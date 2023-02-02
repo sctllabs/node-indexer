@@ -1,0 +1,45 @@
+type Account @entity {
+    "Account address"
+    id: ID!
+    transfersTo: [Transfer!] @derivedFrom(field: "to")
+    transfersFrom: [Transfer!] @derivedFrom(field: "from")
+}
+
+type Transfer @entity {
+    id: ID!
+    blockNumber: Int! @index
+    timestamp: DateTime! @index
+    extrinsicHash: String @index
+    from: Account!
+    to: Account!
+    amount: BigInt! @index
+    fee: BigInt! # fee is calculated at the best effort and may be zero for some old extrinsics
+}
+
+type Dao @entity {
+    id: ID!
+    founder: Account!
+    council: [String!]
+    technicalCommittee: [String!]
+    name: String!
+    purpose: String!
+    metadata: String!
+    token: Token!
+    policy: DaoPolicy!
+#    proposals: [Proposal]
+}
+
+type DaoPolicy @entity {
+    id: ID!
+    proposalPeriod: Int!
+    approveOriginType: String!
+    approveOriginProportion: [Int!]
+}
+
+type Token @entity {
+    id: ID!
+    name: String!
+    symbol: String!
+    decimals: Int
+    balance: BigInt!
+}
