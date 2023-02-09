@@ -17,6 +17,8 @@ build-images: build-processor-image build-query-node-image
 serve:
 	@npx squid-graphql-server --subscriptions
 
+generate:
+	@npx squid-typeorm-migration generate
 
 migrate:
 	@npx squid-typeorm-migration apply
@@ -35,7 +37,10 @@ up:
 
 
 down:
-	@docker-compose down
+	@docker-compose down -v
+
+archive:
+	@docker-compose -f ./archive/docker-compose.yml up -d
 
 
-.PHONY: build serve process migrate codegen typegen up down
+.PHONY: build serve process migrate codegen typegen up down archive generate

@@ -2,10 +2,10 @@
   "outDir": "src/types",
   "specVersions": "http://127.0.0.1:8888/graphql",
   "events": [
-    "Balances.Transfer",
+    "Assets.MetadataSet",
     "Dao.DaoRegistered"
   ],
-  "calls": [ 
+  "calls": [
   ],
   "storage": [
   ]

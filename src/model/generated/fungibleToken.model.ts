@@ -1,9 +1,8 @@
 import {Entity as Entity_, Column as Column_, PrimaryColumn as PrimaryColumn_} from "typeorm"
-import * as marshal from "./marshal"
 
 @Entity_()
-export class Token {
-    constructor(props?: Partial<Token>) {
+export class FungibleToken {
+    constructor(props?: Partial<FungibleToken>) {
         Object.assign(this, props)
     }
 
@@ -19,6 +18,6 @@ export class Token {
     @Column_("int4", {nullable: true})
     decimals!: number | undefined | null
 
-    @Column_("numeric", {transformer: marshal.bigintTransformer, nullable: false})
-    balance!: bigint
+    @Column_("bool", {nullable: false})
+    isFrozen!: boolean
 }

@@ -1,7 +1,9 @@
-import {Entity as Entity_, Column as Column_, PrimaryColumn as PrimaryColumn_, ManyToOne as ManyToOne_, Index as Index_} from "typeorm"
+import {Entity as Entity_, Column as Column_, PrimaryColumn as PrimaryColumn_, ManyToOne as ManyToOne_, Index as Index_, OneToMany as OneToMany_} from "typeorm"
 import {Account} from "./account.model"
-import {Token} from "./token.model"
-import {DaoPolicy} from "./daoPolicy.model"
+import {CouncilAccounts} from "./councilAccounts.model"
+import {TechnicalCommitteeAccounts} from "./technicalCommitteeAccounts.model"
+import {FungibleToken} from "./fungibleToken.model"
+import {Policy} from "./policy.model"
 
 @Entity_()
 export class Dao {
@@ -14,13 +16,17 @@ export class Dao {
 
     @Index_()
     @ManyToOne_(() => Account, {nullable: true})
+    account!: Account
+
+    @Index_()
+    @ManyToOne_(() => Account, {nullable: true})
     founder!: Account
 
-    @Column_("text", {array: true, nullable: true})
-    council!: (string)[] | undefined | null
+    @OneToMany_(() => CouncilAccounts, e => e.dao)
+    council!: CouncilAccounts[]
 
-    @Column_("text", {array: true, nullable: true})
-    technicalCommittee!: (string)[] | undefined | null
+    @OneToMany_(() => TechnicalCommitteeAccounts, e => e.dao)
+    technicalCommittee!: TechnicalCommitteeAccounts[]
 
     @Column_("text", {nullable: false})
     name!: string
@@ -32,10 +38,13 @@ export class Dao {
     metadata!: string
 
     @Index_()
-    @ManyToOne_(() => Token, {nullable: true})
-    token!: Token
+    @ManyToOne_(() => FungibleToken, {nullable: true})
+    fungibleToken!: FungibleToken | undefined | null
+
+    @Column_("text", {nullable: true})
+    ethTokenAddress!: string | undefined | null
 
     @Index_()
-    @ManyToOne_(() => DaoPolicy, {nullable: true})
-    policy!: DaoPolicy
+    @ManyToOne_(() => Policy, {nullable: true})
+    policy!: Policy
 }

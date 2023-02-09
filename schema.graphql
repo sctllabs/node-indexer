@@ -1,45 +1,86 @@
+# noinspection GraphQLUnresolvedReference,GraphQLDuplicateDirective,GraphQLMissingType
 type Account @entity {
     "Account address"
     id: ID!
-    transfersTo: [Transfer!] @derivedFrom(field: "to")
-    transfersFrom: [Transfer!] @derivedFrom(field: "from")
+    memberOfCouncil: [CouncilAccounts!] @derivedFrom(field: "account")
+    memberOfTechnicalCommittee: [TechnicalCommitteeAccounts] @derivedFrom(field: "account")
 }
 
-type Transfer @entity {
+type CouncilAccounts @entity {
     id: ID!
-    blockNumber: Int! @index
-    timestamp: DateTime! @index
-    extrinsicHash: String @index
-    from: Account!
-    to: Account!
-    amount: BigInt! @index
-    fee: BigInt! # fee is calculated at the best effort and may be zero for some old extrinsics
+    account: Account!
+    dao: Dao!
+}
+
+type TechnicalCommitteeAccounts @entity {
+    id: ID!
+    account: Account!
+    dao: Dao!
 }
 
 type Dao @entity {
     id: ID!
+    account: Account!
     founder: Account!
-    council: [String!]
-    technicalCommittee: [String!]
+    council: [CouncilAccounts!] @derivedFrom(field: "dao")
+    technicalCommittee: [TechnicalCommitteeAccounts!] @derivedFrom(field: "dao")
     name: String!
     purpose: String!
     metadata: String!
-    token: Token!
-    policy: DaoPolicy!
-#    proposals: [Proposal]
+    fungibleToken: FungibleToken
+    ethTokenAddress: String
+    policy: Policy!
+    #    proposals: [Proposal]
 }
 
-type DaoPolicy @entity {
+enum ApproveOriginType {
+    AtLeast
+    MoreThan
+}
+
+enum GovernanceKind {
+    GovernanceV1
+    OwnershipWeightedVoting
+}
+
+type GovernanceV1 {
+    kind: GovernanceKind!
+    enactmentPeriod: BigInt!
+    launchPeriod: BigInt!
+    votingPeriod: BigInt!
+    voteLockingPeriod: BigInt!
+    fastTrackVotingPeriod: BigInt!
+    cooloffPeriod: BigInt!
+    minimumDeposit: BigInt!
+    externalOrigin: ApproveOriginType!
+    externalMajorityOrigin: ApproveOriginType!
+    externalDefaultOrigin: ApproveOriginType!
+    fastTrackOrigin: ApproveOriginType!
+    instantOrigin: ApproveOriginType!
+    instantAllowed: Boolean!
+    cancellationOrigin: ApproveOriginType!
+    blacklistOrigin: ApproveOriginType!
+    cancelProposalOrigin: ApproveOriginType!
+}
+
+type OwnershipWeightedVoting {
+    kind: GovernanceKind!
+}
+
+union Governance = GovernanceV1 | OwnershipWeightedVoting
+
+type Policy @entity {
     id: ID!
     proposalPeriod: Int!
-    approveOriginType: String!
-    approveOriginProportion: [Int!]
+    approveOriginType: ApproveOriginType!
+    approveOriginProportion: [Int!]!
+    governance: Governance
 }
 
-type Token @entity {
+type FungibleToken @entity {
     id: ID!
     name: String!
     symbol: String!
     decimals: Int
-    balance: BigInt!
+    isFrozen: Boolean!
 }
