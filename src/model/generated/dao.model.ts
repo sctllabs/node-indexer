@@ -4,6 +4,7 @@ import {CouncilAccounts} from "./councilAccounts.model"
 import {TechnicalCommitteeAccounts} from "./technicalCommitteeAccounts.model"
 import {FungibleToken} from "./fungibleToken.model"
 import {Policy} from "./policy.model"
+import {Proposal} from "./proposal.model"
 
 @Entity_()
 export class Dao {
@@ -47,4 +48,7 @@ export class Dao {
     @Index_()
     @ManyToOne_(() => Policy, {nullable: true})
     policy!: Policy
+
+    @OneToMany_(() => Proposal, e => e.dao)
+    proposals!: Proposal[]
 }

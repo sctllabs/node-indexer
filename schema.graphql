@@ -30,7 +30,7 @@ type Dao @entity {
     fungibleToken: FungibleToken
     ethTokenAddress: String
     policy: Policy!
-    #    proposals: [Proposal]
+    proposals: [Proposal] @derivedFrom(field: "dao")
 }
 
 enum ApproveOriginType {
@@ -83,4 +83,42 @@ type FungibleToken @entity {
     symbol: String!
     decimals: Int
     isFrozen: Boolean!
+}
+
+# TODO @asansyzb investigate difference between Yes/No voting and count based voting
+
+type AddMember {
+    who: Account!
+}
+
+type RemoveMember {
+    who: Account!
+}
+
+type Spend {
+    amount: BigInt!
+    beneficiary: Account!
+}
+
+union ProposalKind = AddMember | RemoveMember | Spend
+
+type Proposal @entity {
+    id: ID!
+    index: String!
+    hash: String!
+    account: String!
+    dao: Dao!
+    voteThreshold: Int!
+    kind: ProposalKind!
+    meta: String
+}
+
+type VoteHistory @entity {
+    id: ID!
+    proposalHash: Proposal
+    approvedVote: Boolean!
+    councillor: Account
+    votedYes: Int
+    votedNo: Int
+    block: BigInt!
 }

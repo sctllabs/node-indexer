@@ -6,6 +6,13 @@ import {
 import { Store, TypeormDatabase } from "@subsquid/typeorm-store";
 
 import { daoHandler, fungibleTokenHandler } from "./handlers";
+import { proposalHandler } from "./handlers/proposalHandler";
+import {
+  AssetsMetadataSetEvent,
+  DaoCouncilProposedEvent,
+  DaoCouncilVotedEvent,
+  DaoDaoRegisteredEvent,
+} from "./types/events";
 
 const processor = new SubstrateBatchProcessor()
   .setDataSource({
@@ -25,6 +32,20 @@ const processor = new SubstrateBatchProcessor()
         args: true,
       },
     },
+  } as const)
+  .addEvent("DaoCouncil.Proposed", {
+    data: {
+      event: {
+        args: true,
+      },
+    },
+  } as const)
+  .addEvent("DaoCouncil.Voted", {
+    data: {
+      event: {
+        args: true,
+      },
+    },
   } as const);
 
 export type Item = BatchProcessorItem<typeof processor>;
@@ -35,19 +56,65 @@ processor.run(new TypeormDatabase(), async (ctx) => {
 });
 
 async function processEvents(ctx: Ctx): Promise<void> {
-  const createDaoEvents = [];
-  const createTokenEvents = [];
+  const { daoEvents, tokenEvents, voteEvents, proposalEvents } = getEvents(ctx);
+
+  const fungibleTokens = await fungibleTokenHandler(ctx, tokenEvents);
+  const {
+    daos,
+    policies,
+    councilAccounts,
+    technicalCommitteeAccounts,
+    accounts,
+  } = await daoHandler(ctx, daoEvents, fungibleTokens);
+  const proposals = await proposalHandler(ctx, proposalEvents, daos);
+
+  await ctx.store.save(accounts);
+  await ctx.store.insert(fungibleTokens);
+  await ctx.store.insert(policies);
+  await ctx.store.insert(daos);
+  await ctx.store.insert(proposals);
+  await ctx.store.insert(councilAccounts);
+  await ctx.store.insert(technicalCommitteeAccounts);
+}
+
+type EventsInfo = {
+  daoEvents: DaoDaoRegisteredEvent[];
+  tokenEvents: AssetsMetadataSetEvent[];
+  proposalEvents: DaoCouncilProposedEvent[];
+  voteEvents: DaoCouncilVotedEvent[];
+};
+
+function getEvents(ctx: Ctx) {
+  const events: EventsInfo = {
+    daoEvents: [],
+    tokenEvents: [],
+    proposalEvents: [],
+    voteEvents: [],
+  };
+
   for (let block of ctx.blocks) {
     for (let item of block.items) {
       switch (item.kind) {
         case "event": {
           switch (item.name) {
             case "Dao.DaoRegistered": {
-              createDaoEvents.push(item);
+              events.daoEvents.push(new DaoDaoRegisteredEvent(ctx, item.event));
               break;
             }
             case "Assets.MetadataSet": {
-              createTokenEvents.push(item);
+              events.tokenEvents.push(
+                new AssetsMetadataSetEvent(ctx, item.event)
+              );
+              break;
+            }
+            case "DaoCouncil.Proposed": {
+              events.proposalEvents.push(
+                new DaoCouncilProposedEvent(ctx, item.event)
+              );
+              break;
+            }
+            case "DaoCouncil.Voted": {
+              events.voteEvents.push(new DaoCouncilVotedEvent(ctx, item.event));
               break;
             }
             default: {
@@ -66,19 +133,5 @@ async function processEvents(ctx: Ctx): Promise<void> {
       }
     }
   }
-
-  const fungibleTokens = await fungibleTokenHandler(ctx, createTokenEvents);
-  const {
-    daos,
-    policies,
-    councilAccounts,
-    technicalCommitteeAccounts,
-    accounts,
-  } = await daoHandler(ctx, createDaoEvents, fungibleTokens);
-  await ctx.store.save(accounts);
-  await ctx.store.insert(fungibleTokens);
-  await ctx.store.insert(policies);
-  await ctx.store.insert(daos);
-  await ctx.store.insert(councilAccounts);
-  await ctx.store.insert(technicalCommitteeAccounts);
+  return events;
 }

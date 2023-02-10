@@ -16,7 +16,6 @@ import { DaoDaoRegisteredEvent } from "../types/events";
 import { getAccount } from "../utils/getAcccount";
 import { decodeAddress } from "../utils/decodeAddress";
 
-import type { EventItem } from "@subsquid/substrate-processor/lib/interfaces/dataSelection";
 import type {
   DaoConfig,
   DaoGovernance,
@@ -28,10 +27,7 @@ type DaoMemberType = "Council" | "TechnicalCommittee";
 
 export async function daoHandler(
   ctx: Ctx,
-  createDaoEvents: EventItem<
-    "Dao.DaoRegistered",
-    { readonly event: { readonly args: true } }
-  >[],
+  createDaoEvents: DaoDaoRegisteredEvent[],
   candidateFungibleTokens: FungibleToken[]
 ) {
   const daos: Dao[] = [];
@@ -40,14 +36,16 @@ export async function daoHandler(
   const technicalCommitteeAccounts: TechnicalCommitteeAccounts[] = [];
 
   const [accountsQuery, fungibleTokensQuery] =
-    await getAccountsAndFungibleTokens(ctx, createDaoEvents);
+    await getAccountsAndFungibleTokens(
+      ctx,
+      createDaoEvents,
+      candidateFungibleTokens
+    );
 
   const accountsMap = new Map(accountsQuery.map((a) => [a.id, a]));
 
   for (const daoEvent of createDaoEvents) {
-    const e = new DaoDaoRegisteredEvent(ctx, daoEvent.event);
-
-    if (!e.isV100) {
+    if (!daoEvent.isV100) {
       throw new Error("Unsupported dao spec");
     }
 
@@ -60,7 +58,7 @@ export async function daoHandler(
       council: encodedCouncil,
       technicalCommittee: encodedTechnicalCommittee,
       token,
-    } = e.asV100;
+    } = daoEvent.asV100;
     const founderAddress = decodeAddress(encodedFounderAddress);
     const daoAccount = decodeAddress(encodedDaoAddress);
 
@@ -167,18 +165,14 @@ function mapTokenToDao(
 
 async function getAccountsAndFungibleTokens(
   ctx: Ctx,
-  createDaoEvents: EventItem<
-    "Dao.DaoRegistered",
-    { readonly event: { readonly args: true } }
-  >[]
+  createDaoEvents: DaoDaoRegisteredEvent[],
+  candidateFungibleTokens: FungibleToken[]
 ) {
   let accountIds = new Set<string>();
   let fungibleTokenIds = new Set<string>();
 
   for (const daoEvent of createDaoEvents) {
-    const e = new DaoDaoRegisteredEvent(ctx, daoEvent.event);
-
-    if (!e.isV100) {
+    if (!daoEvent.isV100) {
       throw new Error("Unsupported dao spec");
     }
     const {
@@ -187,7 +181,7 @@ async function getAccountsAndFungibleTokens(
       council: encodedCouncil,
       technicalCommittee: encodedTechnicalCommittee,
       token,
-    } = e.asV100;
+    } = daoEvent.asV100;
     const founder = decodeAddress(encodedFounderAddress);
     const daoAddress = decodeAddress(encodedDaoAddress);
     encodedCouncil.forEach((_encodedCouncilAddress) => {
@@ -201,7 +195,13 @@ async function getAccountsAndFungibleTokens(
     accountIds.add(founder);
     accountIds.add(daoAddress);
 
-    if (token.__kind === "FungibleToken") {
+    if (
+      token.__kind === "FungibleToken" &&
+      !candidateFungibleTokens.find(
+        (_candidateFungibleToken) =>
+          _candidateFungibleToken.id === token.value.toString()
+      )
+    ) {
       fungibleTokenIds.add(token.value.toString());
     }
   }
