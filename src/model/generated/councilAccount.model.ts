@@ -3,8 +3,8 @@ import {Account} from "./account.model"
 import {Dao} from "./dao.model"
 
 @Entity_()
-export class TechnicalCommitteeAccounts {
-    constructor(props?: Partial<TechnicalCommitteeAccounts>) {
+export class CouncilAccount {
+    constructor(props?: Partial<CouncilAccount>) {
         Object.assign(this, props)
     }
 

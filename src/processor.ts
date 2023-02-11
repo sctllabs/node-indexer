@@ -5,14 +5,28 @@ import {
 } from "@subsquid/substrate-processor";
 import { Store, TypeormDatabase } from "@subsquid/typeorm-store";
 
-import { daoHandler, fungibleTokenHandler } from "./handlers";
-import { proposalHandler } from "./handlers/proposalHandler";
+import {
+  daoHandler,
+  fungibleTokenHandler,
+  proposalHandler,
+  voteHandler,
+} from "./handlers";
 import {
   AssetsMetadataSetEvent,
   DaoCouncilProposedEvent,
   DaoCouncilVotedEvent,
   DaoDaoRegisteredEvent,
 } from "./types/events";
+import {
+  Account,
+  CouncilAccount,
+  Dao,
+  FungibleToken,
+  Policy,
+  Proposal,
+  TechnicalCommitteeAccount,
+  VoteHistory,
+} from "./model";
 
 const processor = new SubstrateBatchProcessor()
   .setDataSource({
@@ -51,38 +65,64 @@ const processor = new SubstrateBatchProcessor()
 export type Item = BatchProcessorItem<typeof processor>;
 export type Ctx = BatchContext<Store, Item>;
 
-processor.run(new TypeormDatabase(), async (ctx) => {
-  await processEvents(ctx);
-});
-
-async function processEvents(ctx: Ctx): Promise<void> {
-  const { daoEvents, tokenEvents, voteEvents, proposalEvents } = getEvents(ctx);
-
-  const fungibleTokens = await fungibleTokenHandler(ctx, tokenEvents);
-  const {
-    daos,
-    policies,
-    councilAccounts,
-    technicalCommitteeAccounts,
-    accounts,
-  } = await daoHandler(ctx, daoEvents, fungibleTokens);
-  const proposals = await proposalHandler(ctx, proposalEvents, daos);
-
-  await ctx.store.save(accounts);
-  await ctx.store.insert(fungibleTokens);
-  await ctx.store.insert(policies);
-  await ctx.store.insert(daos);
-  await ctx.store.insert(proposals);
-  await ctx.store.insert(councilAccounts);
-  await ctx.store.insert(technicalCommitteeAccounts);
-}
-
 type EventsInfo = {
   daoEvents: DaoDaoRegisteredEvent[];
   tokenEvents: AssetsMetadataSetEvent[];
   proposalEvents: DaoCouncilProposedEvent[];
   voteEvents: DaoCouncilVotedEvent[];
 };
+type DataBatch = {
+  accounts: Map<string, Account>;
+  daos: Map<string, Dao>;
+  policies: Map<string, Policy>;
+  proposals: Map<string, Proposal>;
+  fungibleTokens: Map<string, FungibleToken>;
+  councilAccounts: Map<string, CouncilAccount>;
+  technicalCommitteeAccounts: Map<string, TechnicalCommitteeAccount>;
+  votes: Map<string, VoteHistory>;
+};
+
+processor.run(new TypeormDatabase(), async (ctx) => {
+  await processEvents(ctx);
+});
+
+async function processEvents(ctx: Ctx): Promise<void> {
+  const eventsInfo = getEvents(ctx);
+  const dataBatch = await handleEvents(ctx, eventsInfo);
+  await saveData(ctx, dataBatch);
+}
+
+async function handleEvents(
+  ctx: Ctx,
+  { tokenEvents, daoEvents, proposalEvents, voteEvents }: EventsInfo
+): Promise<DataBatch> {
+  const accounts: Map<string, Account> = new Map();
+  const fungibleTokens = await fungibleTokenHandler(ctx, tokenEvents);
+  const { daos, policies, councilAccounts, technicalCommitteeAccounts } =
+    await daoHandler(ctx, daoEvents, fungibleTokens, accounts);
+  const proposals = await proposalHandler(ctx, proposalEvents, daos, accounts);
+  const votes = await voteHandler(ctx, voteEvents);
+  return {
+    accounts,
+    daos,
+    policies,
+    fungibleTokens,
+    councilAccounts,
+    technicalCommitteeAccounts,
+    proposals,
+    votes,
+  };
+}
+
+async function saveData(ctx: Ctx, dataBatch: DataBatch) {
+  await ctx.store.save([...dataBatch.accounts.values()]);
+  await ctx.store.insert([...dataBatch.fungibleTokens.values()]);
+  await ctx.store.insert([...dataBatch.policies.values()]);
+  await ctx.store.insert([...dataBatch.daos.values()]);
+  await ctx.store.insert([...dataBatch.proposals.values()]);
+  await ctx.store.insert([...dataBatch.councilAccounts.values()]);
+  await ctx.store.insert([...dataBatch.technicalCommitteeAccounts.values()]);
+}
 
 function getEvents(ctx: Ctx) {
   const events: EventsInfo = {

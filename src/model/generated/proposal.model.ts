@@ -1,5 +1,6 @@
 import {Entity as Entity_, Column as Column_, PrimaryColumn as PrimaryColumn_, ManyToOne as ManyToOne_, Index as Index_} from "typeorm"
 import * as marshal from "./marshal"
+import {Account} from "./account.model"
 import {Dao} from "./dao.model"
 import {ProposalKind, fromJsonProposalKind} from "./_proposalKind"
 
@@ -18,8 +19,9 @@ export class Proposal {
     @Column_("text", {nullable: false})
     hash!: string
 
-    @Column_("text", {nullable: false})
-    account!: string
+    @Index_()
+    @ManyToOne_(() => Account, {nullable: true})
+    account!: Account
 
     @Index_()
     @ManyToOne_(() => Dao, {nullable: true})

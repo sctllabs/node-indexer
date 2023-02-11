@@ -7,8 +7,6 @@
     "DaoCouncil.Proposed",
     "DaoCouncil.Voted"
   ],
-  "calls": [
-  ],
-  "storage": [
-  ]
+  "calls": [],
+  "storage": []
 }

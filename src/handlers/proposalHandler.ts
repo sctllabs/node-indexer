@@ -1,18 +1,36 @@
-import { Ctx } from "../processor";
-import { AddMember, Dao, Proposal, RemoveMember, Spend } from "../model";
-import { DaoCouncilProposedEvent } from "../types/events";
 import { In } from "typeorm";
-import { decodeAddress } from "../utils/decodeAddress";
+import { Ctx } from "../processor";
+import {
+  Account,
+  AddMember,
+  Dao,
+  Proposal,
+  RemoveMember,
+  Spend,
+} from "../model";
+import { DaoCouncilProposedEvent } from "../types/events";
+import { decodeAddress, getAccount } from "../utils";
 import * as v100 from "../types/v100";
 
 export async function proposalHandler(
   ctx: Ctx,
   proposalEvents: DaoCouncilProposedEvent[],
-  daoCandidates: Dao[]
+  daos: Map<string, Dao>,
+  accounts: Map<string, Account>
 ) {
-  const proposals: Proposal[] = [];
-
-  const daosQuery = await getDaos(ctx, proposalEvents, daoCandidates);
+  const proposals: Map<string, Proposal> = new Map();
+  const [accountsQuery, daosQuery] = await getAccountsAndDaos(
+    ctx,
+    proposalEvents,
+    daos,
+    accounts
+  );
+  accountsQuery.map((_accountQuery) =>
+    accounts.set(_accountQuery.id, _accountQuery)
+  );
+  const daosQueryMap = new Map(
+    daosQuery.map((_daoQuery) => [_daoQuery.id, _daoQuery])
+  );
 
   for (const proposalEvent of proposalEvents) {
     if (!proposalEvent.isV100) {
@@ -30,20 +48,22 @@ export async function proposalHandler(
     } = proposalEvent.asV100;
 
     const dao =
-      daoCandidates.find(
-        (_daoCandidate) => _daoCandidate.id === daoId.toString()
-      ) ?? daosQuery.find((_daoQuery) => _daoQuery.id === daoId.toString());
+      daos.get(daoId.toString()) ?? daosQueryMap.get(daoId.toString());
+
+    if (!dao) {
+      throw new Error(`Dao with id: ${daoId} not found`);
+    }
 
     const kind = getProposalKind(proposal);
-
     const hash = Buffer.from(proposalHash).toString("hex");
 
-    proposals.push(
+    proposals.set(
+      hash,
       new Proposal({
         id: hash,
         hash: hash,
         index: proposalIndex.toString(),
-        account: decodeAddress(account),
+        account: getAccount(accounts, decodeAddress(account)),
         meta: meta?.toString(),
         voteThreshold: threshold,
         kind,
@@ -51,7 +71,6 @@ export async function proposalHandler(
       })
     );
   }
-
   return proposals;
 }
 
@@ -83,27 +102,35 @@ function getProposalKind(proposal: v100.Call) {
   }
 }
 
-function getDaos(
+function getAccountsAndDaos(
   ctx: Ctx,
   proposalEvents: DaoCouncilProposedEvent[],
-  daoCandidates: Dao[]
+  daoCandidates: Map<string, Dao>,
+  accounts: Map<string, Account>
 ) {
+  const accountIds = new Set<string>();
   const daoIds = new Set<string>();
+
   for (const proposalEvent of proposalEvents) {
     if (!proposalEvent.isV100) {
       throw new Error("Unsupported proposal spec");
     }
 
-    const { daoId } = proposalEvent.asV100;
-    if (
-      !daoCandidates.find(
-        (_daoCandidate) => _daoCandidate.id === daoId.toString()
-      )
-    ) {
+    const { daoId, account } = proposalEvent.asV100;
+    const accountAddress = decodeAddress(account);
+    if (!daoCandidates.get(daoId.toString())) {
       daoIds.add(daoId.toString());
     }
+    if (!accounts.get(accountAddress)) {
+      accountIds.add(accountAddress);
+    }
   }
-  return ctx.store.findBy(Dao, {
-    id: In([...daoIds]),
-  });
+  return Promise.all([
+    ctx.store.findBy(Account, {
+      id: In([...accountIds]),
+    }),
+    ctx.store.findBy(Dao, {
+      id: In([...daoIds]),
+    }),
+  ]);
 }

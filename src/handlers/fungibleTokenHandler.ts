@@ -6,8 +6,7 @@ export async function fungibleTokenHandler(
   ctx: Ctx,
   createTokenEvents: AssetsMetadataSetEvent[]
 ) {
-  const fungibleTokens: FungibleToken[] = [];
-
+  const fungibleTokens: Map<string, FungibleToken> = new Map();
   for (const tokenEvent of createTokenEvents) {
     if (!tokenEvent.isV100) {
       throw new Error("Unsupported token spec");
@@ -23,8 +22,7 @@ export async function fungibleTokenHandler(
       decimals,
     });
 
-    fungibleTokens.push(fungibleToken);
+    fungibleTokens.set(fungibleToken.id, fungibleToken);
   }
-
   return fungibleTokens;
 }

@@ -1,7 +1,7 @@
 import {Entity as Entity_, Column as Column_, PrimaryColumn as PrimaryColumn_, ManyToOne as ManyToOne_, Index as Index_, OneToMany as OneToMany_} from "typeorm"
 import {Account} from "./account.model"
-import {CouncilAccounts} from "./councilAccounts.model"
-import {TechnicalCommitteeAccounts} from "./technicalCommitteeAccounts.model"
+import {CouncilAccount} from "./councilAccount.model"
+import {TechnicalCommitteeAccount} from "./technicalCommitteeAccount.model"
 import {FungibleToken} from "./fungibleToken.model"
 import {Policy} from "./policy.model"
 import {Proposal} from "./proposal.model"
@@ -23,11 +23,11 @@ export class Dao {
     @ManyToOne_(() => Account, {nullable: true})
     founder!: Account
 
-    @OneToMany_(() => CouncilAccounts, e => e.dao)
-    council!: CouncilAccounts[]
+    @OneToMany_(() => CouncilAccount, e => e.dao)
+    council!: CouncilAccount[]
 
-    @OneToMany_(() => TechnicalCommitteeAccounts, e => e.dao)
-    technicalCommittee!: TechnicalCommitteeAccounts[]
+    @OneToMany_(() => TechnicalCommitteeAccount, e => e.dao)
+    technicalCommittee!: TechnicalCommitteeAccount[]
 
     @Column_("text", {nullable: false})
     name!: string

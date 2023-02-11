@@ -1,6 +1,6 @@
 import {Entity as Entity_, Column as Column_, PrimaryColumn as PrimaryColumn_, OneToMany as OneToMany_} from "typeorm"
-import {CouncilAccounts} from "./councilAccounts.model"
-import {TechnicalCommitteeAccounts} from "./technicalCommitteeAccounts.model"
+import {CouncilAccount} from "./councilAccount.model"
+import {TechnicalCommitteeAccount} from "./technicalCommitteeAccount.model"
 
 @Entity_()
 export class Account {
@@ -14,9 +14,9 @@ export class Account {
     @PrimaryColumn_()
     id!: string
 
-    @OneToMany_(() => CouncilAccounts, e => e.account)
-    memberOfCouncil!: CouncilAccounts[]
+    @OneToMany_(() => CouncilAccount, e => e.account)
+    memberOfCouncil!: CouncilAccount[]
 
-    @OneToMany_(() => TechnicalCommitteeAccounts, e => e.account)
-    memberOfTechnicalCommittee!: TechnicalCommitteeAccounts[]
+    @OneToMany_(() => TechnicalCommitteeAccount, e => e.account)
+    memberOfTechnicalCommittee!: TechnicalCommitteeAccount[]
 }
