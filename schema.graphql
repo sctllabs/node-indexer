@@ -2,17 +2,17 @@
 type Account @entity {
     "Account address"
     id: ID!
-    memberOfCouncil: [CouncilAccounts!] @derivedFrom(field: "account")
-    memberOfTechnicalCommittee: [TechnicalCommitteeAccounts] @derivedFrom(field: "account")
+    memberOfCouncil: [CouncilAccount!] @derivedFrom(field: "account")
+    memberOfTechnicalCommittee: [TechnicalCommitteeAccount] @derivedFrom(field: "account")
 }
 
-type CouncilAccounts @entity {
+type CouncilAccount @entity {
     id: ID!
     account: Account!
     dao: Dao!
 }
 
-type TechnicalCommitteeAccounts @entity {
+type TechnicalCommitteeAccount @entity {
     id: ID!
     account: Account!
     dao: Dao!
@@ -22,15 +22,15 @@ type Dao @entity {
     id: ID!
     account: Account!
     founder: Account!
-    council: [CouncilAccounts!] @derivedFrom(field: "dao")
-    technicalCommittee: [TechnicalCommitteeAccounts!] @derivedFrom(field: "dao")
+    council: [CouncilAccount!] @derivedFrom(field: "dao")
+    technicalCommittee: [TechnicalCommitteeAccount!] @derivedFrom(field: "dao")
     name: String!
     purpose: String!
     metadata: String!
     fungibleToken: FungibleToken
     ethTokenAddress: String
     policy: Policy!
-    #    proposals: [Proposal]
+    proposals: [Proposal] @derivedFrom(field: "dao")
 }
 
 enum ApproveOriginType {
@@ -83,4 +83,42 @@ type FungibleToken @entity {
     symbol: String!
     decimals: Int
     isFrozen: Boolean!
+}
+
+# TODO @asansyzb investigate difference between Yes/No voting and count based voting
+
+type AddMember {
+    who: Account!
+}
+
+type RemoveMember {
+    who: Account!
+}
+
+type Spend {
+    amount: BigInt!
+    beneficiary: Account!
+}
+
+union ProposalKind = AddMember | RemoveMember | Spend
+
+type Proposal @entity {
+    id: ID!
+    index: String!
+    hash: String!
+    account: Account!
+    dao: Dao!
+    voteThreshold: Int!
+    kind: ProposalKind!
+    meta: String
+}
+
+type VoteHistory @entity {
+    id: ID!
+    proposalHash: Proposal
+    approvedVote: Boolean!
+    councillor: Account
+    votedYes: Int
+    votedNo: Int
+    block: BigInt!
 }

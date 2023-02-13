@@ -3,10 +3,10 @@
   "specVersions": "http://127.0.0.1:8888/graphql",
   "events": [
     "Assets.MetadataSet",
-    "Dao.DaoRegistered"
+    "Dao.DaoRegistered",
+    "DaoCouncil.Proposed",
+    "DaoCouncil.Voted"
   ],
-  "calls": [
-  ],
-  "storage": [
-  ]
+  "calls": [],
+  "storage": []
 }
