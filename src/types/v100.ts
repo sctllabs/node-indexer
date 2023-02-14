@@ -24,6 +24,17 @@ export interface DaoPolicy {
     governance: (DaoGovernance | undefined)
 }
 
+export type Type_39 = Type_39_Ok | Type_39_Err
+
+export interface Type_39_Ok {
+    __kind: 'Ok'
+}
+
+export interface Type_39_Err {
+    __kind: 'Err'
+    value: DispatchError
+}
+
 export type Call = Call_System | Call_Timestamp | Call_Grandpa | Call_Balances | Call_Nicks | Call_Sudo | Call_Scheduler | Call_Dao | Call_Contracts | Call_Authorship | Call_Session | Call_Babe | Call_Staking | Call_Council | Call_TechnicalCommittee | Call_ImOnline | Call_Treasury | Call_DaoTreasury | Call_BagsList | Call_NominationPools | Call_ElectionProviderMultiPhase | Call_Bounties | Call_ChildBounties | Call_TechnicalMembership | Call_Referenda | Call_ConvictionVoting | Call_Assets | Call_Democracy | Call_Indices | Call_Elections | Call_Proxy | Call_Vesting | Call_Uniques | Call_Society | Call_Multisig | Call_Ethereum | Call_EVM | Call_DynamicFee | Call_BaseFee | Call_HotfixSufficients | Call_DaoCouncil | Call_DaoTechnicalCommittee | Call_DaoCouncilMembers | Call_DaoTechnicalCommitteeMembers | Call_DaoDemocracy | Call_DaoEthGovernance | Call_Preimage | Call_Utility
 
 export interface Call_System {
@@ -287,6 +298,64 @@ export interface DaoGovernance_GovernanceV1 {
 
 export interface DaoGovernance_OwnershipWeightedVoting {
     __kind: 'OwnershipWeightedVoting'
+}
+
+export type DispatchError = DispatchError_Other | DispatchError_CannotLookup | DispatchError_BadOrigin | DispatchError_Module | DispatchError_ConsumerRemaining | DispatchError_NoProviders | DispatchError_TooManyConsumers | DispatchError_Token | DispatchError_Arithmetic | DispatchError_Transactional | DispatchError_Exhausted | DispatchError_Corruption | DispatchError_Unavailable
+
+export interface DispatchError_Other {
+    __kind: 'Other'
+}
+
+export interface DispatchError_CannotLookup {
+    __kind: 'CannotLookup'
+}
+
+export interface DispatchError_BadOrigin {
+    __kind: 'BadOrigin'
+}
+
+export interface DispatchError_Module {
+    __kind: 'Module'
+    value: ModuleError
+}
+
+export interface DispatchError_ConsumerRemaining {
+    __kind: 'ConsumerRemaining'
+}
+
+export interface DispatchError_NoProviders {
+    __kind: 'NoProviders'
+}
+
+export interface DispatchError_TooManyConsumers {
+    __kind: 'TooManyConsumers'
+}
+
+export interface DispatchError_Token {
+    __kind: 'Token'
+    value: TokenError
+}
+
+export interface DispatchError_Arithmetic {
+    __kind: 'Arithmetic'
+    value: ArithmeticError
+}
+
+export interface DispatchError_Transactional {
+    __kind: 'Transactional'
+    value: TransactionalError
+}
+
+export interface DispatchError_Exhausted {
+    __kind: 'Exhausted'
+}
+
+export interface DispatchError_Corruption {
+    __kind: 'Corruption'
+}
+
+export interface DispatchError_Unavailable {
+    __kind: 'Unavailable'
 }
 
 /**
@@ -7295,6 +7364,65 @@ export interface GovernanceV1Policy {
     cancellationOrigin: DaoPolicyProportion
     blacklistOrigin: DaoPolicyProportion
     cancelProposalOrigin: DaoPolicyProportion
+}
+
+export interface ModuleError {
+    index: number
+    error: Uint8Array
+}
+
+export type TokenError = TokenError_NoFunds | TokenError_WouldDie | TokenError_BelowMinimum | TokenError_CannotCreate | TokenError_UnknownAsset | TokenError_Frozen | TokenError_Unsupported
+
+export interface TokenError_NoFunds {
+    __kind: 'NoFunds'
+}
+
+export interface TokenError_WouldDie {
+    __kind: 'WouldDie'
+}
+
+export interface TokenError_BelowMinimum {
+    __kind: 'BelowMinimum'
+}
+
+export interface TokenError_CannotCreate {
+    __kind: 'CannotCreate'
+}
+
+export interface TokenError_UnknownAsset {
+    __kind: 'UnknownAsset'
+}
+
+export interface TokenError_Frozen {
+    __kind: 'Frozen'
+}
+
+export interface TokenError_Unsupported {
+    __kind: 'Unsupported'
+}
+
+export type ArithmeticError = ArithmeticError_Underflow | ArithmeticError_Overflow | ArithmeticError_DivisionByZero
+
+export interface ArithmeticError_Underflow {
+    __kind: 'Underflow'
+}
+
+export interface ArithmeticError_Overflow {
+    __kind: 'Overflow'
+}
+
+export interface ArithmeticError_DivisionByZero {
+    __kind: 'DivisionByZero'
+}
+
+export type TransactionalError = TransactionalError_LimitReached | TransactionalError_NoLayer
+
+export interface TransactionalError_LimitReached {
+    __kind: 'LimitReached'
+}
+
+export interface TransactionalError_NoLayer {
+    __kind: 'NoLayer'
 }
 
 export interface EquivocationProof {

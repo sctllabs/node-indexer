@@ -2,28 +2,16 @@
 type Account @entity {
     "Account address"
     id: ID!
-    memberOfCouncil: [CouncilAccount!] @derivedFrom(field: "account")
-    memberOfTechnicalCommittee: [TechnicalCommitteeAccount] @derivedFrom(field: "account")
 }
 
-type CouncilAccount @entity {
-    id: ID!
-    account: Account!
-    dao: Dao!
-}
 
-type TechnicalCommitteeAccount @entity {
-    id: ID!
-    account: Account!
-    dao: Dao!
-}
 
 type Dao @entity {
     id: ID!
     account: Account!
     founder: Account!
-    council: [CouncilAccount!] @derivedFrom(field: "dao")
-    technicalCommittee: [TechnicalCommitteeAccount!] @derivedFrom(field: "dao")
+    council: [String]!
+    technicalCommittee: [String]!
     name: String!
     purpose: String!
     metadata: String!
@@ -31,6 +19,9 @@ type Dao @entity {
     ethTokenAddress: String
     policy: Policy!
     proposals: [Proposal] @derivedFrom(field: "dao")
+    createdAt: DateTime!
+    blockHash: String!
+    blockNum: Int!
 }
 
 enum ApproveOriginType {
@@ -83,6 +74,9 @@ type FungibleToken @entity {
     symbol: String!
     decimals: Int
     isFrozen: Boolean!
+    createdAt: DateTime!
+    blockHash: String!
+    blockNum: Int!
 }
 
 # TODO @asansyzb investigate difference between Yes/No voting and count based voting
@@ -102,6 +96,14 @@ type Spend {
 
 union ProposalKind = AddMember | RemoveMember | Spend
 
+enum ProposalStatus {
+    Open
+    Approved
+    Disapproved
+    Executed
+    Closed
+}
+
 type Proposal @entity {
     id: ID!
     index: String!
@@ -111,14 +113,20 @@ type Proposal @entity {
     voteThreshold: Int!
     kind: ProposalKind!
     meta: String
+    createdAt: DateTime!
+    blockHash: String!
+    blockNum: Int!
+    status: ProposalStatus!
 }
 
 type VoteHistory @entity {
     id: ID!
-    proposalHash: Proposal
+    proposal: Proposal
     approvedVote: Boolean!
     councillor: Account
     votedYes: Int
     votedNo: Int
-    block: BigInt!
+    createdAt: DateTime!
+    blockHash: String!
+    blockNum: Int!
 }

@@ -13,20 +13,23 @@ import {
 } from "./handlers";
 import {
   AssetsMetadataSetEvent,
+  DaoCouncilApprovedEvent,
+  DaoCouncilClosedEvent,
+  DaoCouncilDisapprovedEvent,
+  DaoCouncilExecutedEvent,
   DaoCouncilProposedEvent,
   DaoCouncilVotedEvent,
   DaoDaoRegisteredEvent,
 } from "./types/events";
 import {
   Account,
-  CouncilAccount,
   Dao,
   FungibleToken,
   Policy,
   Proposal,
-  TechnicalCommitteeAccount,
   VoteHistory,
 } from "./model";
+import { proposalStatusHandler } from "./handlers/proposalStatusHandler";
 
 const processor = new SubstrateBatchProcessor()
   .setDataSource({
@@ -60,25 +63,63 @@ const processor = new SubstrateBatchProcessor()
         args: true,
       },
     },
+  } as const)
+  .addEvent("DaoCouncil.Approved", {
+    data: {
+      event: {
+        args: true,
+      },
+    },
+  } as const)
+  .addEvent("DaoCouncil.Disapproved", {
+    data: {
+      event: {
+        args: true,
+      },
+    },
+  } as const)
+  .addEvent("DaoCouncil.Executed", {
+    data: {
+      event: {
+        args: true,
+      },
+    },
+  } as const)
+  .addEvent("DaoCouncil.Closed", {
+    data: {
+      event: {
+        args: true,
+      },
+    },
   } as const);
 
 export type Item = BatchProcessorItem<typeof processor>;
 export type Ctx = BatchContext<Store, Item>;
+export type EventInfo<T> = {
+  event: T;
+  blockNum: number;
+  blockHash: string;
+  timestamp: number;
+};
 
 type EventsInfo = {
-  daoEvents: DaoDaoRegisteredEvent[];
-  tokenEvents: AssetsMetadataSetEvent[];
-  proposalEvents: DaoCouncilProposedEvent[];
-  voteEvents: DaoCouncilVotedEvent[];
+  daoEvents: EventInfo<DaoDaoRegisteredEvent>[];
+  tokenEvents: EventInfo<AssetsMetadataSetEvent>[];
+  proposalEvents: EventInfo<DaoCouncilProposedEvent>[];
+  voteEvents: EventInfo<DaoCouncilVotedEvent>[];
+  approvedProposalEvents: EventInfo<DaoCouncilApprovedEvent>[];
+  disapprovedProposalEvents: EventInfo<DaoCouncilDisapprovedEvent>[];
+  executedProposalEvents: EventInfo<DaoCouncilExecutedEvent>[];
+  closedProposalEvents: EventInfo<DaoCouncilClosedEvent>[];
 };
 type DataBatch = {
   accounts: Map<string, Account>;
   daos: Map<string, Dao>;
+  daosToUpdate: Map<string, Dao>;
   policies: Map<string, Policy>;
   proposals: Map<string, Proposal>;
+  proposalsToUpdate: Map<string, Proposal>;
   fungibleTokens: Map<string, FungibleToken>;
-  councilAccounts: Map<string, CouncilAccount>;
-  technicalCommitteeAccounts: Map<string, TechnicalCommitteeAccount>;
   votes: Map<string, VoteHistory>;
 };
 
@@ -94,22 +135,47 @@ async function processEvents(ctx: Ctx): Promise<void> {
 
 async function handleEvents(
   ctx: Ctx,
-  { tokenEvents, daoEvents, proposalEvents, voteEvents }: EventsInfo
+  {
+    tokenEvents,
+    daoEvents,
+    proposalEvents,
+    voteEvents,
+    approvedProposalEvents,
+    disapprovedProposalEvents,
+    executedProposalEvents,
+    closedProposalEvents,
+  }: EventsInfo
 ): Promise<DataBatch> {
   const accounts: Map<string, Account> = new Map();
   const fungibleTokens = await fungibleTokenHandler(ctx, tokenEvents);
-  const { daos, policies, councilAccounts, technicalCommitteeAccounts } =
-    await daoHandler(ctx, daoEvents, fungibleTokens, accounts);
+  const { daos, policies } = await daoHandler(
+    ctx,
+    daoEvents,
+    fungibleTokens,
+    accounts
+  );
   const proposals = await proposalHandler(ctx, proposalEvents, daos, accounts);
-  const votes = await voteHandler(ctx, voteEvents);
+  const votes = await voteHandler(ctx, voteEvents, proposals, accounts);
+  const { proposalsToUpdate, daosToUpdate } = await proposalStatusHandler(
+    ctx,
+    {
+      approvedProposalEvents,
+      disapprovedProposalEvents,
+      closedProposalEvents,
+      executedProposalEvents,
+    },
+    accounts,
+    proposals,
+    daos
+  );
   return {
     accounts,
     daos,
+    daosToUpdate,
     policies,
     fungibleTokens,
-    councilAccounts,
-    technicalCommitteeAccounts,
     proposals,
+    proposalsToUpdate,
     votes,
   };
 }
@@ -120,8 +186,9 @@ async function saveData(ctx: Ctx, dataBatch: DataBatch) {
   await ctx.store.insert([...dataBatch.policies.values()]);
   await ctx.store.insert([...dataBatch.daos.values()]);
   await ctx.store.insert([...dataBatch.proposals.values()]);
-  await ctx.store.insert([...dataBatch.councilAccounts.values()]);
-  await ctx.store.insert([...dataBatch.technicalCommitteeAccounts.values()]);
+  await ctx.store.insert([...dataBatch.votes.values()]);
+  await ctx.store.save([...dataBatch.proposalsToUpdate.values()]);
+  await ctx.store.save([...dataBatch.daosToUpdate.values()]);
 }
 
 function getEvents(ctx: Ctx) {
@@ -130,31 +197,91 @@ function getEvents(ctx: Ctx) {
     tokenEvents: [],
     proposalEvents: [],
     voteEvents: [],
+    approvedProposalEvents: [],
+    disapprovedProposalEvents: [],
+    closedProposalEvents: [],
+    executedProposalEvents: [],
   };
 
   for (let block of ctx.blocks) {
+    const blockHash = block.header.hash;
+    const blockNum = block.header.height;
+    const timestamp = block.header.timestamp;
+
     for (let item of block.items) {
       switch (item.kind) {
         case "event": {
           switch (item.name) {
             case "Dao.DaoRegistered": {
-              events.daoEvents.push(new DaoDaoRegisteredEvent(ctx, item.event));
+              events.daoEvents.push({
+                event: new DaoDaoRegisteredEvent(ctx, item.event),
+                blockNum,
+                blockHash,
+                timestamp,
+              });
               break;
             }
             case "Assets.MetadataSet": {
-              events.tokenEvents.push(
-                new AssetsMetadataSetEvent(ctx, item.event)
-              );
+              events.tokenEvents.push({
+                event: new AssetsMetadataSetEvent(ctx, item.event),
+                blockNum,
+                blockHash,
+                timestamp,
+              });
               break;
             }
             case "DaoCouncil.Proposed": {
-              events.proposalEvents.push(
-                new DaoCouncilProposedEvent(ctx, item.event)
-              );
+              events.proposalEvents.push({
+                event: new DaoCouncilProposedEvent(ctx, item.event),
+                blockNum,
+                blockHash,
+                timestamp,
+              });
               break;
             }
             case "DaoCouncil.Voted": {
-              events.voteEvents.push(new DaoCouncilVotedEvent(ctx, item.event));
+              events.voteEvents.push({
+                event: new DaoCouncilVotedEvent(ctx, item.event),
+                blockNum,
+                blockHash,
+                timestamp,
+              });
+              break;
+            }
+            case "DaoCouncil.Approved": {
+              events.approvedProposalEvents.push({
+                event: new DaoCouncilApprovedEvent(ctx, item.event),
+                blockNum,
+                blockHash,
+                timestamp,
+              });
+              break;
+            }
+            case "DaoCouncil.Disapproved": {
+              events.disapprovedProposalEvents.push({
+                event: new DaoCouncilDisapprovedEvent(ctx, item.event),
+                blockNum,
+                blockHash,
+                timestamp,
+              });
+              break;
+            }
+            case "DaoCouncil.Executed": {
+              events.executedProposalEvents.push({
+                event: new DaoCouncilExecutedEvent(ctx, item.event),
+                blockNum,
+                blockHash,
+                timestamp,
+              });
+              break;
+            }
+            case "DaoCouncil.Closed": {
+              events.closedProposalEvents.push({
+                event: new DaoCouncilClosedEvent(ctx, item.event),
+                blockNum,
+                blockHash,
+                timestamp,
+              });
               break;
             }
             default: {

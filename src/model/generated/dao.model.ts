@@ -1,7 +1,5 @@
 import {Entity as Entity_, Column as Column_, PrimaryColumn as PrimaryColumn_, ManyToOne as ManyToOne_, Index as Index_, OneToMany as OneToMany_} from "typeorm"
 import {Account} from "./account.model"
-import {CouncilAccount} from "./councilAccount.model"
-import {TechnicalCommitteeAccount} from "./technicalCommitteeAccount.model"
 import {FungibleToken} from "./fungibleToken.model"
 import {Policy} from "./policy.model"
 import {Proposal} from "./proposal.model"
@@ -23,11 +21,11 @@ export class Dao {
     @ManyToOne_(() => Account, {nullable: true})
     founder!: Account
 
-    @OneToMany_(() => CouncilAccount, e => e.dao)
-    council!: CouncilAccount[]
+    @Column_("text", {array: true, nullable: false})
+    council!: (string | undefined | null)[]
 
-    @OneToMany_(() => TechnicalCommitteeAccount, e => e.dao)
-    technicalCommittee!: TechnicalCommitteeAccount[]
+    @Column_("text", {array: true, nullable: false})
+    technicalCommittee!: (string | undefined | null)[]
 
     @Column_("text", {nullable: false})
     name!: string
@@ -51,4 +49,13 @@ export class Dao {
 
     @OneToMany_(() => Proposal, e => e.dao)
     proposals!: Proposal[]
+
+    @Column_("timestamp with time zone", {nullable: false})
+    createdAt!: Date
+
+    @Column_("text", {nullable: false})
+    blockHash!: string
+
+    @Column_("int4", {nullable: false})
+    blockNum!: number
 }
