@@ -25,15 +25,14 @@ export async function voteHandler(
   );
 
   for (const { event, timestamp, blockHash, blockNum } of voteEvents) {
-    const { account, proposalHash, voted, yes, no, daoId } = event.asV100;
+    const { account, proposalIndex, voted, yes, no, daoId } = event.asV100;
     const accountAddress = decodeAddress(account);
-    const hash = Buffer.from(proposalHash).toString("hex");
-    const proposalId = `${daoId}-${hash}`;
+    const proposalId = `${daoId}-${proposalIndex}`;
     const proposal = proposals.get(proposalId) ?? proposalsMap.get(proposalId);
     if (!proposal) {
       throw new Error(`Proposal with id: ${proposalId} not found`);
     }
-    const id = `${daoId}-${hash}-${accountAddress}`;
+    const id = `${daoId}-${proposalIndex}-${accountAddress}`;
     votes.set(
       id,
       new VoteHistory({
@@ -66,10 +65,9 @@ async function getAccountsAndProposals(
       throw new Error("Unsupported vote spec");
     }
 
-    const { daoId, account, proposalHash: encodedProposalHash } = event.asV100;
+    const { daoId, account, proposalIndex } = event.asV100;
     const accountAddress = decodeAddress(account);
-    const hash = Buffer.from(encodedProposalHash).toString("hex");
-    const proposalId = `${daoId}-${hash}`;
+    const proposalId = `${daoId}-${proposalIndex}`;
 
     if (!accounts.get(accountAddress)) {
       accountIds.add(accountAddress);
@@ -80,6 +78,6 @@ async function getAccountsAndProposals(
   }
   return Promise.all([
     ctx.store.findBy(Account, { id: In([...accountIds]) }),
-    ctx.store.findBy(Proposal, { id: In([proposalIds]) }),
+    ctx.store.findBy(Proposal, { id: In([...proposalIds]) }),
   ]);
 }

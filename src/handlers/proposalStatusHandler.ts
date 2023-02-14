@@ -74,9 +74,8 @@ function updateDaos(
 ) {
   const daosToUpdate: Map<string, Dao> = new Map();
   executedEvents.forEach((_executedEvent) => {
-    const { daoId, proposalHash } = _executedEvent.event.asV100;
-    const hash = Buffer.from(proposalHash).toString("hex");
-    const proposalId = `${daoId}-${hash}`;
+    const { daoId, proposalIndex } = _executedEvent.event.asV100;
+    const proposalId = `${daoId}-${proposalIndex}`;
     const proposal =
       proposals.get(proposalId) ?? proposalsToUpdate.get(proposalId);
 
@@ -116,14 +115,13 @@ function getDaos(
 ) {
   const daoIds = new Set<string>();
   executedEvents.forEach((_executedEvent) => {
-    const { daoId, proposalHash } = _executedEvent.event.asV100;
+    const { daoId, proposalIndex } = _executedEvent.event.asV100;
 
     if (daos.get(daoId.toString())) {
       return;
     }
 
-    const hash = Buffer.from(proposalHash).toString("hex");
-    const proposalId = `${daoId}-${hash}`;
+    const proposalId = `${daoId}-${proposalIndex}`;
 
     const proposal =
       proposals.get(proposalId) ?? proposalsToUpdate.get(proposalId);
@@ -177,9 +175,8 @@ function getProposalIds(
       throw new Error("Unsupported status spec");
     }
 
-    const { proposalHash, daoId } = event.asV100;
-    const hash = Buffer.from(proposalHash).toString("hex");
-    const proposalId = `${daoId}-${hash}`;
+    const { daoId, proposalIndex } = event.asV100;
+    const proposalId = `${daoId}-${proposalIndex}`;
     if (!proposals.get(proposalId)) {
       proposalIds.add(proposalId);
     }
@@ -199,9 +196,8 @@ function updateProposalStatuses(
   kind: ProposalEventsKind
 ) {
   for (const { event } of proposalEvents) {
-    const { proposalHash, daoId } = event.asV100;
-    const hash = Buffer.from(proposalHash).toString("hex");
-    const proposalId = `${daoId}-${hash}`;
+    const { daoId, proposalIndex } = event.asV100;
+    const proposalId = `${daoId}-${proposalIndex}`;
     const proposal =
       proposals.get(proposalId) ?? proposalsQueryMap.get(proposalId);
 

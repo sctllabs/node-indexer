@@ -45,7 +45,7 @@ export class DaoDaoRegisteredEvent {
     }
 
     get isV100(): boolean {
-        return this._chain.getEventHash('Dao.DaoRegistered') === '6345dddedfc66c6ab3738adf85a9937e5ef817ea8c8f844518f684baac9a91a8'
+        return this._chain.getEventHash('Dao.DaoRegistered') === 'eaac429ef4019b039a4c7b03837d37302b8068cba17d8438915d3d813a4d383a'
     }
 
     get asV100(): {daoId: number, founder: Uint8Array, accountId: Uint8Array, council: Uint8Array[], technicalCommittee: Uint8Array[], token: v100.DaoToken, config: v100.DaoConfig, policy: v100.DaoPolicy} {
@@ -71,13 +71,13 @@ export class DaoCouncilApprovedEvent {
      * A motion was approved by the required threshold.
      */
     get isV100(): boolean {
-        return this._chain.getEventHash('DaoCouncil.Approved') === 'fa9c058aeb593f7b9992616967ac608d8ceb5ac956cee62b0946932a1e8cfd85'
+        return this._chain.getEventHash('DaoCouncil.Approved') === '66116e5e87427f0f23eab3119f627b9a718d060e11063fd891936b7078e661c7'
     }
 
     /**
      * A motion was approved by the required threshold.
      */
-    get asV100(): {daoId: number, proposalHash: Uint8Array} {
+    get asV100(): {daoId: number, proposalIndex: number, proposalHash: Uint8Array} {
         assert(this.isV100)
         return this._chain.decodeEvent(this.event)
     }
@@ -100,13 +100,13 @@ export class DaoCouncilClosedEvent {
      * A proposal was closed because its threshold was reached or after its duration was up.
      */
     get isV100(): boolean {
-        return this._chain.getEventHash('DaoCouncil.Closed') === '5da5e2fbbb9e4430d615b5b0fcd5efe8c311aa79d6627a6ebc13f8ffd640e1d2'
+        return this._chain.getEventHash('DaoCouncil.Closed') === '2aab0b4e98d9baee0f0f558d8c8acbe398fcff3c871aea51930c1fc3de497a6d'
     }
 
     /**
      * A proposal was closed because its threshold was reached or after its duration was up.
      */
-    get asV100(): {daoId: number, proposalHash: Uint8Array, yes: number, no: number} {
+    get asV100(): {daoId: number, proposalIndex: number, proposalHash: Uint8Array, yes: number, no: number} {
         assert(this.isV100)
         return this._chain.decodeEvent(this.event)
     }
@@ -129,13 +129,13 @@ export class DaoCouncilDisapprovedEvent {
      * A motion was not approved by the required threshold.
      */
     get isV100(): boolean {
-        return this._chain.getEventHash('DaoCouncil.Disapproved') === 'fa9c058aeb593f7b9992616967ac608d8ceb5ac956cee62b0946932a1e8cfd85'
+        return this._chain.getEventHash('DaoCouncil.Disapproved') === '66116e5e87427f0f23eab3119f627b9a718d060e11063fd891936b7078e661c7'
     }
 
     /**
      * A motion was not approved by the required threshold.
      */
-    get asV100(): {daoId: number, proposalHash: Uint8Array} {
+    get asV100(): {daoId: number, proposalIndex: number, proposalHash: Uint8Array} {
         assert(this.isV100)
         return this._chain.decodeEvent(this.event)
     }
@@ -158,13 +158,13 @@ export class DaoCouncilExecutedEvent {
      * A motion was executed; result will be `Ok` if it returned without error.
      */
     get isV100(): boolean {
-        return this._chain.getEventHash('DaoCouncil.Executed') === 'c9ce5bd35ed07dad2e2503c5b77ffbeaf66015471efee804bb291ebd3174214a'
+        return this._chain.getEventHash('DaoCouncil.Executed') === 'd61e1e1db4a2f11e48bf202815707b3fdedce32a9b7b421eaac2353af3d0730e'
     }
 
     /**
      * A motion was executed; result will be `Ok` if it returned without error.
      */
-    get asV100(): {daoId: number, proposalHash: Uint8Array, result: v100.Type_39} {
+    get asV100(): {daoId: number, proposalIndex: number, proposalHash: Uint8Array, result: v100.Type_39} {
         assert(this.isV100)
         return this._chain.decodeEvent(this.event)
     }
@@ -188,7 +188,7 @@ export class DaoCouncilProposedEvent {
      * `MemberCount`).
      */
     get isV100(): boolean {
-        return this._chain.getEventHash('DaoCouncil.Proposed') === 'c65205d8a34cd21e39447cb322d422aac44221132bb1e3425736b5f3f4315463'
+        return this._chain.getEventHash('DaoCouncil.Proposed') === 'd3d85a540f914b82c0c3810f1a26480ff4c5b1a4ab5a96cfbb90959c301cd36e'
     }
 
     /**
@@ -219,14 +219,14 @@ export class DaoCouncilVotedEvent {
      * a tally (yes votes and no votes given respectively as `MemberCount`).
      */
     get isV100(): boolean {
-        return this._chain.getEventHash('DaoCouncil.Voted') === '6f089eee765cb80815bb32439e011e60f574e58dd91d217236c1973877485e10'
+        return this._chain.getEventHash('DaoCouncil.Voted') === '8769a95fd923611bc64bc2b84595715b90ea42b121b0cd06bcba28074b5791ac'
     }
 
     /**
      * A motion (given hash) has been voted on by given account, leaving
      * a tally (yes votes and no votes given respectively as `MemberCount`).
      */
-    get asV100(): {daoId: number, account: Uint8Array, proposalHash: Uint8Array, voted: boolean, yes: number, no: number} {
+    get asV100(): {daoId: number, account: Uint8Array, proposalIndex: number, proposalHash: Uint8Array, voted: boolean, yes: number, no: number} {
         assert(this.isV100)
         return this._chain.decodeEvent(this.event)
     }

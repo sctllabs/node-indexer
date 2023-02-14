@@ -57,7 +57,7 @@ export async function proposalHandler(
 
     const kind = getProposalKind(proposal);
     const hash = Buffer.from(proposalHash).toString("hex");
-    const id = `${dao.id}-${hash}`;
+    const id = `${dao.id}-${proposalIndex}`;
 
     proposals.set(
       id,
