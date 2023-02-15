@@ -5,7 +5,11 @@
     "Assets.MetadataSet",
     "Dao.DaoRegistered",
     "DaoCouncil.Proposed",
-    "DaoCouncil.Voted"
+    "DaoCouncil.Voted",
+    "DaoCouncil.Approved",
+    "DaoCouncil.Disapproved",
+    "DaoCouncil.Executed",
+    "DaoCouncil.Closed"
   ],
   "calls": [],
   "storage": []

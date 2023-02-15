@@ -3,6 +3,7 @@ import * as marshal from "./marshal"
 import {Account} from "./account.model"
 import {Dao} from "./dao.model"
 import {ProposalKind, fromJsonProposalKind} from "./_proposalKind"
+import {ProposalStatus} from "./_proposalStatus"
 
 @Entity_()
 export class Proposal {
@@ -35,4 +36,16 @@ export class Proposal {
 
     @Column_("text", {nullable: true})
     meta!: string | undefined | null
+
+    @Column_("timestamp with time zone", {nullable: false})
+    createdAt!: Date
+
+    @Column_("text", {nullable: false})
+    blockHash!: string
+
+    @Column_("int4", {nullable: false})
+    blockNum!: number
+
+    @Column_("varchar", {length: 11, nullable: false})
+    status!: ProposalStatus
 }

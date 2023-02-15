@@ -22,9 +22,22 @@ export interface DaoPolicy {
     proposalPeriod: number
     approveOrigin: DaoPolicyProportion
     governance: (DaoGovernance | undefined)
+    bountyPayoutDelay: number
+    bountyUpdatePeriod: number
 }
 
-export type Call = Call_System | Call_Timestamp | Call_Grandpa | Call_Balances | Call_Nicks | Call_Sudo | Call_Scheduler | Call_Dao | Call_Contracts | Call_Authorship | Call_Session | Call_Babe | Call_Staking | Call_Council | Call_TechnicalCommittee | Call_ImOnline | Call_Treasury | Call_DaoTreasury | Call_BagsList | Call_NominationPools | Call_ElectionProviderMultiPhase | Call_Bounties | Call_ChildBounties | Call_TechnicalMembership | Call_Referenda | Call_ConvictionVoting | Call_Assets | Call_Democracy | Call_Indices | Call_Elections | Call_Proxy | Call_Vesting | Call_Uniques | Call_Society | Call_Multisig | Call_Ethereum | Call_EVM | Call_DynamicFee | Call_BaseFee | Call_HotfixSufficients | Call_DaoCouncil | Call_DaoTechnicalCommittee | Call_DaoCouncilMembers | Call_DaoTechnicalCommitteeMembers | Call_DaoDemocracy | Call_DaoEthGovernance | Call_Preimage | Call_Utility
+export type Type_39 = Type_39_Ok | Type_39_Err
+
+export interface Type_39_Ok {
+    __kind: 'Ok'
+}
+
+export interface Type_39_Err {
+    __kind: 'Err'
+    value: DispatchError
+}
+
+export type Call = Call_System | Call_Timestamp | Call_Grandpa | Call_Balances | Call_Nicks | Call_Sudo | Call_Scheduler | Call_Dao | Call_Contracts | Call_Authorship | Call_Session | Call_Babe | Call_Staking | Call_Council | Call_TechnicalCommittee | Call_ImOnline | Call_Treasury | Call_DaoTreasury | Call_BagsList | Call_NominationPools | Call_ElectionProviderMultiPhase | Call_Bounties | Call_ChildBounties | Call_TechnicalMembership | Call_Referenda | Call_ConvictionVoting | Call_Assets | Call_Democracy | Call_Indices | Call_Elections | Call_Proxy | Call_Vesting | Call_Uniques | Call_Society | Call_Multisig | Call_Ethereum | Call_EVM | Call_DynamicFee | Call_BaseFee | Call_HotfixSufficients | Call_DaoCouncil | Call_DaoTechnicalCommittee | Call_DaoCouncilMembers | Call_DaoTechnicalCommitteeMembers | Call_DaoDemocracy | Call_DaoEthGovernance | Call_DaoBounties | Call_Preimage | Call_Utility
 
 export interface Call_System {
     __kind: 'System'
@@ -256,6 +269,11 @@ export interface Call_DaoEthGovernance {
     value: DaoEthGovernanceCall
 }
 
+export interface Call_DaoBounties {
+    __kind: 'DaoBounties'
+    value: DaoBountiesCall
+}
+
 export interface Call_Preimage {
     __kind: 'Preimage'
     value: PreimageCall
@@ -287,6 +305,64 @@ export interface DaoGovernance_GovernanceV1 {
 
 export interface DaoGovernance_OwnershipWeightedVoting {
     __kind: 'OwnershipWeightedVoting'
+}
+
+export type DispatchError = DispatchError_Other | DispatchError_CannotLookup | DispatchError_BadOrigin | DispatchError_Module | DispatchError_ConsumerRemaining | DispatchError_NoProviders | DispatchError_TooManyConsumers | DispatchError_Token | DispatchError_Arithmetic | DispatchError_Transactional | DispatchError_Exhausted | DispatchError_Corruption | DispatchError_Unavailable
+
+export interface DispatchError_Other {
+    __kind: 'Other'
+}
+
+export interface DispatchError_CannotLookup {
+    __kind: 'CannotLookup'
+}
+
+export interface DispatchError_BadOrigin {
+    __kind: 'BadOrigin'
+}
+
+export interface DispatchError_Module {
+    __kind: 'Module'
+    value: ModuleError
+}
+
+export interface DispatchError_ConsumerRemaining {
+    __kind: 'ConsumerRemaining'
+}
+
+export interface DispatchError_NoProviders {
+    __kind: 'NoProviders'
+}
+
+export interface DispatchError_TooManyConsumers {
+    __kind: 'TooManyConsumers'
+}
+
+export interface DispatchError_Token {
+    __kind: 'Token'
+    value: TokenError
+}
+
+export interface DispatchError_Arithmetic {
+    __kind: 'Arithmetic'
+    value: ArithmeticError
+}
+
+export interface DispatchError_Transactional {
+    __kind: 'Transactional'
+    value: TransactionalError
+}
+
+export interface DispatchError_Exhausted {
+    __kind: 'Exhausted'
+}
+
+export interface DispatchError_Corruption {
+    __kind: 'Corruption'
+}
+
+export interface DispatchError_Unavailable {
+    __kind: 'Unavailable'
 }
 
 /**
@@ -1118,7 +1194,7 @@ export type BabeCall = BabeCall_report_equivocation | BabeCall_report_equivocati
  */
 export interface BabeCall_report_equivocation {
     __kind: 'report_equivocation'
-    equivocationProof: Type_135
+    equivocationProof: Type_137
     keyOwnerProof: MembershipProof
 }
 
@@ -1134,7 +1210,7 @@ export interface BabeCall_report_equivocation {
  */
 export interface BabeCall_report_equivocation_unsigned {
     __kind: 'report_equivocation_unsigned'
-    equivocationProof: Type_135
+    equivocationProof: Type_137
     keyOwnerProof: MembershipProof
 }
 
@@ -1584,10 +1660,10 @@ export interface StakingCall_set_staking_configs {
     __kind: 'set_staking_configs'
     minNominatorBond: ConfigOp
     minValidatorBond: ConfigOp
-    maxNominatorCount: Type_146
-    maxValidatorCount: Type_146
-    chillThreshold: Type_147
-    minCommission: Type_148
+    maxNominatorCount: Type_148
+    maxValidatorCount: Type_148
+    chillThreshold: Type_149
+    minCommission: Type_150
 }
 
 /**
@@ -2211,65 +2287,13 @@ export interface TreasuryCall_remove_approval {
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  */
-export type DaoTreasuryCall = DaoTreasuryCall_propose_spend | DaoTreasuryCall_reject_proposal | DaoTreasuryCall_approve_proposal | DaoTreasuryCall_spend | DaoTreasuryCall_transfer_token | DaoTreasuryCall_transfer_token_by_id | DaoTreasuryCall_remove_approval
-
-/**
- * Put forward a suggestion for spending. A deposit proportional to the value
- * is reserved and slashed if the proposal is rejected. It is returned once the
- * proposal is awarded.
- * 
- * # <weight>
- * - Complexity: O(1)
- * - DbReads: `ProposalCount`, `origin account`
- * - DbWrites: `ProposalCount`, `Proposals`, `origin account`
- * # </weight>
- */
-export interface DaoTreasuryCall_propose_spend {
-    __kind: 'propose_spend'
-    daoId: number
-    value: bigint
-    beneficiary: MultiAddress
-}
-
-/**
- * Reject a proposed spend. The original deposit will be slashed.
- * 
- * May only be called from `T::ApproveOrigin`.
- * 
- * # <weight>
- * - Complexity: O(1)
- * - DbReads: `Proposals`, `rejected proposer account`
- * - DbWrites: `Proposals`, `rejected proposer account`
- * # </weight>
- */
-export interface DaoTreasuryCall_reject_proposal {
-    __kind: 'reject_proposal'
-    daoId: number
-    proposalId: number
-}
-
-/**
- * Approve a proposal. At a later time, the proposal will be allocated to the beneficiary
- * and the original deposit will be returned.
- * 
- * May only be called from `T::ApproveOrigin`.
- * 
- * # <weight>
- * - Complexity: O(1).
- * - DbReads: `Proposals`, `Approvals`
- * - DbWrite: `Approvals`
- * # </weight>
- */
-export interface DaoTreasuryCall_approve_proposal {
-    __kind: 'approve_proposal'
-    daoId: number
-    proposalId: number
-}
+export type DaoTreasuryCall = DaoTreasuryCall_spend | DaoTreasuryCall_transfer_token | DaoTreasuryCall_transfer_token_by_id
 
 /**
  * Propose and approve a spend of treasury funds.
  * 
- * - `origin`: Must be `SpendOrigin` with the `Success` value being at least `amount`.
+ * - `origin`: Must be `ApproveOrigin` with the `Success` value being at least `amount`.
+ * - `dao_id`: DAO ID.
  * - `amount`: The amount to be transferred from the treasury to the `beneficiary`.
  * - `beneficiary`: The destination account for the transfer.
  * 
@@ -2296,29 +2320,6 @@ export interface DaoTreasuryCall_transfer_token_by_id {
     tokenId: number
     amount: bigint
     beneficiary: MultiAddress
-}
-
-/**
- * Force a previously approved proposal to be removed from the approval queue.
- * The original deposit will no longer be returned.
- * 
- * May only be called from `T::ApproveOrigin`.
- * - `proposal_id`: The index of a proposal
- * 
- * # <weight>
- * - Complexity: O(A) where `A` is the number of approvals
- * - Db reads and writes: `Approvals`
- * # </weight>
- * 
- * Errors:
- * - `ProposalNotApproved`: The `proposal_id` supplied was not found in the approval queue,
- * i.e., the proposal has not been approved. This could also mean the proposal does not
- * exist altogether, thus there is no way it would have been approved in the first place.
- */
-export interface DaoTreasuryCall_remove_approval {
-    __kind: 'remove_approval'
-    daoId: number
-    proposalId: number
 }
 
 /**
@@ -2571,9 +2572,9 @@ export interface NominationPoolsCall_set_configs {
     __kind: 'set_configs'
     minJoinBond: ConfigOp
     minCreateBond: ConfigOp
-    maxPools: Type_165
-    maxMembers: Type_165
-    maxMembersPerPool: Type_165
+    maxPools: Type_167
+    maxMembers: Type_167
+    maxMembersPerPool: Type_167
 }
 
 /**
@@ -2588,9 +2589,9 @@ export interface NominationPoolsCall_set_configs {
 export interface NominationPoolsCall_update_roles {
     __kind: 'update_roles'
     poolId: number
-    newRoot: Type_166
-    newNominator: Type_166
-    newStateToggler: Type_166
+    newRoot: Type_168
+    newNominator: Type_168
+    newStateToggler: Type_168
 }
 
 /**
@@ -5000,7 +5001,7 @@ export interface UniquesCall_force_create {
 export interface UniquesCall_destroy {
     __kind: 'destroy'
     collection: number
-    witness: Type_262
+    witness: Type_264
 }
 
 /**
@@ -6164,7 +6165,7 @@ export interface HotfixSufficientsCall_hotfix_inc_account_sufficients {
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  */
-export type DaoCouncilCall = DaoCouncilCall_set_members | DaoCouncilCall_execute | DaoCouncilCall_propose | DaoCouncilCall_propose_with_meta | DaoCouncilCall_vote | DaoCouncilCall_close | DaoCouncilCall_disapprove_proposal
+export type DaoCouncilCall = DaoCouncilCall_set_members | DaoCouncilCall_propose | DaoCouncilCall_propose_with_meta | DaoCouncilCall_vote | DaoCouncilCall_close
 
 /**
  * Set the collective's membership.
@@ -6203,26 +6204,6 @@ export interface DaoCouncilCall_set_members {
     daoId: number
     newMembers: Uint8Array[]
     oldCount: number
-}
-
-/**
- * Dispatch a proposal from a member using the `Member` origin.
- * 
- * Origin must be a member of the collective.
- * 
- * # <weight>
- * ## Weight
- * - `O(M + P)` where `M` members-count (code-bounded) and `P` complexity of dispatching
- *   `proposal`
- * - DB: 1 read (codec `O(M)`) + DB access of `proposal`
- * - 1 event
- * # </weight>
- */
-export interface DaoCouncilCall_execute {
-    __kind: 'execute'
-    daoId: number
-    proposal: Call
-    lengthBound: number
 }
 
 /**
@@ -6340,31 +6321,9 @@ export interface DaoCouncilCall_close {
 }
 
 /**
- * Disapprove a proposal, close, and remove it from the system, regardless of its current
- * state.
- * 
- * Must be called by the Root origin.
- * 
- * Parameters:
- * * `proposal_hash`: The hash of the proposal that should be disapproved.
- * 
- * # <weight>
- * Complexity: O(P) where P is the number of max proposals
- * DB Weight:
- * * Reads: Proposals
- * * Writes: Voting, Proposals, ProposalOf
- * # </weight>
- */
-export interface DaoCouncilCall_disapprove_proposal {
-    __kind: 'disapprove_proposal'
-    daoId: number
-    proposalHash: Uint8Array
-}
-
-/**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  */
-export type DaoTechnicalCommitteeCall = DaoTechnicalCommitteeCall_set_members | DaoTechnicalCommitteeCall_execute | DaoTechnicalCommitteeCall_propose | DaoTechnicalCommitteeCall_propose_with_meta | DaoTechnicalCommitteeCall_vote | DaoTechnicalCommitteeCall_close | DaoTechnicalCommitteeCall_disapprove_proposal
+export type DaoTechnicalCommitteeCall = DaoTechnicalCommitteeCall_set_members | DaoTechnicalCommitteeCall_propose | DaoTechnicalCommitteeCall_propose_with_meta | DaoTechnicalCommitteeCall_vote | DaoTechnicalCommitteeCall_close
 
 /**
  * Set the collective's membership.
@@ -6403,26 +6362,6 @@ export interface DaoTechnicalCommitteeCall_set_members {
     daoId: number
     newMembers: Uint8Array[]
     oldCount: number
-}
-
-/**
- * Dispatch a proposal from a member using the `Member` origin.
- * 
- * Origin must be a member of the collective.
- * 
- * # <weight>
- * ## Weight
- * - `O(M + P)` where `M` members-count (code-bounded) and `P` complexity of dispatching
- *   `proposal`
- * - DB: 1 read (codec `O(M)`) + DB access of `proposal`
- * - 1 event
- * # </weight>
- */
-export interface DaoTechnicalCommitteeCall_execute {
-    __kind: 'execute'
-    daoId: number
-    proposal: Call
-    lengthBound: number
 }
 
 /**
@@ -6537,28 +6476,6 @@ export interface DaoTechnicalCommitteeCall_close {
     index: number
     proposalWeightBound: Weight
     lengthBound: number
-}
-
-/**
- * Disapprove a proposal, close, and remove it from the system, regardless of its current
- * state.
- * 
- * Must be called by the Root origin.
- * 
- * Parameters:
- * * `proposal_hash`: The hash of the proposal that should be disapproved.
- * 
- * # <weight>
- * Complexity: O(P) where P is the number of max proposals
- * DB Weight:
- * * Reads: Proposals
- * * Writes: Voting, Proposals, ProposalOf
- * # </weight>
- */
-export interface DaoTechnicalCommitteeCall_disapprove_proposal {
-    __kind: 'disapprove_proposal'
-    daoId: number
-    proposalHash: Uint8Array
 }
 
 /**
@@ -7119,6 +7036,177 @@ export interface DaoEthGovernanceCall_close {
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  */
+export type DaoBountiesCall = DaoBountiesCall_create_bounty | DaoBountiesCall_create_token_bounty | DaoBountiesCall_propose_curator | DaoBountiesCall_unassign_curator | DaoBountiesCall_accept_curator | DaoBountiesCall_award_bounty | DaoBountiesCall_claim_bounty | DaoBountiesCall_close_bounty | DaoBountiesCall_extend_bounty_expiry
+
+/**
+ * Create new bounty.
+ * 
+ * May only be called from `T::ApproveOrigin`.
+ * 
+ * # <weight>
+ * - O(1).
+ * # </weight>
+ */
+export interface DaoBountiesCall_create_bounty {
+    __kind: 'create_bounty'
+    daoId: number
+    value: bigint
+    description: Uint8Array
+}
+
+/**
+ * Create new bounty. At a later time, the bounty will be funded.
+ * 
+ * May only be called from `T::ApproveOrigin`.
+ * 
+ * # <weight>
+ * - O(1).
+ * # </weight>
+ */
+export interface DaoBountiesCall_create_token_bounty {
+    __kind: 'create_token_bounty'
+    daoId: number
+    tokenId: (number | undefined)
+    value: bigint
+    description: Uint8Array
+}
+
+/**
+ * Assign a curator to a funded bounty.
+ * 
+ * May only be called from `T::ApproveOrigin`.
+ * 
+ * # <weight>
+ * - O(1).
+ * # </weight>
+ */
+export interface DaoBountiesCall_propose_curator {
+    __kind: 'propose_curator'
+    daoId: number
+    bountyId: number
+    curator: MultiAddress
+    fee: bigint
+}
+
+/**
+ * Unassign curator from a bounty.
+ * 
+ * This function can only be called by the `ApproveOrigin` a signed origin.
+ * 
+ * If this function is called by the `ApproveOrigin`, we assume that the curator is
+ * malicious or inactive. As a result, we will slash the curator when possible.
+ * 
+ * If the origin is the curator, we take this as a sign they are unable to do their job and
+ * they willingly give up. We could slash them, but for now we allow them to recover their
+ * deposit and exit without issue. (We may want to change this if it is abused.)
+ * 
+ * Finally, the origin can be anyone if and only if the curator is "inactive". This allows
+ * anyone in the community to call out that a curator is not doing their due diligence, and
+ * we should pick a new curator. In this case the curator should also be slashed.
+ * 
+ * # <weight>
+ * - O(1).
+ * # </weight>
+ */
+export interface DaoBountiesCall_unassign_curator {
+    __kind: 'unassign_curator'
+    daoId: number
+    bountyId: number
+}
+
+/**
+ * Accept the curator role for a bounty.
+ * A deposit will be reserved from curator and refund upon successful payout.
+ * 
+ * May only be called from the curator.
+ * 
+ * # <weight>
+ * - O(1).
+ * # </weight>
+ */
+export interface DaoBountiesCall_accept_curator {
+    __kind: 'accept_curator'
+    daoId: number
+    bountyId: number
+}
+
+/**
+ * Award bounty to a beneficiary account. The beneficiary will be able to claim the funds
+ * after a delay.
+ * 
+ * The dispatch origin for this call must be the curator of this bounty.
+ * 
+ * - `bounty_id`: Bounty ID to award.
+ * - `beneficiary`: The beneficiary account whom will receive the payout.
+ * 
+ * # <weight>
+ * - O(1).
+ * # </weight>
+ */
+export interface DaoBountiesCall_award_bounty {
+    __kind: 'award_bounty'
+    daoId: number
+    bountyId: number
+    beneficiary: MultiAddress
+}
+
+/**
+ * Claim the payout from an awarded bounty after payout delay.
+ * 
+ * The dispatch origin for this call must be the beneficiary of this bounty.
+ * 
+ * - `bounty_id`: Bounty ID to claim.
+ * 
+ * # <weight>
+ * - O(1).
+ * # </weight>
+ */
+export interface DaoBountiesCall_claim_bounty {
+    __kind: 'claim_bounty'
+    daoId: number
+    bountyId: number
+}
+
+/**
+ * Cancel a proposed or active bounty. All the funds will be sent to treasury and
+ * the curator deposit will be unreserved if possible.
+ * 
+ * Only `T::ApproveOrigin` is able to cancel a bounty.
+ * 
+ * - `bounty_id`: Bounty ID to cancel.
+ * 
+ * # <weight>
+ * - O(1).
+ * # </weight>
+ */
+export interface DaoBountiesCall_close_bounty {
+    __kind: 'close_bounty'
+    daoId: number
+    bountyId: number
+}
+
+/**
+ * Extend the expiry time of an active bounty.
+ * 
+ * The dispatch origin for this call must be the curator of this bounty.
+ * 
+ * - `bounty_id`: Bounty ID to extend.
+ * - `remark`: additional information.
+ * 
+ * # <weight>
+ * - O(1).
+ * # </weight>
+ */
+export interface DaoBountiesCall_extend_bounty_expiry {
+    __kind: 'extend_bounty_expiry'
+    daoId: number
+    bountyId: number
+    remark: Uint8Array
+}
+
+/**
+ * Contains one variant per dispatchable that can be called by an extrinsic.
+ */
 export type PreimageCall = PreimageCall_note_preimage | PreimageCall_unnote_preimage | PreimageCall_request_preimage | PreimageCall_unrequest_preimage
 
 /**
@@ -7297,6 +7385,65 @@ export interface GovernanceV1Policy {
     cancelProposalOrigin: DaoPolicyProportion
 }
 
+export interface ModuleError {
+    index: number
+    error: Uint8Array
+}
+
+export type TokenError = TokenError_NoFunds | TokenError_WouldDie | TokenError_BelowMinimum | TokenError_CannotCreate | TokenError_UnknownAsset | TokenError_Frozen | TokenError_Unsupported
+
+export interface TokenError_NoFunds {
+    __kind: 'NoFunds'
+}
+
+export interface TokenError_WouldDie {
+    __kind: 'WouldDie'
+}
+
+export interface TokenError_BelowMinimum {
+    __kind: 'BelowMinimum'
+}
+
+export interface TokenError_CannotCreate {
+    __kind: 'CannotCreate'
+}
+
+export interface TokenError_UnknownAsset {
+    __kind: 'UnknownAsset'
+}
+
+export interface TokenError_Frozen {
+    __kind: 'Frozen'
+}
+
+export interface TokenError_Unsupported {
+    __kind: 'Unsupported'
+}
+
+export type ArithmeticError = ArithmeticError_Underflow | ArithmeticError_Overflow | ArithmeticError_DivisionByZero
+
+export interface ArithmeticError_Underflow {
+    __kind: 'Underflow'
+}
+
+export interface ArithmeticError_Overflow {
+    __kind: 'Overflow'
+}
+
+export interface ArithmeticError_DivisionByZero {
+    __kind: 'DivisionByZero'
+}
+
+export type TransactionalError = TransactionalError_LimitReached | TransactionalError_NoLayer
+
+export interface TransactionalError_LimitReached {
+    __kind: 'LimitReached'
+}
+
+export interface TransactionalError_NoLayer {
+    __kind: 'NoLayer'
+}
+
 export interface EquivocationProof {
     setId: bigint
     equivocation: Equivocation
@@ -7351,7 +7498,7 @@ export interface SessionKeys {
     authorityDiscovery: Uint8Array
 }
 
-export interface Type_135 {
+export interface Type_137 {
     offender: Uint8Array
     slot: bigint
     firstHeader: Header
@@ -7415,36 +7562,6 @@ export interface ConfigOp_Remove {
     __kind: 'Remove'
 }
 
-export type Type_146 = Type_146_Noop | Type_146_Set | Type_146_Remove
-
-export interface Type_146_Noop {
-    __kind: 'Noop'
-}
-
-export interface Type_146_Set {
-    __kind: 'Set'
-    value: number
-}
-
-export interface Type_146_Remove {
-    __kind: 'Remove'
-}
-
-export type Type_147 = Type_147_Noop | Type_147_Set | Type_147_Remove
-
-export interface Type_147_Noop {
-    __kind: 'Noop'
-}
-
-export interface Type_147_Set {
-    __kind: 'Set'
-    value: number
-}
-
-export interface Type_147_Remove {
-    __kind: 'Remove'
-}
-
 export type Type_148 = Type_148_Noop | Type_148_Set | Type_148_Remove
 
 export interface Type_148_Noop {
@@ -7457,6 +7574,36 @@ export interface Type_148_Set {
 }
 
 export interface Type_148_Remove {
+    __kind: 'Remove'
+}
+
+export type Type_149 = Type_149_Noop | Type_149_Set | Type_149_Remove
+
+export interface Type_149_Noop {
+    __kind: 'Noop'
+}
+
+export interface Type_149_Set {
+    __kind: 'Set'
+    value: number
+}
+
+export interface Type_149_Remove {
+    __kind: 'Remove'
+}
+
+export type Type_150 = Type_150_Noop | Type_150_Set | Type_150_Remove
+
+export interface Type_150_Noop {
+    __kind: 'Noop'
+}
+
+export interface Type_150_Set {
+    __kind: 'Set'
+    value: number
+}
+
+export interface Type_150_Remove {
     __kind: 'Remove'
 }
 
@@ -7493,33 +7640,33 @@ export interface PoolState_Destroying {
     __kind: 'Destroying'
 }
 
-export type Type_165 = Type_165_Noop | Type_165_Set | Type_165_Remove
+export type Type_167 = Type_167_Noop | Type_167_Set | Type_167_Remove
 
-export interface Type_165_Noop {
+export interface Type_167_Noop {
     __kind: 'Noop'
 }
 
-export interface Type_165_Set {
+export interface Type_167_Set {
     __kind: 'Set'
     value: number
 }
 
-export interface Type_165_Remove {
+export interface Type_167_Remove {
     __kind: 'Remove'
 }
 
-export type Type_166 = Type_166_Noop | Type_166_Set | Type_166_Remove
+export type Type_168 = Type_168_Noop | Type_168_Set | Type_168_Remove
 
-export interface Type_166_Noop {
+export interface Type_168_Noop {
     __kind: 'Noop'
 }
 
-export interface Type_166_Set {
+export interface Type_168_Set {
     __kind: 'Set'
     value: Uint8Array
 }
 
-export interface Type_166_Remove {
+export interface Type_168_Remove {
     __kind: 'Remove'
 }
 
@@ -7554,32 +7701,32 @@ export interface OriginCaller_system {
 
 export interface OriginCaller_Dao {
     __kind: 'Dao'
-    value: Type_234
+    value: Type_236
 }
 
 export interface OriginCaller_Council {
     __kind: 'Council'
-    value: Type_235
+    value: Type_237
 }
 
 export interface OriginCaller_TechnicalCommittee {
     __kind: 'TechnicalCommittee'
-    value: Type_236
+    value: Type_238
 }
 
 export interface OriginCaller_Ethereum {
     __kind: 'Ethereum'
-    value: Type_237
+    value: Type_239
 }
 
 export interface OriginCaller_DaoCouncil {
     __kind: 'DaoCouncil'
-    value: Type_239
+    value: Type_241
 }
 
 export interface OriginCaller_DaoTechnicalCommittee {
     __kind: 'DaoTechnicalCommittee'
-    value: Type_240
+    value: Type_242
 }
 
 export interface OriginCaller_Void {
@@ -7706,7 +7853,7 @@ export interface VestingInfo {
     startingBlock: number
 }
 
-export interface Type_262 {
+export interface Type_264 {
     items: number
     itemMetadatas: number
     attributes: number
@@ -7757,12 +7904,12 @@ export type Equivocation = Equivocation_Prevote | Equivocation_Precommit
 
 export interface Equivocation_Prevote {
     __kind: 'Prevote'
-    value: Type_101
+    value: Type_103
 }
 
 export interface Equivocation_Precommit {
     __kind: 'Precommit'
-    value: Type_107
+    value: Type_109
 }
 
 export interface Digest {
@@ -7822,81 +7969,81 @@ export interface RawOrigin_None {
     __kind: 'None'
 }
 
-export type Type_234 = Type_234_Dao
+export type Type_236 = Type_236_Dao
 
-export interface Type_234_Dao {
+export interface Type_236_Dao {
     __kind: 'Dao'
     value: Uint8Array
 }
 
-export type Type_235 = Type_235_Members | Type_235_Member | Type_235__Phantom
+export type Type_237 = Type_237_Members | Type_237_Member | Type_237__Phantom
 
-export interface Type_235_Members {
+export interface Type_237_Members {
     __kind: 'Members'
     value: [number, number]
 }
 
-export interface Type_235_Member {
+export interface Type_237_Member {
     __kind: 'Member'
     value: Uint8Array
 }
 
-export interface Type_235__Phantom {
+export interface Type_237__Phantom {
     __kind: '_Phantom'
 }
 
-export type Type_236 = Type_236_Members | Type_236_Member | Type_236__Phantom
+export type Type_238 = Type_238_Members | Type_238_Member | Type_238__Phantom
 
-export interface Type_236_Members {
+export interface Type_238_Members {
     __kind: 'Members'
     value: [number, number]
 }
 
-export interface Type_236_Member {
+export interface Type_238_Member {
     __kind: 'Member'
     value: Uint8Array
 }
 
-export interface Type_236__Phantom {
+export interface Type_238__Phantom {
     __kind: '_Phantom'
 }
 
-export type Type_237 = Type_237_EthereumTransaction
+export type Type_239 = Type_239_EthereumTransaction
 
-export interface Type_237_EthereumTransaction {
+export interface Type_239_EthereumTransaction {
     __kind: 'EthereumTransaction'
     value: Uint8Array
 }
 
-export type Type_239 = Type_239_Members | Type_239_Member | Type_239__Phantom
+export type Type_241 = Type_241_Members | Type_241_Member | Type_241__Phantom
 
-export interface Type_239_Members {
+export interface Type_241_Members {
     __kind: 'Members'
     value: [number, number]
 }
 
-export interface Type_239_Member {
+export interface Type_241_Member {
     __kind: 'Member'
     value: Uint8Array
 }
 
-export interface Type_239__Phantom {
+export interface Type_241__Phantom {
     __kind: '_Phantom'
 }
 
-export type Type_240 = Type_240_Members | Type_240_Member | Type_240__Phantom
+export type Type_242 = Type_242_Members | Type_242_Member | Type_242__Phantom
 
-export interface Type_240_Members {
+export interface Type_242_Members {
     __kind: 'Members'
     value: [number, number]
 }
 
-export interface Type_240_Member {
+export interface Type_242_Member {
     __kind: 'Member'
     value: Uint8Array
 }
 
-export interface Type_240__Phantom {
+export interface Type_242__Phantom {
     __kind: '_Phantom'
 }
 
@@ -7939,14 +8086,14 @@ export interface EIP1559Transaction {
     s: Uint8Array
 }
 
-export interface Type_101 {
+export interface Type_103 {
     roundNumber: bigint
     identity: Uint8Array
     first: [Prevote, Uint8Array]
     second: [Prevote, Uint8Array]
 }
 
-export interface Type_107 {
+export interface Type_109 {
     roundNumber: bigint
     identity: Uint8Array
     first: [Precommit, Uint8Array]

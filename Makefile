@@ -45,4 +45,4 @@ archive:
 archive-down:
 	@docker-compose -f ./archive/docker-compose.yml down
 
-.PHONY: build serve process migrate codegen typegen up down archive generate
+.PHONY: build serve process migrate codegen typegen up down archive generate archive-down

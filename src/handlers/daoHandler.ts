@@ -1,5 +1,5 @@
 import { In } from "typeorm";
-import { Ctx } from "../processor";
+import { Ctx, EventInfo } from "../processor";
 import {
   Account,
   ApproveOriginType,
@@ -9,8 +9,6 @@ import {
   GovernanceV1,
   OwnershipWeightedVoting,
   FungibleToken,
-  CouncilAccount,
-  TechnicalCommitteeAccount,
 } from "../model";
 import { DaoDaoRegisteredEvent } from "../types/events";
 import { getAccount, decodeAddress } from "../utils";
@@ -22,19 +20,14 @@ import type {
   DaoToken,
 } from "../types/v100";
 
-type DaoMemberType = "Council" | "TechnicalCommittee";
-
 export async function daoHandler(
   ctx: Ctx,
-  createDaoEvents: DaoDaoRegisteredEvent[],
+  createDaoEvents: EventInfo<DaoDaoRegisteredEvent>[],
   fungibleTokens: Map<string, FungibleToken>,
   accounts: Map<string, Account>
 ) {
   const daos: Map<string, Dao> = new Map();
   const policies: Map<string, Policy> = new Map();
-  const councilAccounts: Map<string, CouncilAccount> = new Map();
-  const technicalCommitteeAccounts: Map<string, TechnicalCommitteeAccount> =
-    new Map();
 
   const [accountsQuery, fungibleTokensQuery] =
     await getAccountsAndFungibleTokens(ctx, createDaoEvents, fungibleTokens);
@@ -48,8 +41,8 @@ export async function daoHandler(
     ])
   );
 
-  for (const daoEvent of createDaoEvents) {
-    if (!daoEvent.isV100) {
+  for (const { event, timestamp, blockNum, blockHash } of createDaoEvents) {
+    if (!event.isV100) {
       throw new Error("Unsupported dao spec");
     }
 
@@ -62,7 +55,7 @@ export async function daoHandler(
       council: encodedCouncil,
       technicalCommittee: encodedTechnicalCommittee,
       token,
-    } = daoEvent.asV100;
+    } = event.asV100;
     const founderAddress = decodeAddress(encodedFounderAddress);
     const daoAccount = decodeAddress(encodedDaoAddress);
 
@@ -74,18 +67,22 @@ export async function daoHandler(
       account,
       founder,
       daoPolicy,
-      daoConfig
+      daoConfig,
+      blockHash,
+      blockNum,
+      timestamp
+    );
+
+    dao.council = encodedCouncil.map(
+      (_encodedCouncil) =>
+        getAccount(accounts, decodeAddress(_encodedCouncil)).id
+    );
+    dao.technicalCommittee = encodedTechnicalCommittee.map(
+      (_encodedTechnicalCommittee) =>
+        getAccount(accounts, decodeAddress(_encodedTechnicalCommittee)).id
     );
 
     mapTokenToDao(dao, token, fungibleTokensQueryMap, fungibleTokens);
-    addMembersToDao(dao, encodedCouncil, accounts, councilAccounts, "Council");
-    addMembersToDao(
-      dao,
-      encodedTechnicalCommittee,
-      accounts,
-      technicalCommitteeAccounts,
-      "TechnicalCommittee"
-    );
 
     policies.set(dao.policy.id, dao.policy);
     daos.set(dao.id, dao);
@@ -94,51 +91,7 @@ export async function daoHandler(
     daos,
     policies,
     accounts,
-    councilAccounts,
-    technicalCommitteeAccounts,
   };
-}
-
-function addMembersToDao(
-  dao: Dao,
-  encodedMemberAddresses: Uint8Array[],
-  accounts: Map<string, Account>,
-  map: Map<string, CouncilAccount | TechnicalCommitteeAccount>,
-  memberType: DaoMemberType
-) {
-  return encodedMemberAddresses.map((_encodedMemberAddress) => {
-    const address = decodeAddress(_encodedMemberAddress);
-    const account = getAccount(accounts, address);
-    const id = `${dao.id}-${address}`;
-
-    switch (memberType) {
-      case "Council": {
-        map.set(
-          id,
-          new CouncilAccount({
-            id,
-            dao,
-            account,
-          })
-        );
-        return;
-      }
-      case "TechnicalCommittee": {
-        map.set(
-          id,
-          new TechnicalCommitteeAccount({
-            id,
-            dao,
-            account,
-          })
-        );
-        return;
-      }
-      default: {
-        throw new Error("Unknown dao account group");
-      }
-    }
-  });
 }
 
 function mapTokenToDao(
@@ -169,14 +122,14 @@ function mapTokenToDao(
 
 async function getAccountsAndFungibleTokens(
   ctx: Ctx,
-  createDaoEvents: DaoDaoRegisteredEvent[],
+  createDaoEvents: EventInfo<DaoDaoRegisteredEvent>[],
   candidateFungibleTokens: Map<string, FungibleToken>
 ) {
   const accountIds = new Set<string>();
   const fungibleTokenIds = new Set<string>();
 
-  for (const daoEvent of createDaoEvents) {
-    if (!daoEvent.isV100) {
+  for (const { event } of createDaoEvents) {
+    if (!event.isV100) {
       throw new Error("Unsupported dao spec");
     }
     const {
@@ -185,7 +138,7 @@ async function getAccountsAndFungibleTokens(
       council: encodedCouncil,
       technicalCommittee: encodedTechnicalCommittee,
       token,
-    } = daoEvent.asV100;
+    } = event.asV100;
     const founder = decodeAddress(encodedFounderAddress);
     const daoAddress = decodeAddress(encodedDaoAddress);
     encodedCouncil.forEach((_encodedCouncilAddress) =>
@@ -220,7 +173,10 @@ function createDao(
   account: Account,
   founder: Account,
   daoPolicy: DaoPolicy,
-  daoConfig: DaoConfig
+  daoConfig: DaoConfig,
+  blockHash: string,
+  blockNum: number,
+  timestamp: number
 ) {
   const governance = createGovernance(daoPolicy.governance);
   const policy = new Policy({
@@ -238,6 +194,9 @@ function createDao(
     purpose: daoConfig.purpose.toString(),
     metadata: daoConfig.metadata.toString(),
     policy,
+    blockHash,
+    blockNum,
+    createdAt: new Date(timestamp),
   });
 }
 

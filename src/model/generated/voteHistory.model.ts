@@ -1,5 +1,4 @@
 import {Entity as Entity_, Column as Column_, PrimaryColumn as PrimaryColumn_, ManyToOne as ManyToOne_, Index as Index_} from "typeorm"
-import * as marshal from "./marshal"
 import {Proposal} from "./proposal.model"
 import {Account} from "./account.model"
 
@@ -14,7 +13,7 @@ export class VoteHistory {
 
     @Index_()
     @ManyToOne_(() => Proposal, {nullable: true})
-    proposalHash!: Proposal | undefined | null
+    proposal!: Proposal | undefined | null
 
     @Column_("bool", {nullable: false})
     approvedVote!: boolean
@@ -29,6 +28,12 @@ export class VoteHistory {
     @Column_("int4", {nullable: true})
     votedNo!: number | undefined | null
 
-    @Column_("numeric", {transformer: marshal.bigintTransformer, nullable: false})
-    block!: bigint
+    @Column_("timestamp with time zone", {nullable: false})
+    createdAt!: Date
+
+    @Column_("text", {nullable: false})
+    blockHash!: string
+
+    @Column_("int4", {nullable: false})
+    blockNum!: number
 }

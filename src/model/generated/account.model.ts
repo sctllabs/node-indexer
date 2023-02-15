@@ -1,6 +1,4 @@
-import {Entity as Entity_, Column as Column_, PrimaryColumn as PrimaryColumn_, OneToMany as OneToMany_} from "typeorm"
-import {CouncilAccount} from "./councilAccount.model"
-import {TechnicalCommitteeAccount} from "./technicalCommitteeAccount.model"
+import {Entity as Entity_, Column as Column_, PrimaryColumn as PrimaryColumn_} from "typeorm"
 
 @Entity_()
 export class Account {
@@ -13,10 +11,4 @@ export class Account {
      */
     @PrimaryColumn_()
     id!: string
-
-    @OneToMany_(() => CouncilAccount, e => e.account)
-    memberOfCouncil!: CouncilAccount[]
-
-    @OneToMany_(() => TechnicalCommitteeAccount, e => e.account)
-    memberOfTechnicalCommittee!: TechnicalCommitteeAccount[]
 }

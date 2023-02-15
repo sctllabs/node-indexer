@@ -20,4 +20,13 @@ export class FungibleToken {
 
     @Column_("bool", {nullable: false})
     isFrozen!: boolean
+
+    @Column_("timestamp with time zone", {nullable: false})
+    createdAt!: Date
+
+    @Column_("text", {nullable: false})
+    blockHash!: string
+
+    @Column_("int4", {nullable: false})
+    blockNum!: number
 }
