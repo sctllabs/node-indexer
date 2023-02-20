@@ -12,6 +12,7 @@ import {
 import { DaoCouncilProposedEvent } from "../types/events";
 import { decodeAddress, getAccount } from "../utils";
 import * as v100 from "../types/v100";
+import { decodeHash } from "../utils/decodeHash";
 
 export async function proposalHandler(
   ctx: Ctx,
@@ -56,7 +57,7 @@ export async function proposalHandler(
     }
 
     const kind = getProposalKind(proposal);
-    const hash = Buffer.from(proposalHash).toString("hex");
+    const hash = decodeHash(proposalHash);
     const id = `${dao.id}-${proposalIndex}`;
 
     proposals.set(

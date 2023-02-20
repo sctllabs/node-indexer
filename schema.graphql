@@ -1,132 +1,130 @@
 # noinspection GraphQLUnresolvedReference,GraphQLDuplicateDirective,GraphQLMissingType
 type Account @entity {
-    "Account address"
-    id: ID!
+  "Account address"
+  id: ID!
 }
 
-
-
 type Dao @entity {
-    id: ID!
-    account: Account!
-    founder: Account!
-    council: [String]!
-    technicalCommittee: [String]!
-    name: String!
-    purpose: String!
-    metadata: String!
-    fungibleToken: FungibleToken
-    ethTokenAddress: String
-    policy: Policy!
-    proposals: [Proposal] @derivedFrom(field: "dao")
-    createdAt: DateTime!
-    blockHash: String!
-    blockNum: Int!
+  id: ID!
+  account: Account!
+  founder: Account!
+  council: [String]!
+  technicalCommittee: [String]!
+  name: String!
+  purpose: String!
+  metadata: String!
+  fungibleToken: FungibleToken
+  ethTokenAddress: String
+  policy: Policy!
+  proposals: [Proposal] @derivedFrom(field: "dao")
+  createdAt: DateTime!
+  blockHash: String!
+  blockNum: Int!
 }
 
 enum ApproveOriginType {
-    AtLeast
-    MoreThan
+  AtLeast
+  MoreThan
 }
 
 enum GovernanceKind {
-    GovernanceV1
-    OwnershipWeightedVoting
+  GovernanceV1
+  OwnershipWeightedVoting
 }
 
 type GovernanceV1 {
-    kind: GovernanceKind!
-    enactmentPeriod: BigInt!
-    launchPeriod: BigInt!
-    votingPeriod: BigInt!
-    voteLockingPeriod: BigInt!
-    fastTrackVotingPeriod: BigInt!
-    cooloffPeriod: BigInt!
-    minimumDeposit: BigInt!
-    externalOrigin: ApproveOriginType!
-    externalMajorityOrigin: ApproveOriginType!
-    externalDefaultOrigin: ApproveOriginType!
-    fastTrackOrigin: ApproveOriginType!
-    instantOrigin: ApproveOriginType!
-    instantAllowed: Boolean!
-    cancellationOrigin: ApproveOriginType!
-    blacklistOrigin: ApproveOriginType!
-    cancelProposalOrigin: ApproveOriginType!
+  kind: GovernanceKind!
+  enactmentPeriod: BigInt!
+  launchPeriod: BigInt!
+  votingPeriod: BigInt!
+  voteLockingPeriod: BigInt!
+  fastTrackVotingPeriod: BigInt!
+  cooloffPeriod: BigInt!
+  minimumDeposit: BigInt!
+  externalOrigin: ApproveOriginType!
+  externalMajorityOrigin: ApproveOriginType!
+  externalDefaultOrigin: ApproveOriginType!
+  fastTrackOrigin: ApproveOriginType!
+  instantOrigin: ApproveOriginType!
+  instantAllowed: Boolean!
+  cancellationOrigin: ApproveOriginType!
+  blacklistOrigin: ApproveOriginType!
+  cancelProposalOrigin: ApproveOriginType!
 }
 
 type OwnershipWeightedVoting {
-    kind: GovernanceKind!
+  kind: GovernanceKind!
 }
 
 union Governance = GovernanceV1 | OwnershipWeightedVoting
 
 type Policy @entity {
-    id: ID!
-    proposalPeriod: Int!
-    approveOriginType: ApproveOriginType!
-    approveOriginProportion: [Int!]!
-    governance: Governance
+  id: ID!
+  proposalPeriod: Int!
+  approveOriginType: ApproveOriginType!
+  approveOriginProportion: [Int!]!
+  governance: Governance
 }
 
 type FungibleToken @entity {
-    id: ID!
-    name: String!
-    symbol: String!
-    decimals: Int
-    isFrozen: Boolean!
-    createdAt: DateTime!
-    blockHash: String!
-    blockNum: Int!
+  id: ID!
+  name: String!
+  symbol: String!
+  decimals: Int
+  isFrozen: Boolean!
+  createdAt: DateTime!
+  blockHash: String!
+  blockNum: Int!
 }
 
 # TODO @asansyzb investigate difference between Yes/No voting and count based voting
 
 type AddMember {
-    who: Account!
+  who: String!
 }
 
 type RemoveMember {
-    who: Account!
+  who: String!
 }
 
 type Spend {
-    amount: BigInt!
-    beneficiary: Account!
+  amount: BigInt!
+  beneficiary: String!
 }
 
 union ProposalKind = AddMember | RemoveMember | Spend
 
 enum ProposalStatus {
-    Open
-    Approved
-    Disapproved
-    Executed
-    Closed
+  Open
+  Approved
+  Disapproved
+  Executed
+  Closed
 }
 
 type Proposal @entity {
-    id: ID!
-    index: String!
-    hash: String!
-    account: Account!
-    dao: Dao!
-    voteThreshold: Int!
-    kind: ProposalKind!
-    meta: String
-    createdAt: DateTime!
-    blockHash: String!
-    blockNum: Int!
-    status: ProposalStatus!
+  id: ID!
+  index: String!
+  hash: String!
+  account: Account!
+  dao: Dao!
+  voteThreshold: Int!
+  kind: ProposalKind!
+  meta: String
+  createdAt: DateTime!
+  blockHash: String!
+  blockNum: Int!
+  status: ProposalStatus!
 }
 
 type VoteHistory @entity {
-    id: ID!
-    proposal: Proposal
-    approvedVote: Boolean!
-    councillor: Account
-    votedYes: Int
-    votedNo: Int
-    createdAt: DateTime!
-    blockHash: String!
-    blockNum: Int!
+  id: ID!
+  proposal: Proposal
+  approvedVote: Boolean!
+  councillor: Account
+  votedYes: Int
+  votedNo: Int
+  createdAt: DateTime!
+  blockHash: String!
+  blockNum: Int!
 }
