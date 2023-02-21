@@ -4,7 +4,7 @@ export type DaoToken = DaoToken_FungibleToken | DaoToken_EthTokenAddress
 
 export interface DaoToken_FungibleToken {
     __kind: 'FungibleToken'
-    value: number
+    value: bigint
 }
 
 export interface DaoToken_EthTokenAddress {
@@ -910,7 +910,7 @@ export interface SchedulerCall_schedule_named_after {
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  */
-export type DaoCall = DaoCall_create_dao | DaoCall_approve_dao | DaoCall_approve_propose | DaoCall_approve_proposal_vote
+export type DaoCall = DaoCall_create_dao | DaoCall_approve_dao
 
 export interface DaoCall_create_dao {
     __kind: 'create_dao'
@@ -922,22 +922,6 @@ export interface DaoCall_create_dao {
 export interface DaoCall_approve_dao {
     __kind: 'approve_dao'
     daoHash: Uint8Array
-    approve: boolean
-}
-
-export interface DaoCall_approve_propose {
-    __kind: 'approve_propose'
-    daoId: number
-    threshold: bigint
-    blockNumber: number
-    hash: Uint8Array
-    approve: boolean
-}
-
-export interface DaoCall_approve_proposal_vote {
-    __kind: 'approve_proposal_vote'
-    daoId: number
-    hash: Uint8Array
     approve: boolean
 }
 
@@ -2317,7 +2301,7 @@ export interface DaoTreasuryCall_transfer_token {
 export interface DaoTreasuryCall_transfer_token_by_id {
     __kind: 'transfer_token_by_id'
     daoId: number
-    tokenId: number
+    tokenId: bigint
     amount: bigint
     beneficiary: MultiAddress
 }
@@ -3431,7 +3415,7 @@ export type AssetsCall = AssetsCall_create | AssetsCall_force_create | AssetsCal
  */
 export interface AssetsCall_create {
     __kind: 'create'
-    id: number
+    id: bigint
     admin: MultiAddress
     minBalance: bigint
 }
@@ -3459,7 +3443,7 @@ export interface AssetsCall_create {
  */
 export interface AssetsCall_force_create {
     __kind: 'force_create'
-    id: number
+    id: bigint
     owner: MultiAddress
     isSufficient: boolean
     minBalance: bigint
@@ -3487,7 +3471,7 @@ export interface AssetsCall_force_create {
  */
 export interface AssetsCall_destroy {
     __kind: 'destroy'
-    id: number
+    id: bigint
     witness: DestroyWitness
 }
 
@@ -3507,7 +3491,7 @@ export interface AssetsCall_destroy {
  */
 export interface AssetsCall_mint {
     __kind: 'mint'
-    id: number
+    id: bigint
     beneficiary: MultiAddress
     amount: bigint
 }
@@ -3531,7 +3515,7 @@ export interface AssetsCall_mint {
  */
 export interface AssetsCall_burn {
     __kind: 'burn'
-    id: number
+    id: bigint
     who: MultiAddress
     amount: bigint
 }
@@ -3558,7 +3542,7 @@ export interface AssetsCall_burn {
  */
 export interface AssetsCall_transfer {
     __kind: 'transfer'
-    id: number
+    id: bigint
     target: MultiAddress
     amount: bigint
 }
@@ -3585,7 +3569,7 @@ export interface AssetsCall_transfer {
  */
 export interface AssetsCall_transfer_keep_alive {
     __kind: 'transfer_keep_alive'
-    id: number
+    id: bigint
     target: MultiAddress
     amount: bigint
 }
@@ -3613,7 +3597,7 @@ export interface AssetsCall_transfer_keep_alive {
  */
 export interface AssetsCall_force_transfer {
     __kind: 'force_transfer'
-    id: number
+    id: bigint
     source: MultiAddress
     dest: MultiAddress
     amount: bigint
@@ -3633,7 +3617,7 @@ export interface AssetsCall_force_transfer {
  */
 export interface AssetsCall_freeze {
     __kind: 'freeze'
-    id: number
+    id: bigint
     who: MultiAddress
 }
 
@@ -3651,7 +3635,7 @@ export interface AssetsCall_freeze {
  */
 export interface AssetsCall_thaw {
     __kind: 'thaw'
-    id: number
+    id: bigint
     who: MultiAddress
 }
 
@@ -3668,7 +3652,7 @@ export interface AssetsCall_thaw {
  */
 export interface AssetsCall_freeze_asset {
     __kind: 'freeze_asset'
-    id: number
+    id: bigint
 }
 
 /**
@@ -3684,7 +3668,7 @@ export interface AssetsCall_freeze_asset {
  */
 export interface AssetsCall_thaw_asset {
     __kind: 'thaw_asset'
-    id: number
+    id: bigint
 }
 
 /**
@@ -3701,7 +3685,7 @@ export interface AssetsCall_thaw_asset {
  */
 export interface AssetsCall_transfer_ownership {
     __kind: 'transfer_ownership'
-    id: number
+    id: bigint
     owner: MultiAddress
 }
 
@@ -3721,7 +3705,7 @@ export interface AssetsCall_transfer_ownership {
  */
 export interface AssetsCall_set_team {
     __kind: 'set_team'
-    id: number
+    id: bigint
     issuer: MultiAddress
     admin: MultiAddress
     freezer: MultiAddress
@@ -3747,7 +3731,7 @@ export interface AssetsCall_set_team {
  */
 export interface AssetsCall_set_metadata {
     __kind: 'set_metadata'
-    id: number
+    id: bigint
     name: Uint8Array
     symbol: Uint8Array
     decimals: number
@@ -3768,7 +3752,7 @@ export interface AssetsCall_set_metadata {
  */
 export interface AssetsCall_clear_metadata {
     __kind: 'clear_metadata'
-    id: number
+    id: bigint
 }
 
 /**
@@ -3789,7 +3773,7 @@ export interface AssetsCall_clear_metadata {
  */
 export interface AssetsCall_force_set_metadata {
     __kind: 'force_set_metadata'
-    id: number
+    id: bigint
     name: Uint8Array
     symbol: Uint8Array
     decimals: number
@@ -3811,7 +3795,7 @@ export interface AssetsCall_force_set_metadata {
  */
 export interface AssetsCall_force_clear_metadata {
     __kind: 'force_clear_metadata'
-    id: number
+    id: bigint
 }
 
 /**
@@ -3840,7 +3824,7 @@ export interface AssetsCall_force_clear_metadata {
  */
 export interface AssetsCall_force_asset_status {
     __kind: 'force_asset_status'
-    id: number
+    id: bigint
     owner: MultiAddress
     issuer: MultiAddress
     admin: MultiAddress
@@ -3874,7 +3858,7 @@ export interface AssetsCall_force_asset_status {
  */
 export interface AssetsCall_approve_transfer {
     __kind: 'approve_transfer'
-    id: number
+    id: bigint
     delegate: MultiAddress
     amount: bigint
 }
@@ -3896,7 +3880,7 @@ export interface AssetsCall_approve_transfer {
  */
 export interface AssetsCall_cancel_approval {
     __kind: 'cancel_approval'
-    id: number
+    id: bigint
     delegate: MultiAddress
 }
 
@@ -3917,7 +3901,7 @@ export interface AssetsCall_cancel_approval {
  */
 export interface AssetsCall_force_cancel_approval {
     __kind: 'force_cancel_approval'
-    id: number
+    id: bigint
     owner: MultiAddress
     delegate: MultiAddress
 }
@@ -3944,7 +3928,7 @@ export interface AssetsCall_force_cancel_approval {
  */
 export interface AssetsCall_transfer_approved {
     __kind: 'transfer_approved'
-    id: number
+    id: bigint
     owner: MultiAddress
     destination: MultiAddress
     amount: bigint
@@ -3963,7 +3947,7 @@ export interface AssetsCall_transfer_approved {
  */
 export interface AssetsCall_touch {
     __kind: 'touch'
-    id: number
+    id: bigint
 }
 
 /**
@@ -3978,7 +3962,7 @@ export interface AssetsCall_touch {
  */
 export interface AssetsCall_refund {
     __kind: 'refund'
-    id: number
+    id: bigint
     allowBurn: boolean
 }
 
@@ -6969,7 +6953,7 @@ export interface DaoDemocracyCall_cancel_proposal {
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  */
-export type DaoEthGovernanceCall = DaoEthGovernanceCall_propose | DaoEthGovernanceCall_propose_with_meta | DaoEthGovernanceCall_vote | DaoEthGovernanceCall_close
+export type DaoEthGovernanceCall = DaoEthGovernanceCall_propose | DaoEthGovernanceCall_propose_with_meta | DaoEthGovernanceCall_vote | DaoEthGovernanceCall_close | DaoEthGovernanceCall_approve_propose | DaoEthGovernanceCall_approve_vote
 
 /**
  * Add a new proposal to either be voted on or executed directly.
@@ -7033,6 +7017,22 @@ export interface DaoEthGovernanceCall_close {
     lengthBound: number
 }
 
+export interface DaoEthGovernanceCall_approve_propose {
+    __kind: 'approve_propose'
+    daoId: number
+    threshold: bigint
+    blockNumber: number
+    hash: Uint8Array
+    approve: boolean
+}
+
+export interface DaoEthGovernanceCall_approve_vote {
+    __kind: 'approve_vote'
+    daoId: number
+    hash: Uint8Array
+    approve: boolean
+}
+
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  */
@@ -7066,7 +7066,7 @@ export interface DaoBountiesCall_create_bounty {
 export interface DaoBountiesCall_create_token_bounty {
     __kind: 'create_token_bounty'
     daoId: number
-    tokenId: (number | undefined)
+    tokenId: (bigint | undefined)
     value: bigint
     description: Uint8Array
 }

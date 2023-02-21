@@ -121,6 +121,7 @@ type DataBatch = {
   proposalsToUpdate: Map<string, Proposal>;
   fungibleTokens: Map<string, FungibleToken>;
   votes: Map<string, VoteHistory>;
+  votesToUpdate: Map<string, VoteHistory>;
 };
 
 processor.run(new TypeormDatabase(), async (ctx) => {
@@ -155,7 +156,12 @@ async function handleEvents(
     accounts
   );
   const proposals = await proposalHandler(ctx, proposalEvents, daos, accounts);
-  const votes = await voteHandler(ctx, voteEvents, proposals, accounts);
+  const { votes, votesToUpdate } = await voteHandler(
+    ctx,
+    voteEvents,
+    proposals,
+    accounts
+  );
   const { proposalsToUpdate, daosToUpdate } = await proposalStatusHandler(
     ctx,
     {
@@ -177,6 +183,7 @@ async function handleEvents(
     proposals,
     proposalsToUpdate,
     votes,
+    votesToUpdate,
   };
 }
 
@@ -189,6 +196,7 @@ async function saveData(ctx: Ctx, dataBatch: DataBatch) {
   await ctx.store.insert([...dataBatch.votes.values()]);
   await ctx.store.save([...dataBatch.proposalsToUpdate.values()]);
   await ctx.store.save([...dataBatch.daosToUpdate.values()]);
+  await ctx.store.save([...dataBatch.votesToUpdate.values()]);
 }
 
 function getEvents(ctx: Ctx) {

@@ -11,17 +11,17 @@ export async function voteHandler(
   accounts: Map<string, Account>
 ) {
   const votes: Map<string, VoteHistory> = new Map();
-  const [accountsQuery, proposalsQuery] = await getAccountsAndProposals(
-    ctx,
-    voteEvents,
-    proposals,
-    accounts
-  );
+  const votesToUpdate: Map<string, VoteHistory> = new Map();
+  const [accountsQuery, proposalsQuery, votesQuery] =
+    await getAccountsAndProposalsAndVotes(ctx, voteEvents, proposals, accounts);
   accountsQuery.forEach((_accountQuery: Account) =>
     accounts.set(_accountQuery.id, _accountQuery)
   );
   const proposalsMap = new Map(
     proposalsQuery.map((_proposalQuery) => [_proposalQuery.id, _proposalQuery])
+  );
+  const votesMap = new Map(
+    votesQuery.map((_voteQuery) => [_voteQuery.id, _voteQuery])
   );
 
   for (const { event, timestamp, blockHash, blockNum } of voteEvents) {
@@ -33,25 +33,35 @@ export async function voteHandler(
       throw new Error(`Proposal with id: ${proposalId} not found`);
     }
     const id = `${daoId}-${proposalIndex}-${accountAddress}`;
-    votes.set(
-      id,
-      new VoteHistory({
+
+    const existingVote = votesMap.get(id);
+
+    if (existingVote) {
+      votesToUpdate.set(
         id,
-        votedNo: no,
-        votedYes: yes,
-        approvedVote: voted,
-        councillor: getAccount(accounts, accountAddress),
-        proposal,
-        blockHash,
-        blockNum,
-        createdAt: new Date(timestamp),
-      })
-    );
+        new VoteHistory({ ...existingVote, approvedVote: voted })
+      );
+    } else {
+      votes.set(
+        id,
+        new VoteHistory({
+          id,
+          votedNo: no,
+          votedYes: yes,
+          approvedVote: voted,
+          councillor: getAccount(accounts, accountAddress),
+          proposal,
+          blockHash,
+          blockNum,
+          createdAt: new Date(timestamp),
+        })
+      );
+    }
   }
-  return votes;
+  return { votes, votesToUpdate };
 }
 
-async function getAccountsAndProposals(
+async function getAccountsAndProposalsAndVotes(
   ctx: Ctx,
   voteEvents: EventInfo<DaoCouncilVotedEvent>[],
   proposals: Map<string, Proposal>,
@@ -59,6 +69,7 @@ async function getAccountsAndProposals(
 ) {
   const accountIds = new Set<string>();
   const proposalIds = new Set<string>();
+  const voteIds = new Set<string>();
 
   for (const { event } of voteEvents) {
     if (!event.isV100) {
@@ -68,6 +79,7 @@ async function getAccountsAndProposals(
     const { daoId, account, proposalIndex } = event.asV100;
     const accountAddress = decodeAddress(account);
     const proposalId = `${daoId}-${proposalIndex}`;
+    const voteId = `${daoId}-${proposalIndex}-${accountAddress}`;
 
     if (!accounts.get(accountAddress)) {
       accountIds.add(accountAddress);
@@ -75,9 +87,11 @@ async function getAccountsAndProposals(
     if (!proposals.get(proposalId)) {
       proposalIds.add(proposalId);
     }
+    voteIds.add(voteId);
   }
   return Promise.all([
     ctx.store.findBy(Account, { id: In([...accountIds]) }),
     ctx.store.findBy(Proposal, { id: In([...proposalIds]) }),
+    ctx.store.findBy(VoteHistory, { id: In([...voteIds]) }),
   ]);
 }

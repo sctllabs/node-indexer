@@ -19,13 +19,13 @@ export class AssetsMetadataSetEvent {
      * New metadata has been set for an asset.
      */
     get isV100(): boolean {
-        return this._chain.getEventHash('Assets.MetadataSet') === '70e50f56e329151cd6ac15f45bb6a69c66f668bf4a5fd0b33a5e87b09e296498'
+        return this._chain.getEventHash('Assets.MetadataSet') === '01ab9e31f40d9a1871985e1d4fa0e5b8324a517e9a5d954999b54e728d81b541'
     }
 
     /**
      * New metadata has been set for an asset.
      */
-    get asV100(): {assetId: number, name: Uint8Array, symbol: Uint8Array, decimals: number, isFrozen: boolean} {
+    get asV100(): {assetId: bigint, name: Uint8Array, symbol: Uint8Array, decimals: number, isFrozen: boolean} {
         assert(this.isV100)
         return this._chain.decodeEvent(this.event)
     }
@@ -45,7 +45,7 @@ export class DaoDaoRegisteredEvent {
     }
 
     get isV100(): boolean {
-        return this._chain.getEventHash('Dao.DaoRegistered') === 'eaac429ef4019b039a4c7b03837d37302b8068cba17d8438915d3d813a4d383a'
+        return this._chain.getEventHash('Dao.DaoRegistered') === 'd0355a019f331abde8d4fa84a03e150fd2da637a2d1f60a6ecce59df973577f2'
     }
 
     get asV100(): {daoId: number, founder: Uint8Array, accountId: Uint8Array, council: Uint8Array[], technicalCommittee: Uint8Array[], token: v100.DaoToken, config: v100.DaoConfig, policy: v100.DaoPolicy} {
@@ -188,7 +188,7 @@ export class DaoCouncilProposedEvent {
      * `MemberCount`).
      */
     get isV100(): boolean {
-        return this._chain.getEventHash('DaoCouncil.Proposed') === 'd3d85a540f914b82c0c3810f1a26480ff4c5b1a4ab5a96cfbb90959c301cd36e'
+        return this._chain.getEventHash('DaoCouncil.Proposed') === '996c2d558f181bdefd2760d7fa223806623a584f72409a5d0f4c4caf4954f175'
     }
 
     /**

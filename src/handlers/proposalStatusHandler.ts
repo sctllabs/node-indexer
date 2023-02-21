@@ -130,13 +130,6 @@ function getDaos(
       throw new Error(`Proposal with id: ${proposalId} not found.`);
     }
 
-    if (
-      proposal.kind.isTypeOf !== "AddMember" &&
-      proposal.kind.isTypeOf !== "RemoveMember"
-    ) {
-      return;
-    }
-
     daoIds.add(daoId.toString());
   });
 

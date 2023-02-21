@@ -8,10 +8,12 @@ import {
   ProposalStatus,
   RemoveMember,
   Spend,
+  TransferToken,
 } from "../model";
 import { DaoCouncilProposedEvent } from "../types/events";
 import { decodeAddress, getAccount } from "../utils";
 import * as v100 from "../types/v100";
+import { decodeHash } from "../utils/decodeHash";
 
 export async function proposalHandler(
   ctx: Ctx,
@@ -56,7 +58,7 @@ export async function proposalHandler(
     }
 
     const kind = getProposalKind(proposal);
-    const hash = Buffer.from(proposalHash).toString("hex");
+    const hash = decodeHash(proposalHash);
     const id = `${dao.id}-${proposalIndex}`;
 
     proposals.set(
@@ -94,6 +96,14 @@ function getProposalKind(proposal: v100.Call) {
     }
     case "spend": {
       return new Spend({
+        beneficiary: decodeAddress(
+          proposal.value.beneficiary.value as Uint8Array
+        ),
+        amount: proposal.value.amount,
+      });
+    }
+    case "transfer_token": {
+      return new TransferToken({
         beneficiary: decodeAddress(
           proposal.value.beneficiary.value as Uint8Array
         ),
