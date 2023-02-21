@@ -92,7 +92,12 @@ type Spend {
   beneficiary: String!
 }
 
-union ProposalKind = AddMember | RemoveMember | Spend
+type TransferToken {
+  amount: BigInt!
+  beneficiary: String!
+}
+
+union ProposalKind = AddMember | RemoveMember | Spend | TransferToken
 
 enum ProposalStatus {
   Open

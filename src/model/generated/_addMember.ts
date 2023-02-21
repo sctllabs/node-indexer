@@ -1,6 +1,5 @@
 import assert from "assert"
 import * as marshal from "./marshal"
-import {Account} from "./account.model"
 
 export class AddMember {
     public readonly isTypeOf = 'AddMember'

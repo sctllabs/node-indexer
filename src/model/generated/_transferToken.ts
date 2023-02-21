@@ -1,12 +1,12 @@
 import assert from "assert"
 import * as marshal from "./marshal"
 
-export class Spend {
-    public readonly isTypeOf = 'Spend'
+export class TransferToken {
+    public readonly isTypeOf = 'TransferToken'
     private _amount!: bigint
     private _beneficiary!: string
 
-    constructor(props?: Partial<Omit<Spend, 'toJSON'>>, json?: any) {
+    constructor(props?: Partial<Omit<TransferToken, 'toJSON'>>, json?: any) {
         Object.assign(this, props)
         if (json != null) {
             this._amount = marshal.bigint.fromJSON(json.amount)

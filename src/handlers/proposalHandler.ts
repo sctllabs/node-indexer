@@ -8,6 +8,7 @@ import {
   ProposalStatus,
   RemoveMember,
   Spend,
+  TransferToken,
 } from "../model";
 import { DaoCouncilProposedEvent } from "../types/events";
 import { decodeAddress, getAccount } from "../utils";
@@ -95,6 +96,14 @@ function getProposalKind(proposal: v100.Call) {
     }
     case "spend": {
       return new Spend({
+        beneficiary: decodeAddress(
+          proposal.value.beneficiary.value as Uint8Array
+        ),
+        amount: proposal.value.amount,
+      });
+    }
+    case "transfer_token": {
+      return new TransferToken({
         beneficiary: decodeAddress(
           proposal.value.beneficiary.value as Uint8Array
         ),
