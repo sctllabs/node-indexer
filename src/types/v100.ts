@@ -284,6 +284,34 @@ export interface Call_Utility {
     value: UtilityCall
 }
 
+export type VoteThreshold = VoteThreshold_SuperMajorityApprove | VoteThreshold_SuperMajorityAgainst | VoteThreshold_SimpleMajority
+
+export interface VoteThreshold_SuperMajorityApprove {
+    __kind: 'SuperMajorityApprove'
+}
+
+export interface VoteThreshold_SuperMajorityAgainst {
+    __kind: 'SuperMajorityAgainst'
+}
+
+export interface VoteThreshold_SimpleMajority {
+    __kind: 'SimpleMajority'
+}
+
+export type AccountVote = AccountVote_Standard | AccountVote_Split
+
+export interface AccountVote_Standard {
+    __kind: 'Standard'
+    vote: number
+    balance: bigint
+}
+
+export interface AccountVote_Split {
+    __kind: 'Split'
+    aye: bigint
+    nay: bigint
+}
+
 export type DaoPolicyProportion = DaoPolicyProportion_AtLeast | DaoPolicyProportion_MoreThan
 
 export interface DaoPolicyProportion_AtLeast {
@@ -7762,20 +7790,6 @@ export interface DispatchTime_At {
 export interface DispatchTime_After {
     __kind: 'After'
     value: number
-}
-
-export type AccountVote = AccountVote_Standard | AccountVote_Split
-
-export interface AccountVote_Standard {
-    __kind: 'Standard'
-    vote: number
-    balance: bigint
-}
-
-export interface AccountVote_Split {
-    __kind: 'Split'
-    aye: bigint
-    nay: bigint
 }
 
 export type Conviction = Conviction_None | Conviction_Locked1x | Conviction_Locked2x | Conviction_Locked3x | Conviction_Locked4x | Conviction_Locked5x | Conviction_Locked6x

@@ -1,5 +1,6 @@
 import { In } from "typeorm";
-import { Ctx, EventInfo } from "../processor";
+import type { Ctx } from "../processor";
+import type { EventInfo } from "../processorHandler";
 import {
   Account,
   ApproveOriginType,

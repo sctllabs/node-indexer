@@ -1,10 +1,10 @@
 import {Entity as Entity_, Column as Column_, PrimaryColumn as PrimaryColumn_, ManyToOne as ManyToOne_, Index as Index_} from "typeorm"
-import {Proposal} from "./proposal.model"
+import {CouncilProposal} from "./councilProposal.model"
 import {Account} from "./account.model"
 
 @Entity_()
-export class VoteHistory {
-    constructor(props?: Partial<VoteHistory>) {
+export class CouncilVoteHistory {
+    constructor(props?: Partial<CouncilVoteHistory>) {
         Object.assign(this, props)
     }
 
@@ -12,8 +12,8 @@ export class VoteHistory {
     id!: string
 
     @Index_()
-    @ManyToOne_(() => Proposal, {nullable: true})
-    proposal!: Proposal | undefined | null
+    @ManyToOne_(() => CouncilProposal, {nullable: true})
+    proposal!: CouncilProposal | undefined | null
 
     @Column_("bool", {nullable: false})
     approvedVote!: boolean

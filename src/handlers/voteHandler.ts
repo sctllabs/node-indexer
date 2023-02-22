@@ -1,17 +1,18 @@
 import { In } from "typeorm";
-import { Ctx, EventInfo } from "../processor";
+import type { Ctx } from "../processor";
+import type { EventInfo } from "../processorHandler";
 import { DaoCouncilVotedEvent } from "../types/events";
-import { Account, Proposal, VoteHistory } from "../model";
+import { Account, CouncilProposal, CouncilVoteHistory } from "../model";
 import { decodeAddress, getAccount } from "../utils";
 
 export async function voteHandler(
   ctx: Ctx,
   voteEvents: EventInfo<DaoCouncilVotedEvent>[],
-  proposals: Map<string, Proposal>,
+  proposals: Map<string, CouncilProposal>,
   accounts: Map<string, Account>
 ) {
-  const votes: Map<string, VoteHistory> = new Map();
-  const votesToUpdate: Map<string, VoteHistory> = new Map();
+  const votes: Map<string, CouncilVoteHistory> = new Map();
+  const votesToUpdate: Map<string, CouncilVoteHistory> = new Map();
   const [accountsQuery, proposalsQuery, votesQuery] =
     await getAccountsAndProposalsAndVotes(ctx, voteEvents, proposals, accounts);
   accountsQuery.forEach((_accountQuery: Account) =>
@@ -39,12 +40,12 @@ export async function voteHandler(
     if (existingVote) {
       votesToUpdate.set(
         id,
-        new VoteHistory({ ...existingVote, approvedVote: voted })
+        new CouncilVoteHistory({ ...existingVote, approvedVote: voted })
       );
     } else {
       votes.set(
         id,
-        new VoteHistory({
+        new CouncilVoteHistory({
           id,
           votedNo: no,
           votedYes: yes,
@@ -64,7 +65,7 @@ export async function voteHandler(
 async function getAccountsAndProposalsAndVotes(
   ctx: Ctx,
   voteEvents: EventInfo<DaoCouncilVotedEvent>[],
-  proposals: Map<string, Proposal>,
+  proposals: Map<string, CouncilProposal>,
   accounts: Map<string, Account>
 ) {
   const accountIds = new Set<string>();
@@ -91,7 +92,7 @@ async function getAccountsAndProposalsAndVotes(
   }
   return Promise.all([
     ctx.store.findBy(Account, { id: In([...accountIds]) }),
-    ctx.store.findBy(Proposal, { id: In([...proposalIds]) }),
-    ctx.store.findBy(VoteHistory, { id: In([...voteIds]) }),
+    ctx.store.findBy(CouncilProposal, { id: In([...proposalIds]) }),
+    ctx.store.findBy(CouncilVoteHistory, { id: In([...voteIds]) }),
   ]);
 }

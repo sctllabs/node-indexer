@@ -1,4 +1,6 @@
 export * from "./daoHandler";
 export * from "./fungibleTokenHandler";
-export * from "./proposalHandler";
+export * from "./councilProposalHandler";
+export * from "./councilProposalStatusHandler";
+export * from "./democracyProposalHandler";
 export * from "./voteHandler";

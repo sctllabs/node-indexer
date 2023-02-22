@@ -1,4 +1,4 @@
-export enum ProposalStatus {
+export enum CouncilProposalStatus {
     Open = "Open",
     Approved = "Approved",
     Disapproved = "Disapproved",

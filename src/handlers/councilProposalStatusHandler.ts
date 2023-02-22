@@ -1,6 +1,7 @@
 import { In } from "typeorm";
-import { Ctx, EventInfo } from "../processor";
-import { Account, Dao, Proposal, ProposalStatus } from "../model";
+import type { Ctx } from "../processor";
+import type { EventInfo } from "../processorHandler";
+import { Account, Dao, CouncilProposal, CouncilProposalStatus } from "../model";
 import {
   DaoCouncilApprovedEvent,
   DaoCouncilClosedEvent,
@@ -10,22 +11,22 @@ import {
 import { getAccount } from "../utils";
 
 type ProposalEvents = {
-  approvedProposalEvents: EventInfo<DaoCouncilApprovedEvent>[];
-  disapprovedProposalEvents: EventInfo<DaoCouncilDisapprovedEvent>[];
-  closedProposalEvents: EventInfo<DaoCouncilClosedEvent>[];
-  executedProposalEvents: EventInfo<DaoCouncilExecutedEvent>[];
+  approvedCouncilProposalEvents: EventInfo<DaoCouncilApprovedEvent>[];
+  disapprovedCouncilProposalEvents: EventInfo<DaoCouncilDisapprovedEvent>[];
+  closedCouncilProposalEvents: EventInfo<DaoCouncilClosedEvent>[];
+  executedCouncilProposalEvents: EventInfo<DaoCouncilExecutedEvent>[];
 };
 
 type ProposalEventsKind = keyof ProposalEvents;
 
-export async function proposalStatusHandler(
+export async function councilProposalStatusHandler(
   ctx: Ctx,
   proposalEvents: ProposalEvents,
   accounts: Map<string, Account>,
-  proposals: Map<string, Proposal>,
+  proposals: Map<string, CouncilProposal>,
   daos: Map<string, Dao>
 ) {
-  const proposalsToUpdate: Map<string, Proposal> = new Map();
+  const proposalsToUpdate: Map<string, CouncilProposal> = new Map();
 
   const proposalsQuery = await getProposals(ctx, proposalEvents, proposals);
   const proposalsQueryMap = new Map(
@@ -47,7 +48,7 @@ export async function proposalStatusHandler(
     daos,
     proposals,
     proposalsToUpdate,
-    proposalEvents.executedProposalEvents
+    proposalEvents.executedCouncilProposalEvents
   );
   const daosQueryMap = new Map(
     daosQuery.map((_daoQuery) => [_daoQuery.id, _daoQuery])
@@ -58,7 +59,7 @@ export async function proposalStatusHandler(
     accounts,
     proposals,
     proposalsToUpdate,
-    proposalEvents.executedProposalEvents
+    proposalEvents.executedCouncilProposalEvents
   );
 
   return { proposalsToUpdate, daosToUpdate };
@@ -68,8 +69,8 @@ function updateDaos(
   daos: Map<string, Dao>,
   daosQueryMap: Map<string, Dao>,
   accounts: Map<string, Account>,
-  proposals: Map<string, Proposal>,
-  proposalsToUpdate: Map<string, Proposal>,
+  proposals: Map<string, CouncilProposal>,
+  proposalsToUpdate: Map<string, CouncilProposal>,
   executedEvents: EventInfo<DaoCouncilExecutedEvent>[]
 ) {
   const daosToUpdate: Map<string, Dao> = new Map();
@@ -109,8 +110,8 @@ function updateDaos(
 function getDaos(
   ctx: Ctx,
   daos: Map<string, Dao>,
-  proposals: Map<string, Proposal>,
-  proposalsToUpdate: Map<string, Proposal>,
+  proposals: Map<string, CouncilProposal>,
+  proposalsToUpdate: Map<string, CouncilProposal>,
   executedEvents: EventInfo<DaoCouncilExecutedEvent>[]
 ) {
   const daoIds = new Set<string>();
@@ -141,20 +142,20 @@ function getDaos(
 function getProposals(
   ctx: Ctx,
   proposalEvents: ProposalEvents,
-  proposals: Map<string, Proposal>
+  proposals: Map<string, CouncilProposal>
 ) {
   const proposalIds = new Set<string>();
   Object.values(proposalEvents).map((_proposalEventsKind) =>
     getProposalIds(proposals, _proposalEventsKind, proposalIds)
   );
 
-  return ctx.store.findBy(Proposal, {
+  return ctx.store.findBy(CouncilProposal, {
     id: In([...proposalIds]),
   });
 }
 
 function getProposalIds(
-  proposals: Map<string, Proposal>,
+  proposals: Map<string, CouncilProposal>,
   proposalEvents: EventInfo<
     | DaoCouncilApprovedEvent
     | DaoCouncilDisapprovedEvent
@@ -177,9 +178,9 @@ function getProposalIds(
 }
 
 function updateProposalStatuses(
-  proposalsToUpdate: Map<string, Proposal>,
-  proposals: Map<string, Proposal>,
-  proposalsQueryMap: Map<string, Proposal>,
+  proposalsToUpdate: Map<string, CouncilProposal>,
+  proposals: Map<string, CouncilProposal>,
+  proposalsQueryMap: Map<string, CouncilProposal>,
   proposalEvents: EventInfo<
     | DaoCouncilApprovedEvent
     | DaoCouncilDisapprovedEvent
@@ -198,22 +199,22 @@ function updateProposalStatuses(
       throw new Error(`Proposal with id: ${proposalId} not found.`);
     }
 
-    let status: ProposalStatus;
+    let status: CouncilProposalStatus;
     switch (kind) {
-      case "approvedProposalEvents": {
-        status = ProposalStatus.Approved;
+      case "approvedCouncilProposalEvents": {
+        status = CouncilProposalStatus.Approved;
         break;
       }
-      case "disapprovedProposalEvents": {
-        status = ProposalStatus.Disapproved;
+      case "disapprovedCouncilProposalEvents": {
+        status = CouncilProposalStatus.Disapproved;
         break;
       }
-      case "closedProposalEvents": {
-        status = ProposalStatus.Closed;
+      case "closedCouncilProposalEvents": {
+        status = CouncilProposalStatus.Closed;
         break;
       }
-      case "executedProposalEvents": {
-        status = ProposalStatus.Executed;
+      case "executedCouncilProposalEvents": {
+        status = CouncilProposalStatus.Executed;
         break;
       }
     }

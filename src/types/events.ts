@@ -231,3 +231,264 @@ export class DaoCouncilVotedEvent {
         return this._chain.decodeEvent(this.event)
     }
 }
+
+export class DaoDemocracyCancelledEvent {
+    private readonly _chain: Chain
+    private readonly event: Event
+
+    constructor(ctx: EventContext)
+    constructor(ctx: ChainContext, event: Event)
+    constructor(ctx: EventContext, event?: Event) {
+        event = event || ctx.event
+        assert(event.name === 'DaoDemocracy.Cancelled')
+        this._chain = ctx._chain
+        this.event = event
+    }
+
+    /**
+     * A referendum has been cancelled.
+     */
+    get isV100(): boolean {
+        return this._chain.getEventHash('DaoDemocracy.Cancelled') === 'fd60262a82594b52e0d423cc5303ef96ce205982a5e1306310ff009c7a2928a6'
+    }
+
+    /**
+     * A referendum has been cancelled.
+     */
+    get asV100(): {daoId: number, refIndex: number} {
+        assert(this.isV100)
+        return this._chain.decodeEvent(this.event)
+    }
+}
+
+export class DaoDemocracyDelegatedEvent {
+    private readonly _chain: Chain
+    private readonly event: Event
+
+    constructor(ctx: EventContext)
+    constructor(ctx: ChainContext, event: Event)
+    constructor(ctx: EventContext, event?: Event) {
+        event = event || ctx.event
+        assert(event.name === 'DaoDemocracy.Delegated')
+        this._chain = ctx._chain
+        this.event = event
+    }
+
+    /**
+     * An account has delegated their vote to another account.
+     */
+    get isV100(): boolean {
+        return this._chain.getEventHash('DaoDemocracy.Delegated') === '2d07fe865fb3beb1a067d5c7f71bcf9f322e0bf98f549ddfb5f3e34cad097556'
+    }
+
+    /**
+     * An account has delegated their vote to another account.
+     */
+    get asV100(): {daoId: number, who: Uint8Array, target: Uint8Array} {
+        assert(this.isV100)
+        return this._chain.decodeEvent(this.event)
+    }
+}
+
+export class DaoDemocracyNotPassedEvent {
+    private readonly _chain: Chain
+    private readonly event: Event
+
+    constructor(ctx: EventContext)
+    constructor(ctx: ChainContext, event: Event)
+    constructor(ctx: EventContext, event?: Event) {
+        event = event || ctx.event
+        assert(event.name === 'DaoDemocracy.NotPassed')
+        this._chain = ctx._chain
+        this.event = event
+    }
+
+    /**
+     * A proposal has been rejected by referendum.
+     */
+    get isV100(): boolean {
+        return this._chain.getEventHash('DaoDemocracy.NotPassed') === 'fd60262a82594b52e0d423cc5303ef96ce205982a5e1306310ff009c7a2928a6'
+    }
+
+    /**
+     * A proposal has been rejected by referendum.
+     */
+    get asV100(): {daoId: number, refIndex: number} {
+        assert(this.isV100)
+        return this._chain.decodeEvent(this.event)
+    }
+}
+
+export class DaoDemocracyPassedEvent {
+    private readonly _chain: Chain
+    private readonly event: Event
+
+    constructor(ctx: EventContext)
+    constructor(ctx: ChainContext, event: Event)
+    constructor(ctx: EventContext, event?: Event) {
+        event = event || ctx.event
+        assert(event.name === 'DaoDemocracy.Passed')
+        this._chain = ctx._chain
+        this.event = event
+    }
+
+    /**
+     * A proposal has been approved by referendum.
+     */
+    get isV100(): boolean {
+        return this._chain.getEventHash('DaoDemocracy.Passed') === 'fd60262a82594b52e0d423cc5303ef96ce205982a5e1306310ff009c7a2928a6'
+    }
+
+    /**
+     * A proposal has been approved by referendum.
+     */
+    get asV100(): {daoId: number, refIndex: number} {
+        assert(this.isV100)
+        return this._chain.decodeEvent(this.event)
+    }
+}
+
+export class DaoDemocracyProposedEvent {
+    private readonly _chain: Chain
+    private readonly event: Event
+
+    constructor(ctx: EventContext)
+    constructor(ctx: ChainContext, event: Event)
+    constructor(ctx: EventContext, event?: Event) {
+        event = event || ctx.event
+        assert(event.name === 'DaoDemocracy.Proposed')
+        this._chain = ctx._chain
+        this.event = event
+    }
+
+    /**
+     * A motion has been proposed by a public account.
+     */
+    get isV100(): boolean {
+        return this._chain.getEventHash('DaoDemocracy.Proposed') === 'f590e26edf0d188b119559b1508a4d1a52cdc64c3369a4c9a26af39d513cf491'
+    }
+
+    /**
+     * A motion has been proposed by a public account.
+     */
+    get asV100(): {daoId: number, account: Uint8Array, proposalIndex: number, proposal: v100.Call, deposit: bigint, meta: (Uint8Array | undefined)} {
+        assert(this.isV100)
+        return this._chain.decodeEvent(this.event)
+    }
+}
+
+export class DaoDemocracySecondedEvent {
+    private readonly _chain: Chain
+    private readonly event: Event
+
+    constructor(ctx: EventContext)
+    constructor(ctx: ChainContext, event: Event)
+    constructor(ctx: EventContext, event?: Event) {
+        event = event || ctx.event
+        assert(event.name === 'DaoDemocracy.Seconded')
+        this._chain = ctx._chain
+        this.event = event
+    }
+
+    /**
+     * An account has secconded a proposal
+     */
+    get isV100(): boolean {
+        return this._chain.getEventHash('DaoDemocracy.Seconded') === '1217874cf1007e6c338b986ec21154b5366bb48c3b1379f558fb2b0e06d48ac4'
+    }
+
+    /**
+     * An account has secconded a proposal
+     */
+    get asV100(): {daoId: number, seconder: Uint8Array, propIndex: number} {
+        assert(this.isV100)
+        return this._chain.decodeEvent(this.event)
+    }
+}
+
+export class DaoDemocracyStartedEvent {
+    private readonly _chain: Chain
+    private readonly event: Event
+
+    constructor(ctx: EventContext)
+    constructor(ctx: ChainContext, event: Event)
+    constructor(ctx: EventContext, event?: Event) {
+        event = event || ctx.event
+        assert(event.name === 'DaoDemocracy.Started')
+        this._chain = ctx._chain
+        this.event = event
+    }
+
+    /**
+     * A referendum has begun.
+     */
+    get isV100(): boolean {
+        return this._chain.getEventHash('DaoDemocracy.Started') === 'aa06bad17472fd1377d0c624d87bbc4c7cd9c97ae2696578bdd40e578f067f5e'
+    }
+
+    /**
+     * A referendum has begun.
+     */
+    get asV100(): {daoId: number, refIndex: number, propIndex: number, threshold: v100.VoteThreshold} {
+        assert(this.isV100)
+        return this._chain.decodeEvent(this.event)
+    }
+}
+
+export class DaoDemocracyUndelegatedEvent {
+    private readonly _chain: Chain
+    private readonly event: Event
+
+    constructor(ctx: EventContext)
+    constructor(ctx: ChainContext, event: Event)
+    constructor(ctx: EventContext, event?: Event) {
+        event = event || ctx.event
+        assert(event.name === 'DaoDemocracy.Undelegated')
+        this._chain = ctx._chain
+        this.event = event
+    }
+
+    /**
+     * An account has cancelled a previous delegation operation.
+     */
+    get isV100(): boolean {
+        return this._chain.getEventHash('DaoDemocracy.Undelegated') === '97042d6931b15da54dcaad082a787c9922bbdb55bdf63bab80a7750afddb9377'
+    }
+
+    /**
+     * An account has cancelled a previous delegation operation.
+     */
+    get asV100(): {daoId: number, account: Uint8Array} {
+        assert(this.isV100)
+        return this._chain.decodeEvent(this.event)
+    }
+}
+
+export class DaoDemocracyVotedEvent {
+    private readonly _chain: Chain
+    private readonly event: Event
+
+    constructor(ctx: EventContext)
+    constructor(ctx: ChainContext, event: Event)
+    constructor(ctx: EventContext, event?: Event) {
+        event = event || ctx.event
+        assert(event.name === 'DaoDemocracy.Voted')
+        this._chain = ctx._chain
+        this.event = event
+    }
+
+    /**
+     * An account has voted in a referendum
+     */
+    get isV100(): boolean {
+        return this._chain.getEventHash('DaoDemocracy.Voted') === 'a1b602ed4f3d294f215c9dd0766baa1f8ed205723cfa88eaed4e5bc2d8372b2a'
+    }
+
+    /**
+     * An account has voted in a referendum
+     */
+    get asV100(): {daoId: number, voter: Uint8Array, refIndex: number, vote: v100.AccountVote} {
+        assert(this.isV100)
+        return this._chain.decodeEvent(this.event)
+    }
+}
