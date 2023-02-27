@@ -2,7 +2,7 @@ import {Entity as Entity_, Column as Column_, PrimaryColumn as PrimaryColumn_, M
 import {Account} from "./account.model"
 import {FungibleToken} from "./fungibleToken.model"
 import {Policy} from "./policy.model"
-import {Proposal} from "./proposal.model"
+import {CouncilProposal} from "./councilProposal.model"
 
 @Entity_()
 export class Dao {
@@ -47,8 +47,8 @@ export class Dao {
     @ManyToOne_(() => Policy, {nullable: true})
     policy!: Policy
 
-    @OneToMany_(() => Proposal, e => e.dao)
-    proposals!: Proposal[]
+    @OneToMany_(() => CouncilProposal, e => e.dao)
+    proposals!: CouncilProposal[]
 
     @Column_("timestamp with time zone", {nullable: false})
     createdAt!: Date

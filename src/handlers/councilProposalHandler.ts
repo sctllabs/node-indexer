@@ -1,27 +1,19 @@
 import { In } from "typeorm";
-import { Ctx, EventInfo } from "../processor";
-import {
-  Account,
-  AddMember,
-  Dao,
-  Proposal,
-  ProposalStatus,
-  RemoveMember,
-  Spend,
-  TransferToken,
-} from "../model";
+import type { Ctx } from "../processor";
+import type { EventInfo } from "../processorHandler";
+import { Account, Dao, CouncilProposal, CouncilProposalStatus } from "../model";
 import { DaoCouncilProposedEvent } from "../types/events";
 import { decodeAddress, getAccount } from "../utils";
-import * as v100 from "../types/v100";
 import { decodeHash } from "../utils/decodeHash";
+import { getProposalKind } from "../utils/getProposalKind";
 
-export async function proposalHandler(
+export async function councilProposalHandler(
   ctx: Ctx,
   proposalEvents: EventInfo<DaoCouncilProposedEvent>[],
   daos: Map<string, Dao>,
   accounts: Map<string, Account>
 ) {
-  const proposals: Map<string, Proposal> = new Map();
+  const proposals: Map<string, CouncilProposal> = new Map();
   const [accountsQuery, daosQuery] = await getAccountsAndDaos(
     ctx,
     proposalEvents,
@@ -63,7 +55,7 @@ export async function proposalHandler(
 
     proposals.set(
       id,
-      new Proposal({
+      new CouncilProposal({
         id,
         hash,
         index: proposalIndex.toString(),
@@ -73,49 +65,13 @@ export async function proposalHandler(
         kind,
         dao,
         blockHash,
-        status: ProposalStatus.Open,
+        status: CouncilProposalStatus.Open,
         blockNum,
         createdAt: new Date(timestamp),
       })
     );
   }
   return proposals;
-}
-
-function getProposalKind(proposal: v100.Call) {
-  switch (proposal.value.__kind) {
-    case "add_member": {
-      return new AddMember({
-        who: decodeAddress(proposal.value.who as Uint8Array),
-      });
-    }
-    case "remove_member": {
-      return new RemoveMember({
-        who: decodeAddress(proposal.value.who as Uint8Array),
-      });
-    }
-    case "spend": {
-      return new Spend({
-        beneficiary: decodeAddress(
-          proposal.value.beneficiary.value as Uint8Array
-        ),
-        amount: proposal.value.amount,
-      });
-    }
-    case "transfer_token": {
-      return new TransferToken({
-        beneficiary: decodeAddress(
-          proposal.value.beneficiary.value as Uint8Array
-        ),
-        amount: proposal.value.amount,
-      });
-    }
-    default: {
-      throw new Error(
-        `Proposal method ${proposal.value.__kind} does not exist`
-      );
-    }
-  }
 }
 
 function getAccountsAndDaos(
@@ -142,11 +98,7 @@ function getAccountsAndDaos(
     }
   }
   return Promise.all([
-    ctx.store.findBy(Account, {
-      id: In([...accountIds]),
-    }),
-    ctx.store.findBy(Dao, {
-      id: In([...daoIds]),
-    }),
+    ctx.store.findBy(Account, { id: In([...accountIds]) }),
+    ctx.store.findBy(Dao, { id: In([...daoIds]) }),
   ]);
 }

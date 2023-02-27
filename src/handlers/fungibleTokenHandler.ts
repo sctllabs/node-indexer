@@ -1,4 +1,5 @@
-import { Ctx, EventInfo } from "../processor";
+import type { Ctx } from "../processor";
+import type { EventInfo } from "../processorHandler";
 import { FungibleToken } from "../model";
 import { AssetsMetadataSetEvent } from "../types/events";
 

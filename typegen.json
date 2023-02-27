@@ -9,7 +9,16 @@
     "DaoCouncil.Approved",
     "DaoCouncil.Disapproved",
     "DaoCouncil.Executed",
-    "DaoCouncil.Closed"
+    "DaoCouncil.Closed",
+    "DaoDemocracy.Proposed",
+    "DaoDemocracy.Voted",
+    "DaoDemocracy.Started",
+    "DaoDemocracy.Passed",
+    "DaoDemocracy.NotPassed",
+    "DaoDemocracy.Cancelled",
+    "DaoDemocracy.Seconded",
+    "DaoDemocracy.Delegated",
+    "DaoDemocracy.Undelegated"
   ],
   "calls": [],
   "storage": []

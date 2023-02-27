@@ -1,9 +1,13 @@
 # noinspection GraphQLUnresolvedReference,GraphQLDuplicateDirective,GraphQLMissingType
+
+# start Account
 type Account @entity {
   "Account address"
   id: ID!
 }
+# end Account
 
+# start Dao
 type Dao @entity {
   id: ID!
   account: Account!
@@ -16,7 +20,7 @@ type Dao @entity {
   fungibleToken: FungibleToken
   ethTokenAddress: String
   policy: Policy!
-  proposals: [Proposal] @derivedFrom(field: "dao")
+  proposals: [CouncilProposal] @derivedFrom(field: "dao")
   createdAt: DateTime!
   blockHash: String!
   blockNum: Int!
@@ -65,7 +69,9 @@ type Policy @entity {
   approveOriginProportion: [Int!]!
   governance: Governance
 }
+# end Dao
 
+# start Token
 type FungibleToken @entity {
   id: ID!
   name: String!
@@ -76,9 +82,9 @@ type FungibleToken @entity {
   blockHash: String!
   blockNum: Int!
 }
+# end Token
 
-# TODO @asansyzb investigate difference between Yes/No voting and count based voting
-
+# start Proposal types
 type AddMember {
   who: String!
 }
@@ -96,10 +102,12 @@ type TransferToken {
   amount: BigInt!
   beneficiary: String!
 }
+# end Proposal types
 
-union ProposalKind = AddMember | RemoveMember | Spend | TransferToken
+# start CouncilProposal
+union CouncilProposalKind = AddMember | RemoveMember | Spend | TransferToken
 
-enum ProposalStatus {
+enum CouncilProposalStatus {
   Open
   Approved
   Disapproved
@@ -107,24 +115,24 @@ enum ProposalStatus {
   Closed
 }
 
-type Proposal @entity {
+type CouncilProposal @entity {
   id: ID!
   index: String!
   hash: String!
   account: Account!
   dao: Dao!
   voteThreshold: Int!
-  kind: ProposalKind!
+  kind: CouncilProposalKind!
   meta: String
   createdAt: DateTime!
   blockHash: String!
   blockNum: Int!
-  status: ProposalStatus!
+  status: CouncilProposalStatus!
 }
 
-type VoteHistory @entity {
+type CouncilVoteHistory @entity {
   id: ID!
-  proposal: Proposal
+  proposal: CouncilProposal
   approvedVote: Boolean!
   councillor: Account
   votedYes: Int
@@ -133,3 +141,56 @@ type VoteHistory @entity {
   blockHash: String!
   blockNum: Int!
 }
+# end CouncilProposal
+
+# start DemocracyProposal
+union DemocracyProposalKind = AddMember | RemoveMember | Spend | TransferToken
+
+enum DemocracyProposalStatus {
+  Open
+  Started
+  Passed
+  NotPassed
+  Cancelled
+}
+
+type DemocracyProposal @entity {
+  id: ID!
+  index: String!
+  account: Account!
+  dao: Dao!
+  deposit: BigInt!
+  kind: CouncilProposalKind!
+  meta: String
+  createdAt: DateTime!
+  blockHash: String!
+  blockNum: Int!
+  status: DemocracyProposalStatus!
+}
+
+type DemocracySecond @entity {
+  id: ID!
+  dao: Dao!
+  seconder: Account!
+  proposal: DemocracyProposal!
+}
+# end DemocracyProposal
+
+# start DemocracyReferendum
+type DemocracyReferendum {
+  id: ID!
+  voteThreshold: Int!
+}
+
+type DemocracyVoteHistory @entity {
+  id: ID!
+  proposal: DemocracyReferendum
+  approvedVote: Boolean!
+  voter: Account
+  votedYes: Int
+  votedNo: Int
+  createdAt: DateTime!
+  blockHash: String!
+  blockNum: Int!
+}
+#end DemocracyReferendum

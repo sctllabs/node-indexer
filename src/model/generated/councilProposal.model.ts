@@ -2,12 +2,12 @@ import {Entity as Entity_, Column as Column_, PrimaryColumn as PrimaryColumn_, M
 import * as marshal from "./marshal"
 import {Account} from "./account.model"
 import {Dao} from "./dao.model"
-import {ProposalKind, fromJsonProposalKind} from "./_proposalKind"
-import {ProposalStatus} from "./_proposalStatus"
+import {CouncilProposalKind, fromJsonCouncilProposalKind} from "./_councilProposalKind"
+import {CouncilProposalStatus} from "./_councilProposalStatus"
 
 @Entity_()
-export class Proposal {
-    constructor(props?: Partial<Proposal>) {
+export class CouncilProposal {
+    constructor(props?: Partial<CouncilProposal>) {
         Object.assign(this, props)
     }
 
@@ -31,8 +31,8 @@ export class Proposal {
     @Column_("int4", {nullable: false})
     voteThreshold!: number
 
-    @Column_("jsonb", {transformer: {to: obj => obj.toJSON(), from: obj => obj == null ? undefined : fromJsonProposalKind(obj)}, nullable: false})
-    kind!: ProposalKind
+    @Column_("jsonb", {transformer: {to: obj => obj.toJSON(), from: obj => obj == null ? undefined : fromJsonCouncilProposalKind(obj)}, nullable: false})
+    kind!: CouncilProposalKind
 
     @Column_("text", {nullable: true})
     meta!: string | undefined | null
@@ -47,5 +47,5 @@ export class Proposal {
     blockNum!: number
 
     @Column_("varchar", {length: 11, nullable: false})
-    status!: ProposalStatus
+    status!: CouncilProposalStatus
 }
