@@ -37,30 +37,33 @@ npm ci
 
 # 2. Run your node
 
-# 3. Compile type generations from your node
+# 3. Run archive docker
+make archive
+
+# 4. Compile type generations from your node
 make typegen
 
-# 4. Compile your entities from your schema
+# 5. Compile your entities from your schema
 make codegen
 
-# 5. Compile your project
+# 6. Compile your project
 make build
 
-# 6. Start target Postgres database and detach
+# 7. Start target Postgres database and detach
 make up
 
-# 7. Generate migrations from your schema.
+# 8. Generate migrations from your schema.
 # Do not generate migrations if you already generated them
 make generate
 
-# 8. Make migrations to your database.
+# 9. Make migrations to your database.
 # Do no run migrations if you already applied them
 make migrate
 
-# 9. Start the processor
+# 10. Start the processor
 make process
 
-# 10. The command above will block the terminal
+# 11. The command above will block the terminal
 #    being busy with fetching the chain data, 
 #    transforming and storing it in the target database.
 #
@@ -70,6 +73,12 @@ make serve
 
 # In case your database migrations fails remove `db`
 # and start process from step #7.
+
+# To remove archive docker container run
+make archive-down
+
+# To remove processor docker container run
+make down
 ```
 
 ## Migrate to FireSquid
