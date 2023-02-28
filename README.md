@@ -35,22 +35,50 @@ On Windows we recommend to use [WSL](https://docs.microsoft.com/en-us/windows/ws
 npm run update
 npm ci
 
-# 2. Compile typescript files
-sqd build
+# 2. Run your node
 
-# 3. Start target Postgres database and detach
-sqd up
+# 3. Run archive docker
+make archive
 
-# 4. Start the processor
-sqd process
+# 4. Compile type generations from your node
+make typegen
 
-# 5. The command above will block the terminal
+# 5. Compile your entities from your schema
+make codegen
+
+# 6. Compile your project
+make build
+
+# 7. Start target Postgres database and detach
+make up
+
+# 8. Generate migrations from your schema.
+# Do not generate migrations if you already generated them
+make generate
+
+# 9. Make migrations to your database.
+# Do no run migrations if you already applied them
+make migrate
+
+# 10. Start the processor
+make process
+
+# 11. The command above will block the terminal
 #    being busy with fetching the chain data, 
 #    transforming and storing it in the target database.
 #
 #    To start the graphql server open the separate terminal
 #    and run
-sqd serve
+make serve
+
+# In case your database migrations fails remove `db`
+# and start process from step #7.
+
+# To remove archive docker container run
+make archive-down
+
+# To remove processor docker container run
+make down
 ```
 
 ## Migrate to FireSquid

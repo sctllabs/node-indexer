@@ -43,6 +43,6 @@ archive:
 	@docker-compose -f ./archive/docker-compose.yml up -d
 
 archive-down:
-	@docker-compose -f ./archive/docker-compose.yml down
+	@docker-compose -f ./archive/docker-compose.yml down -v
 
 .PHONY: build serve process migrate codegen typegen up down archive generate archive-down
