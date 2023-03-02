@@ -7,3 +7,10 @@
 
 # IDE files
 /.idea
+
+# VS Code
+.vscode
+.history
+
+# misc
+.DS_Store
