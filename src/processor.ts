@@ -8,8 +8,8 @@ import { processEvents } from "./processorHandler";
 
 const processor = new SubstrateBatchProcessor()
   .setDataSource({
-    chain: "ws://127.0.0.1:9944",
-    archive: "http://127.0.0.1:8888/graphql",
+    chain: process.env.WEBSOCKET_URL,
+    archive: process.env.ARCHIVE_URL as string,
   })
   .addEvent("Dao.DaoRegistered", {
     data: { event: { args: true } },
