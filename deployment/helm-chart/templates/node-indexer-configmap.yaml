@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-configmap
+data:
+  WEBSOCKET_URL: "ws://host.docker.internal:9944"
+{{- range $k, $v := .Values.environment }}
+  {{ $k }}: "{{ $v }}"
+{{- end }}

@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "node-indexer.fullname" . }}-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    cert-manager.io/cluster-issuer: "letsencrypt"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - {{ .Values.queryNode.ingress.host }}
+    secretName: {{ include "queryNode.fullname" . }}-tls-secret
+  rules:
+  - host: {{ .Values.queryNode.ingress.host }}
+    http:
+      paths:
+        - path: /
+          backend:
+            service:
+              name: {{ include "queryNode.fullname" . }}
+              port:
+                number: 80
+          pathType: ImplementationSpecific
