@@ -5,10 +5,10 @@ runs:
   - name: Cache Docker layers
     uses: actions/cache@v2
     with:
-      path: /tmp/.buildx-cache-societal-client
-      key: ${{ runner.os }}-societal-client-${{ github.sha }}
+      path: /tmp/.buildx-cache-node-indexer
+      key: ${{ runner.os }}-node-indexer-${{ github.sha }}
       restore-keys: |
-        ${{ runner.os }}-societal-client
+        ${{ runner.os }}-node-indexer
 
   - name: Docker meta
     id: meta
@@ -33,11 +33,11 @@ runs:
       platforms: linux/amd64
       tags: ${{ steps.meta.outputs.tags }}
       push: true
-      cache-from: type=local,src=/tmp/.buildx-cache-societal-client
-      cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-societal-client-new
+      cache-from: type=local,src=/tmp/.buildx-cache-node-indexer
+      cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-node-indexer-new
 
   - name: Move cache
     shell: bash
     run: |
-      rm -rf /tmp/.buildx-cache-societal-client
-      mv /tmp/.buildx-cache-societal-client-new /tmp/.buildx-cache-societal-client
+      rm -rf /tmp/.buildx-cache-node-indexer
+      mv /tmp/.buildx-cache-node-indexer-new /tmp/.buildx-cache-node-indexer
