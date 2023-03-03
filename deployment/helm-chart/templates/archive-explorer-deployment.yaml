@@ -1,0 +1,92 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "archiveExplorer.fullname" . }}
+  labels:
+    {{- include "archiveExplorer.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.archiveExplorer.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "archiveExplorer.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "archiveExplorer.selectorLabels" . | nindent 8 }}
+    spec:
+    {{- with .Values.archiveExplorer.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      securityContext:
+        {{- toYaml .Values.archiveExplorer.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ include "archiveExplorer.fullname" . }}
+          securityContext:
+            {{- toYaml .Values.archiveExplorer.securityContext | nindent 12 }}
+          image: "{{ .Values.archiveExplorer.image.repository }}/{{ .Values.archiveExplorer.image.name }}:{{ .Values.archiveExplorer.image.tag }}"
+          imagePullPolicy: {{ .Values.archiveExplorer.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.archiveExplorer.container.internalPort }}
+              protocol: TCP
+          {{- if .Values.archiveExplorer.container.livenessProbe.enabled }}
+          livenessProbe:
+            httpGet:
+              path: "{{ .Values.archiveExplorer.container.livenessProbe.path }}"
+              port: {{ .Values.archiveExplorer.container.livenessProbe.port }}
+              scheme: HTTP
+            initialDelaySeconds: {{ .Values.archiveExplorer.container.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.archiveExplorer.container.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.archiveExplorer.container.livenessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.archiveExplorer.container.livenessProbe.successThreshold }}
+            failureThreshold: {{ .Values.archiveExplorer.container.livenessProbe.failureThreshold }}
+          readinessProbe:
+            httpGet:
+              path: "{{ .Values.archiveExplorer.container.readinessProbe.path }}"
+              port: {{ .Values.archiveExplorer.container.readinessProbe.port }}
+              scheme: HTTP
+            initialDelaySeconds: {{ .Values.archiveExplorer.container.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.archiveExplorer.container.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.archiveExplorer.container.readinessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.archiveExplorer.container.readinessProbe.successThreshold }}
+            failureThreshold: {{ .Values.archiveExplorer.container.readinessProbe.failureThreshold }}
+          {{- end }}
+          envFrom:
+          - configMapRef:
+              name: node-indexer-configmap
+          - configMapRef:
+              name: {{ .Release.Name }}-version
+          - secretRef:
+              name: archive-db-secret
+          resources:
+            {{- toYaml .Values.archiveExplorer.resources | nindent 12 }}
+      {{- with .Values.archiveExplorer.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.archiveExplorer.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.archiveExplorer.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "archiveExplorer.fullname" . }}
+  labels:
+    {{- include "archiveExplorer.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.archiveExplorer.service.type }}
+  ports:
+    - port: {{ .Values.archiveExplorer.service.port }}
+      targetPort: {{ .Values.archiveExplorer.service.targetPort }}
+  selector:
+    {{- include "archiveExplorer.selectorLabels" . | nindent 4 }}

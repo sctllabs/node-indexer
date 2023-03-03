@@ -1,0 +1,95 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "archiveGateway.fullname" . }}
+  labels:
+    {{- include "archiveGateway.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.archiveGateway.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "archiveGateway.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "archiveGateway.selectorLabels" . | nindent 8 }}
+    spec:
+    {{- with .Values.archiveGateway.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      securityContext:
+        {{- toYaml .Values.archiveGateway.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ include "archiveGateway.fullname" . }}
+          securityContext:
+            {{- toYaml .Values.archiveGateway.securityContext | nindent 12 }}
+          image: "{{ .Values.archiveGateway.image.repository }}/{{ .Values.archiveGateway.image.name }}:{{ .Values.archiveGateway.image.tag }}"
+          args:
+            - --database-url
+            - $(DATABASE_URL)
+          imagePullPolicy: {{ .Values.archiveGateway.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.archiveGateway.container.internalPort }}
+              protocol: TCP
+          {{- if .Values.archiveGateway.container.livenessProbe.enabled }}
+          livenessProbe:
+            httpGet:
+              path: "{{ .Values.archiveGateway.container.livenessProbe.path }}"
+              port: {{ .Values.archiveGateway.container.livenessProbe.port }}
+              scheme: HTTP
+            initialDelaySeconds: {{ .Values.archiveGateway.container.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.archiveGateway.container.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.archiveGateway.container.livenessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.archiveGateway.container.livenessProbe.successThreshold }}
+            failureThreshold: {{ .Values.archiveGateway.container.livenessProbe.failureThreshold }}
+          readinessProbe:
+            httpGet:
+              path: "{{ .Values.archiveGateway.container.readinessProbe.path }}"
+              port: {{ .Values.archiveGateway.container.readinessProbe.port }}
+              scheme: HTTP
+            initialDelaySeconds: {{ .Values.archiveGateway.container.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.archiveGateway.container.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.archiveGateway.container.readinessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.archiveGateway.container.readinessProbe.successThreshold }}
+            failureThreshold: {{ .Values.archiveGateway.container.readinessProbe.failureThreshold }}
+          {{- end }}
+          envFrom:
+          - configMapRef:
+              name: node-indexer-configmap
+          - configMapRef:
+              name: {{ .Release.Name }}-version
+          - secretRef:
+              name: archive-db-secret
+          resources:
+            {{- toYaml .Values.archiveGateway.resources | nindent 12 }}
+      {{- with .Values.archiveGateway.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.archiveGateway.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.archiveGateway.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "archiveGateway.fullname" . }}
+  labels:
+    {{- include "archiveGateway.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.archiveGateway.service.type }}
+  ports:
+    - port: {{ .Values.archiveGateway.service.port }}
+      targetPort: {{ .Values.archiveGateway.service.targetPort }}
+  selector:
+    {{- include "archiveGateway.selectorLabels" . | nindent 4 }}

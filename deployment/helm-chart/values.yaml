@@ -1,0 +1,429 @@
+# Default values for societal-node-indexer.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+nameOverride: ""
+fullnameOverride: ""
+
+version:
+  commit: latest
+  branch: develop
+
+processor:
+  replicaCount: 1
+
+  image:
+    repository: okalenyk
+    tag: latest
+    name: node-indexer
+    pullPolicy: Always
+
+  imagePullSecrets: [ ]
+  nameOverride: "processor"
+  fullnameOverride: ""
+
+  container:
+    # Specifies the internal container port
+    internalPort: 3000
+    # TODO
+    # Specifies the endpoint for liveness checks
+    livenessProbe:
+      enabled: false
+      failureThreshold: 2
+      initialDelaySeconds: 10
+      periodSeconds: 60
+      successThreshold: 1
+      timeoutSeconds: 5
+      port: 3000
+      path: /api/health
+    readinessProbe:
+      failureThreshold: 2
+      initialDelaySeconds: 20
+      periodSeconds: 60
+      successThreshold: 1
+      timeoutSeconds: 5
+      port: 3000
+      path: /api/health
+
+  serviceAccount:
+    # Specifies whether a service account should be created
+    create: false
+    # Annotations to add to the service account
+    annotations: {}
+    # The name of the service account to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: ui
+
+  podSecurityContext: {}
+    # fsGroup: 2000
+
+  securityContext: {}
+    # capabilities:
+    #   drop:
+    #   - ALL
+    # readOnlyRootFilesystem: true
+    # runAsNonRoot: true
+    # runAsUser: 1000
+
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 3000
+
+  resources:
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    limits:
+      cpu: 300m
+      memory: 400Mi
+    requests:
+      cpu: 200m
+      memory: 300Mi
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
+
+  environment:
+    - name: APP_TYPE
+      value: query-node
+
+
+queryNode:
+  replicaCount: 1
+
+  image:
+    repository: okalenyk
+    tag: latest
+    name: node-indexer
+    pullPolicy: Always
+
+  imagePullSecrets: [ ]
+  nameOverride: "query-node"
+  fullnameOverride: ""
+
+  container:
+    # Specifies the internal container port
+    internalPort: 3000
+    # TODO
+    # Specifies the endpoint for liveness checks
+    livenessProbe:
+      enabled: false
+      failureThreshold: 2
+      initialDelaySeconds: 10
+      periodSeconds: 60
+      successThreshold: 1
+      timeoutSeconds: 5
+      port: 3000
+      path: /api/health
+    readinessProbe:
+      failureThreshold: 2
+      initialDelaySeconds: 20
+      periodSeconds: 60
+      successThreshold: 1
+      timeoutSeconds: 5
+      port: 3000
+      path: /api/health
+
+  serviceAccount:
+    # Specifies whether a service account should be created
+    create: false
+    # Annotations to add to the service account
+    annotations: {}
+    # The name of the service account to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: ui
+
+  podSecurityContext: {}
+    # fsGroup: 2000
+
+  securityContext: {}
+    # capabilities:
+    #   drop:
+    #   - ALL
+    # readOnlyRootFilesystem: true
+    # runAsNonRoot: true
+    # runAsUser: 1000
+
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 3000
+
+  ingress:
+    host: "query-node-host"
+
+  resources:
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    limits:
+      cpu: 300m
+      memory: 400Mi
+    requests:
+      cpu: 200m
+      memory: 300Mi
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
+
+  environment:
+    - name: APP_TYPE
+      value: query-node
+
+
+archiveGateway:
+  replicaCount: 1
+
+  image:
+    repository: subsquid
+    tag: firesquid
+    name: substrate-gateway
+    pullPolicy: Always
+
+  imagePullSecrets: [ ]
+  nameOverride: "archive-gateway"
+  fullnameOverride: ""
+
+  container:
+    # Specifies the internal container port
+    internalPort: 3000
+    # TODO
+    # Specifies the endpoint for liveness checks
+    livenessProbe:
+      enabled: false
+      failureThreshold: 2
+      initialDelaySeconds: 10
+      periodSeconds: 60
+      successThreshold: 1
+      timeoutSeconds: 5
+      port: 3000
+      path: /api/health
+    readinessProbe:
+      failureThreshold: 2
+      initialDelaySeconds: 20
+      periodSeconds: 60
+      successThreshold: 1
+      timeoutSeconds: 5
+      port: 3000
+      path: /api/health
+
+  serviceAccount:
+    # Specifies whether a service account should be created
+    create: false
+    # Annotations to add to the service account
+    annotations: {}
+    # The name of the service account to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: ui
+
+  podSecurityContext: {}
+    # fsGroup: 2000
+
+  securityContext: {}
+    # capabilities:
+    #   drop:
+    #   - ALL
+    # readOnlyRootFilesystem: true
+    # runAsNonRoot: true
+    # runAsUser: 1000
+
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 8000
+
+  resources:
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    limits:
+      cpu: 300m
+      memory: 400Mi
+    requests:
+      cpu: 200m
+      memory: 300Mi
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
+
+  environment:
+    
+
+archiveIngest:
+  replicaCount: 1
+
+  image:
+    repository: subsquid
+    tag: firesquid
+    name: substrate-ingest
+    pullPolicy: Always
+
+  imagePullSecrets: [ ]
+  nameOverride: "archive-ingest"
+  fullnameOverride: ""
+
+  container:
+    # Specifies the internal container port
+    internalPort: 3000
+    # TODO
+    # Specifies the endpoint for liveness checks
+    livenessProbe:
+      enabled: false
+      failureThreshold: 2
+      initialDelaySeconds: 10
+      periodSeconds: 60
+      successThreshold: 1
+      timeoutSeconds: 5
+      port: 3000
+      path: /api/health
+    readinessProbe:
+      failureThreshold: 2
+      initialDelaySeconds: 20
+      periodSeconds: 60
+      successThreshold: 1
+      timeoutSeconds: 5
+      port: 3000
+      path: /api/health
+
+  serviceAccount:
+    # Specifies whether a service account should be created
+    create: false
+    # Annotations to add to the service account
+    annotations: {}
+    # The name of the service account to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: ui
+
+  podSecurityContext: {}
+    # fsGroup: 2000
+
+  securityContext: {}
+    # capabilities:
+    #   drop:
+    #   - ALL
+    # readOnlyRootFilesystem: true
+    # runAsNonRoot: true
+    # runAsUser: 1000
+
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 3000
+
+  resources:
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    limits:
+      cpu: 300m
+      memory: 400Mi
+    requests:
+      cpu: 200m
+      memory: 300Mi
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
+
+  environment:
+    
+
+archiveExplorer:
+  replicaCount: 1
+
+  image:
+    repository: subsquid
+    tag: firesquid
+    name: substrate-explorer
+    pullPolicy: Always
+
+  imagePullSecrets: [ ]
+  nameOverride: "archive-explorer"
+  fullnameOverride: ""
+
+  container:
+    # Specifies the internal container port
+    internalPort: 3000
+    # TODO
+    # Specifies the endpoint for liveness checks
+    livenessProbe:
+      enabled: false
+      failureThreshold: 2
+      initialDelaySeconds: 10
+      periodSeconds: 60
+      successThreshold: 1
+      timeoutSeconds: 5
+      port: 3000
+      path: /api/health
+    readinessProbe:
+      failureThreshold: 2
+      initialDelaySeconds: 20
+      periodSeconds: 60
+      successThreshold: 1
+      timeoutSeconds: 5
+      port: 3000
+      path: /api/health
+
+  serviceAccount:
+    # Specifies whether a service account should be created
+    create: false
+    # Annotations to add to the service account
+    annotations: {}
+    # The name of the service account to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: ui
+
+  podSecurityContext: {}
+    # fsGroup: 2000
+
+  securityContext: {}
+    # capabilities:
+    #   drop:
+    #   - ALL
+    # readOnlyRootFilesystem: true
+    # runAsNonRoot: true
+    # runAsUser: 1000
+
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 3000
+
+  ingress:
+    host: "archive-explorer-host"
+
+  resources:
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    limits:
+      cpu: 300m
+      memory: 400Mi
+    requests:
+      cpu: 200m
+      memory: 300Mi
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
+
+  environment:

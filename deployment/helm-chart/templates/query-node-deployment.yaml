@@ -1,0 +1,94 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "queryNode.fullname" . }}
+  labels:
+    {{- include "queryNode.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.queryNode.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "queryNode.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "queryNode.selectorLabels" . | nindent 8 }}
+    spec:
+    {{- with .Values.queryNode.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      securityContext:
+        {{- toYaml .Values.queryNode.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ include "processor.fullname" . }}
+          securityContext:
+            {{- toYaml .Values.queryNode.securityContext | nindent 12 }}
+          image: "{{ .Values.queryNode.image.repository }}/{{ .Values.queryNode.image.name }}:{{ .Values.queryNode.image.tag }}"
+          imagePullPolicy: {{ .Values.queryNode.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.queryNode.container.internalPort }}
+              protocol: TCP
+          {{- if .Values.queryNode.container.livenessProbe.enabled }}
+          livenessProbe:
+            httpGet:
+              path: "{{ .Values.queryNode.container.livenessProbe.path }}"
+              port: {{ .Values.queryNode.container.livenessProbe.port }}
+              scheme: HTTP
+            initialDelaySeconds: {{ .Values.queryNode.container.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.queryNode.container.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.queryNode.container.livenessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.queryNode.container.livenessProbe.successThreshold }}
+            failureThreshold: {{ .Values.queryNode.container.livenessProbe.failureThreshold }}
+          readinessProbe:
+            httpGet:
+              path: "{{ .Values.queryNode.container.readinessProbe.path }}"
+              port: {{ .Values.queryNode.container.readinessProbe.port }}
+              scheme: HTTP
+            initialDelaySeconds: {{ .Values.queryNode.container.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.queryNode.container.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.queryNode.container.readinessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.queryNode.container.readinessProbe.successThreshold }}
+            failureThreshold: {{ .Values.queryNode.container.readinessProbe.failureThreshold }}
+          {{- end }}
+          env:
+            {{- toYaml .Values.queryNode.environment | nindent 12 }}
+          envFrom:
+          - configMapRef:
+              name: node-indexer-configmap
+          - configMapRef:
+              name: {{ .Release.Name }}-version
+          - secretRef:
+              name: indexer-db-secret
+          resources:
+            {{- toYaml .Values.queryNode.resources | nindent 12 }}
+      {{- with .Values.queryNode.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.queryNode.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.queryNode.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "queryNode.fullname" . }}
+  labels:
+    {{- include "queryNode.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.queryNode.service.type }}
+  ports:
+    - port: {{ .Values.queryNode.service.port }}
+      targetPort: {{ .Values.queryNode.service.targetPort }}
+  selector:
+    {{- include "queryNode.selectorLabels" . | nindent 4 }}

@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-version
+data:
+  VER_COMMIT: "{{ .Values.version.commit }}"
+  VER_BRANCH: "{{ .Values.version.branch }}"

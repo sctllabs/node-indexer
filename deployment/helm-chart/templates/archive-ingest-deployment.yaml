@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "archiveIngest.fullname" . }}
+  labels:
+    {{- include "archiveIngest.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.archiveIngest.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "archiveIngest.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "archiveIngest.selectorLabels" . | nindent 8 }}
+    spec:
+    {{- with .Values.archiveIngest.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      securityContext:
+        {{- toYaml .Values.archiveIngest.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ include "archiveIngest.fullname" . }}
+          securityContext:
+            {{- toYaml .Values.archiveIngest.securityContext | nindent 12 }}
+          image: "{{ .Values.archiveIngest.image.repository }}/{{ .Values.archiveIngest.image.name }}:{{ .Values.archiveIngest.image.tag }}"
+          args:
+            - -e
+            - $(WEBSOCKET_URL)
+            - --out
+            - $(DATABASE_URL)
+          imagePullPolicy: {{ .Values.archiveIngest.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.archiveIngest.container.internalPort }}
+              protocol: TCP
+          {{- if .Values.archiveIngest.container.livenessProbe.enabled }}
+          livenessProbe:
+            httpGet:
+              path: "{{ .Values.archiveIngest.container.livenessProbe.path }}"
+              port: {{ .Values.archiveIngest.container.livenessProbe.port }}
+              scheme: HTTP
+            initialDelaySeconds: {{ .Values.archiveIngest.container.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.archiveIngest.container.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.archiveIngest.container.livenessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.archiveIngest.container.livenessProbe.successThreshold }}
+            failureThreshold: {{ .Values.archiveIngest.container.livenessProbe.failureThreshold }}
+          readinessProbe:
+            httpGet:
+              path: "{{ .Values.archiveIngest.container.readinessProbe.path }}"
+              port: {{ .Values.archiveIngest.container.readinessProbe.port }}
+              scheme: HTTP
+            initialDelaySeconds: {{ .Values.archiveIngest.container.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.archiveIngest.container.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.archiveIngest.container.readinessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.archiveIngest.container.readinessProbe.successThreshold }}
+            failureThreshold: {{ .Values.archiveIngest.container.readinessProbe.failureThreshold }}
+          {{- end }}
+          envFrom:
+          - configMapRef:
+              name: node-indexer-configmap
+          - configMapRef:
+              name: {{ .Release.Name }}-version
+          - secretRef:
+              name: archive-db-secret
+          resources:
+            {{- toYaml .Values.archiveIngest.resources | nindent 12 }}
+      {{- with .Values.archiveIngest.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.archiveIngest.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.archiveIngest.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
