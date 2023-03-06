@@ -1,6 +1,4 @@
 import { In } from "typeorm";
-import type { Ctx } from "../processor";
-import type { EventInfo } from "../processorHandler";
 import { DaoDemocracyProposedEvent } from "../types/events";
 import {
   Account,
@@ -11,94 +9,98 @@ import {
 import { decodeAddress, getAccount } from "../utils";
 import { getProposalKind } from "../utils/getProposalKind";
 
-export async function democracyProposalHandler(
-  ctx: Ctx,
-  democracyProposedEvents: EventInfo<DaoDemocracyProposedEvent>[],
-  daos: Map<string, Dao>,
-  accounts: Map<string, Account>
-) {
-  const democracyProposals: Map<string, DemocracyProposal> = new Map();
-  const [accountsQuery, daosQuery] = await getAccountsAndDaos(
-    ctx,
-    democracyProposedEvents,
-    daos,
-    accounts
-  );
-  accountsQuery.forEach((_accountsQuery) =>
-    accounts.set(_accountsQuery.id, _accountsQuery)
-  );
-  const daosQueryMap = new Map(
-    daosQuery.map((_daoQuery) => [_daoQuery.id, _daoQuery])
-  );
+import type { Ctx } from "../processor";
+import type { EventInfo } from "../types";
 
-  for (const {
-    event,
-    timestamp,
-    blockHash,
-    blockNum,
-  } of democracyProposedEvents) {
-    if (!event.isV100) {
-      throw new Error("Unsupported proposal spec");
-    }
+export class DemocracyProposalHandler {
+  ctx: Ctx;
+  democracyProposedEvents: EventInfo<DaoDemocracyProposedEvent>[];
 
-    const { daoId, account, proposalIndex, proposal, deposit, meta } =
-      event.asV100;
+  constructor(
+    ctx: Ctx,
+    democracyProposedEvents: EventInfo<DaoDemocracyProposedEvent>[]
+  ) {
+    this.ctx = ctx;
+    this.democracyProposedEvents = democracyProposedEvents;
+  }
 
-    const dao =
-      daos.get(daoId.toString()) ?? daosQueryMap.get(daoId.toString());
-
-    if (!dao) {
-      throw new Error(`Dao with id: ${daoId} not found`);
-    }
-
-    const kind = getProposalKind(proposal);
-    const id = `${dao.id}-${proposalIndex}`;
-    democracyProposals.set(
-      id,
-      new DemocracyProposal({
-        id,
-        index: proposalIndex.toString(),
-        account: getAccount(accounts, decodeAddress(account)),
-        dao,
-        deposit,
-        kind,
-        meta: meta?.toString(),
-        createdAt: new Date(timestamp),
-        blockHash,
-        blockNum,
-        status: DemocracyProposalStatus.Open,
-      })
+  async handle(daosToInsert: Map<string, Dao>, accounts: Map<string, Account>) {
+    const democracyProposals: Map<string, DemocracyProposal> = new Map();
+    const [accountsQuery, daosQuery] = await this.getAccountsAndDaos(
+      daosToInsert,
+      accounts
     );
+    accountsQuery.forEach((_accountsQuery) =>
+      accounts.set(_accountsQuery.id, _accountsQuery)
+    );
+    const daosQueryMap = new Map(
+      daosQuery.map((_daoQuery) => [_daoQuery.id, _daoQuery])
+    );
+
+    for (const { event, timestamp, blockHash, blockNum } of this
+      .democracyProposedEvents) {
+      if (!event.isV100) {
+        throw new Error("Unsupported proposal spec");
+      }
+
+      const { daoId, account, proposalIndex, proposal, deposit, meta } =
+        event.asV100;
+
+      const dao =
+        daosToInsert.get(daoId.toString()) ??
+        daosQueryMap.get(daoId.toString());
+
+      if (!dao) {
+        throw new Error(`Dao with id: ${daoId} not found`);
+      }
+
+      const kind = getProposalKind(proposal);
+      const id = `${dao.id}-${proposalIndex}`;
+      democracyProposals.set(
+        id,
+        new DemocracyProposal({
+          id,
+          index: proposalIndex.toString(),
+          account: getAccount(accounts, decodeAddress(account)),
+          dao,
+          deposit,
+          kind,
+          meta: meta?.toString(),
+          createdAt: new Date(timestamp),
+          blockHash,
+          blockNum,
+          status: DemocracyProposalStatus.Open,
+        })
+      );
+    }
+    return democracyProposals;
   }
-  return democracyProposals;
-}
 
-function getAccountsAndDaos(
-  ctx: Ctx,
-  democracyProposedEvents: EventInfo<DaoDemocracyProposedEvent>[],
-  daos: Map<string, Dao>,
-  accounts: Map<string, Account>
-) {
-  const accountIds = new Set<string>();
-  const daoIds = new Set<string>();
+  private getAccountsAndDaos(
+    daosToInsert: Map<string, Dao>,
+    accounts: Map<string, Account>
+  ) {
+    const accountIds = new Set<string>();
+    const daoIds = new Set<string>();
 
-  for (const { event } of democracyProposedEvents) {
-    if (!event.isV100) {
-      throw new Error("Unsupported proposal spec");
+    for (const { event } of this.democracyProposedEvents) {
+      if (!event.isV100) {
+        throw new Error("Unsupported proposal spec");
+      }
+
+      const { daoId, account } = event.asV100;
+      const accountAddress = decodeAddress(account);
+
+      if (!daosToInsert.get(daoId.toString())) {
+        daoIds.add(daoId.toString());
+      }
+      if (!accounts.get(accountAddress)) {
+        accountIds.add(accountAddress);
+      }
     }
-
-    const { daoId, account } = event.asV100;
-    const accountAddress = decodeAddress(account);
-
-    if (!daos.get(daoId.toString())) {
-      daoIds.add(daoId.toString());
-    }
-    if (!accounts.get(accountAddress)) {
-      accountIds.add(accountAddress);
-    }
+    return Promise.all([
+      this.ctx.store.findBy(Account, { id: In([...accountIds]) }),
+      this.ctx.store.findBy(Dao, { id: In([...daoIds]) }),
+    ]);
   }
-  return Promise.all([
-    ctx.store.findBy(Account, { id: In([...accountIds]) }),
-    ctx.store.findBy(Dao, { id: In([...daoIds]) }),
-  ]);
 }

@@ -170,8 +170,8 @@ type DemocracyProposal @entity {
 
 type DemocracySecond @entity {
   id: ID!
-  dao: Dao!
   seconder: Account!
+  count: Int!
   proposal: DemocracyProposal!
 }
 # end DemocracyProposal
