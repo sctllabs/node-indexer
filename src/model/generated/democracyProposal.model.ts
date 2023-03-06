@@ -2,7 +2,7 @@ import {Entity as Entity_, Column as Column_, PrimaryColumn as PrimaryColumn_, M
 import * as marshal from "./marshal"
 import {Account} from "./account.model"
 import {Dao} from "./dao.model"
-import {CouncilProposalKind, fromJsonCouncilProposalKind} from "./_councilProposalKind"
+import {DemocracyProposalKind, fromJsonDemocracyProposalKind} from "./_democracyProposalKind"
 import {DemocracyProposalStatus} from "./_democracyProposalStatus"
 
 @Entity_()
@@ -28,8 +28,8 @@ export class DemocracyProposal {
     @Column_("numeric", {transformer: marshal.bigintTransformer, nullable: false})
     deposit!: bigint
 
-    @Column_("jsonb", {transformer: {to: obj => obj.toJSON(), from: obj => obj == null ? undefined : fromJsonCouncilProposalKind(obj)}, nullable: false})
-    kind!: CouncilProposalKind
+    @Column_("jsonb", {transformer: {to: obj => obj.toJSON(), from: obj => obj == null ? undefined : fromJsonDemocracyProposalKind(obj)}, nullable: false})
+    kind!: DemocracyProposalKind
 
     @Column_("text", {nullable: true})
     meta!: string | undefined | null
