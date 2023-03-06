@@ -4,13 +4,16 @@ metadata:
   name: {{ include "node-indexer.fullname" . }}-ingress
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
-    cert-manager.io/cluster-issuer: "letsencrypt"
+    cert-manager.io/cluster-issuer: "letsencrypt-development"
 spec:
   ingressClassName: nginx
   tls:
   - hosts:
     - {{ .Values.queryNode.ingress.host }}
     secretName: {{ include "queryNode.fullname" . }}-tls-secret
+  - hosts:
+    - {{ .Values.archiveExplorer.ingress.host }}
+    secretName: {{ include "archiveExplorer.fullname" . }}-tls-secret
   rules:
   - host: {{ .Values.queryNode.ingress.host }}
     http:
@@ -19,6 +22,16 @@ spec:
           backend:
             service:
               name: {{ include "queryNode.fullname" . }}
+              port:
+                number: 80
+          pathType: ImplementationSpecific
+  - host: {{ .Values.archiveExplorer.ingress.host }}
+    http:
+      paths:
+        - path: /
+          backend:
+            service:
+              name: {{ include "archiveExplorer.fullname" . }}
               port:
                 number: 80
           pathType: ImplementationSpecific
