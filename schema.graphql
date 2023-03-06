@@ -160,7 +160,7 @@ type DemocracyProposal @entity {
   account: Account!
   dao: Dao!
   deposit: BigInt!
-  kind: CouncilProposalKind!
+  kind: DemocracyProposalKind!
   meta: String
   createdAt: DateTime!
   blockHash: String!
