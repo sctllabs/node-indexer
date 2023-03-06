@@ -152,10 +152,10 @@ queryNode:
   service:
     type: ClusterIP
     port: 80
-    targetPort: 3000
+    targetPort: 4000
 
   ingress:
-    host: "query-node-host"
+    host: "indexer.dev.sctl.link"
 
   resources:
     # We usually recommend not to specify default resources and to leave this as a conscious
@@ -403,10 +403,10 @@ archiveExplorer:
   service:
     type: ClusterIP
     port: 80
-    targetPort: 3000
+    targetPort: 4444
 
   ingress:
-    host: "archive-explorer-host"
+    host: "explorer.dev.sctl.link"
 
   resources:
     # We usually recommend not to specify default resources and to leave this as a conscious
