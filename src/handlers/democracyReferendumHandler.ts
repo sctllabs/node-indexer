@@ -237,8 +237,8 @@ export class DemocracyReferendumHandler {
     return this.ctx.store.findBy(DemocracyReferendum, {
       id: In([
         ...democracyReferendumsPassedIds,
-        democracyReferendumsNotPassedIds,
-        democracyReferendumsCancelledIds,
+        ...democracyReferendumsNotPassedIds,
+        ...democracyReferendumsCancelledIds,
       ]),
     });
   }
