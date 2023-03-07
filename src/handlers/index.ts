@@ -4,3 +4,5 @@ export * from "./councilProposalHandler";
 export * from "./councilProposalStatusHandler";
 export * from "./democracyProposalHandler";
 export * from "./voteHandler";
+export * from "./democracySecondHandler";
+export * from "./eventHandler";

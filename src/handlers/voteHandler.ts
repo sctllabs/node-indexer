@@ -1,98 +1,113 @@
 import { In } from "typeorm";
-import type { Ctx } from "../processor";
-import type { EventInfo } from "../processorHandler";
 import { DaoCouncilVotedEvent } from "../types/events";
 import { Account, CouncilProposal, CouncilVoteHistory } from "../model";
 import { decodeAddress, getAccount } from "../utils";
 
-export async function voteHandler(
-  ctx: Ctx,
-  voteEvents: EventInfo<DaoCouncilVotedEvent>[],
-  proposals: Map<string, CouncilProposal>,
-  accounts: Map<string, Account>
-) {
-  const votes: Map<string, CouncilVoteHistory> = new Map();
-  const votesToUpdate: Map<string, CouncilVoteHistory> = new Map();
-  const [accountsQuery, proposalsQuery, votesQuery] =
-    await getAccountsAndProposalsAndVotes(ctx, voteEvents, proposals, accounts);
-  accountsQuery.forEach((_accountQuery: Account) =>
-    accounts.set(_accountQuery.id, _accountQuery)
-  );
-  const proposalsMap = new Map(
-    proposalsQuery.map((_proposalQuery) => [_proposalQuery.id, _proposalQuery])
-  );
-  const votesMap = new Map(
-    votesQuery.map((_voteQuery) => [_voteQuery.id, _voteQuery])
-  );
+import type { Ctx } from "../processor";
+import type { EventInfo } from "../types";
 
-  for (const { event, timestamp, blockHash, blockNum } of voteEvents) {
-    const { account, proposalIndex, voted, yes, no, daoId } = event.asV100;
-    const accountAddress = decodeAddress(account);
-    const proposalId = `${daoId}-${proposalIndex}`;
-    const proposal = proposals.get(proposalId) ?? proposalsMap.get(proposalId);
-    if (!proposal) {
-      throw new Error(`Proposal with id: ${proposalId} not found`);
-    }
-    const id = `${daoId}-${proposalIndex}-${accountAddress}`;
+export class VoteHandler {
+  ctx: Ctx;
+  voteEvents: EventInfo<DaoCouncilVotedEvent>[];
 
-    const existingVote = votesMap.get(id);
+  constructor(ctx: Ctx, voteEvents: EventInfo<DaoCouncilVotedEvent>[]) {
+    this.ctx = ctx;
+    this.voteEvents = voteEvents;
+  }
 
-    if (existingVote) {
-      votesToUpdate.set(
-        id,
-        new CouncilVoteHistory({ ...existingVote, approvedVote: voted })
+  async handle(
+    councilProposalsToInsert: Map<string, CouncilProposal>,
+    accounts: Map<string, Account>
+  ) {
+    const councilVotesToInsert: Map<string, CouncilVoteHistory> = new Map();
+    const councilVotesToUpdate: Map<string, CouncilVoteHistory> = new Map();
+    const [accountsQuery, councilProposalsQuery, votesQuery] =
+      await this.getAccountsAndProposalsAndVotes(
+        councilProposalsToInsert,
+        accounts
       );
-    } else {
-      votes.set(
-        id,
-        new CouncilVoteHistory({
+    accountsQuery.forEach((_accountQuery: Account) =>
+      accounts.set(_accountQuery.id, _accountQuery)
+    );
+    const councilProposalsMap = new Map(
+      councilProposalsQuery.map((_proposalQuery) => [
+        _proposalQuery.id,
+        _proposalQuery,
+      ])
+    );
+    const votesMap = new Map(
+      votesQuery.map((_voteQuery) => [_voteQuery.id, _voteQuery])
+    );
+
+    for (const { event, timestamp, blockHash, blockNum } of this.voteEvents) {
+      const { account, proposalIndex, voted, yes, no, daoId } = event.asV100;
+      const accountAddress = decodeAddress(account);
+      const proposalId = `${daoId}-${proposalIndex}`;
+      const proposal =
+        councilProposalsToInsert.get(proposalId) ??
+        councilProposalsMap.get(proposalId);
+      if (!proposal) {
+        throw new Error(`Proposal with id: ${proposalId} not found`);
+      }
+      const id = `${daoId}-${proposalIndex}-${accountAddress}`;
+
+      const existingVote = votesMap.get(id);
+
+      if (existingVote) {
+        councilVotesToUpdate.set(
           id,
-          votedNo: no,
-          votedYes: yes,
-          approvedVote: voted,
-          councillor: getAccount(accounts, accountAddress),
-          proposal,
-          blockHash,
-          blockNum,
-          createdAt: new Date(timestamp),
-        })
-      );
+          new CouncilVoteHistory({ ...existingVote, approvedVote: voted })
+        );
+      } else {
+        councilVotesToInsert.set(
+          id,
+          new CouncilVoteHistory({
+            id,
+            votedNo: no,
+            votedYes: yes,
+            approvedVote: voted,
+            councillor: getAccount(accounts, accountAddress),
+            proposal,
+            blockHash,
+            blockNum,
+            createdAt: new Date(timestamp),
+          })
+        );
+      }
     }
+    return { councilVotesToInsert, councilVotesToUpdate };
   }
-  return { votes, votesToUpdate };
-}
 
-async function getAccountsAndProposalsAndVotes(
-  ctx: Ctx,
-  voteEvents: EventInfo<DaoCouncilVotedEvent>[],
-  proposals: Map<string, CouncilProposal>,
-  accounts: Map<string, Account>
-) {
-  const accountIds = new Set<string>();
-  const proposalIds = new Set<string>();
-  const voteIds = new Set<string>();
+  private async getAccountsAndProposalsAndVotes(
+    councilProposalsToInsert: Map<string, CouncilProposal>,
+    accounts: Map<string, Account>
+  ) {
+    const accountIds = new Set<string>();
+    const proposalIds = new Set<string>();
+    const voteIds = new Set<string>();
 
-  for (const { event } of voteEvents) {
-    if (!event.isV100) {
-      throw new Error("Unsupported vote spec");
+    for (const { event } of this.voteEvents) {
+      if (!event.isV100) {
+        throw new Error("Unsupported vote spec");
+      }
+
+      const { daoId, account, proposalIndex } = event.asV100;
+      const accountAddress = decodeAddress(account);
+      const proposalId = `${daoId}-${proposalIndex}`;
+      const voteId = `${daoId}-${proposalIndex}-${accountAddress}`;
+
+      if (!accounts.get(accountAddress)) {
+        accountIds.add(accountAddress);
+      }
+      if (!councilProposalsToInsert.get(proposalId)) {
+        proposalIds.add(proposalId);
+      }
+      voteIds.add(voteId);
     }
-
-    const { daoId, account, proposalIndex } = event.asV100;
-    const accountAddress = decodeAddress(account);
-    const proposalId = `${daoId}-${proposalIndex}`;
-    const voteId = `${daoId}-${proposalIndex}-${accountAddress}`;
-
-    if (!accounts.get(accountAddress)) {
-      accountIds.add(accountAddress);
-    }
-    if (!proposals.get(proposalId)) {
-      proposalIds.add(proposalId);
-    }
-    voteIds.add(voteId);
+    return Promise.all([
+      this.ctx.store.findBy(Account, { id: In([...accountIds]) }),
+      this.ctx.store.findBy(CouncilProposal, { id: In([...proposalIds]) }),
+      this.ctx.store.findBy(CouncilVoteHistory, { id: In([...voteIds]) }),
+    ]);
   }
-  return Promise.all([
-    ctx.store.findBy(Account, { id: In([...accountIds]) }),
-    ctx.store.findBy(CouncilProposal, { id: In([...proposalIds]) }),
-    ctx.store.findBy(CouncilVoteHistory, { id: In([...voteIds]) }),
-  ]);
 }
