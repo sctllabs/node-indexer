@@ -129,7 +129,6 @@ async function handleEvents(
 }
 
 async function saveData(ctx: Ctx, dataBatch: DataBatch) {
-  console.log("fata", dataBatch.democracyProposalsToInsert);
   await ctx.store.save([...dataBatch.accounts.values()]);
   await ctx.store.insert([...dataBatch.fungibleTokens.values()]);
   await ctx.store.insert([...dataBatch.policiesToInsert.values()]);

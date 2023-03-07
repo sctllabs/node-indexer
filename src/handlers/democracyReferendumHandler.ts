@@ -11,6 +11,7 @@ import {
   DemocracyReferendumStatus,
   DemocracyReferendumVoteThreshold,
 } from "../model";
+import { mapArrayById } from "../utils/mapArrayById";
 
 import type { Ctx } from "../processor";
 import type { EventInfo } from "../types";
