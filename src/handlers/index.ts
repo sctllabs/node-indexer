@@ -6,3 +6,5 @@ export * from "./democracyProposalHandler";
 export * from "./voteHandler";
 export * from "./democracySecondHandler";
 export * from "./eventHandler";
+export * from "./democracyProposalStatusHandler";
+export * from "./democracyReferendumHandler";

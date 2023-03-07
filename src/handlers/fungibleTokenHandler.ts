@@ -17,7 +17,7 @@ export class FungibleTokenHandler {
   }
 
   async handle() {
-    const fungibleTokens: Map<string, FungibleToken> = new Map();
+    const fungibleTokens = new Map<string, FungibleToken>();
     for (const { event, timestamp, blockHash, blockNum } of this
       .createTokenEvents) {
       if (!event.isV100) {

@@ -23,6 +23,7 @@ import {
   CouncilVoteHistory,
   Dao,
   DemocracyProposal,
+  DemocracyReferendum,
   DemocracySecond,
   FungibleToken,
   Policy,
@@ -66,6 +67,9 @@ export type DataBatch = {
   councilVotesToInsert: Map<string, CouncilVoteHistory>;
   councilVotesToUpdate: Map<string, CouncilVoteHistory>;
   democracyProposalsToInsert: Map<string, DemocracyProposal>;
+  democracyProposalsToUpdate: Map<string, DemocracyProposal>;
   democracySecondsToInsert: Map<string, DemocracySecond>;
   democracySecondsToUpdate: Map<string, DemocracySecond>;
+  democracyReferendumsToInsert: Map<string, DemocracyReferendum>;
+  democracyReferendumsToUpdate: Map<string, DemocracyReferendum>;
 };

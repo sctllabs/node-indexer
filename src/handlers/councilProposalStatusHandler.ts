@@ -34,7 +34,7 @@ export class CouncilProposalStatusHandler {
     daosToInsert: Map<string, Dao>,
     accounts: Map<string, Account>
   ) {
-    const councilProposalsToUpdate: Map<string, CouncilProposal> = new Map();
+    const councilProposalsToUpdate = new Map<string, CouncilProposal>();
 
     const proposalsQuery = await this.getProposals(councilProposalsToInsert);
     const proposalsQueryMap = new Map(
@@ -81,7 +81,7 @@ export class CouncilProposalStatusHandler {
     daosQueryMap: Map<string, Dao>,
     councilProposalsToUpdate: Map<string, CouncilProposal>
   ) {
-    const daosToUpdate: Map<string, Dao> = new Map();
+    const daosToUpdate = new Map<string, Dao>();
     this.councilProposalEvents.executedCouncilProposalEvents.forEach(
       (_executedEvent) => {
         const { daoId, proposalIndex } = _executedEvent.event.asV100;

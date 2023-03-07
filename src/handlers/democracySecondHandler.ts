@@ -22,8 +22,8 @@ export class DemocracySecondHandler {
     democracyProposalsToInsert: Map<string, DemocracyProposal>,
     accounts: Map<string, Account>
   ) {
-    const democracySecondsToInsert: Map<string, DemocracySecond> = new Map();
-    const democracySecondsToUpdate: Map<string, DemocracySecond> = new Map();
+    const democracySecondsToInsert = new Map<string, DemocracySecond>();
+    const democracySecondsToUpdate = new Map<string, DemocracySecond>();
 
     const [accountsQuery, democracyProposalsQuery, democracySecondsQuery] =
       await this.getAccountsAndProposalsAndSeconds(

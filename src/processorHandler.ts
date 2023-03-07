@@ -8,6 +8,8 @@ import {
   VoteHandler,
   CouncilProposalStatusHandler,
   DemocracyProposalHandler,
+  DemocracyProposalStatusHandler,
+  DemocracyReferendumHandler,
 } from "./handlers";
 
 import { Account } from "./model";
@@ -33,14 +35,13 @@ async function handleEvents(
     closedCouncilProposalEvents,
     democracyProposalEvents,
     democracySecondEvents,
-  }: // democracyVotedEvents,
-  // democracyUndelegatedEvents,
-  // democracyStartedEvents,
-  // democracyNotPassedEvents,
-  // democracyDelegatedEvents,
-  // democracyCancelledEvents,
-  // democracyPassedEvents,
-  EventsInfo
+    democracyStartedEvents,
+    democracyPassedEvents,
+    democracyNotPassedEvents,
+    democracyCancelledEvents,
+    democracyDelegatedEvents,
+    democracyUndelegatedEvents,
+  }: EventsInfo
 ): Promise<DataBatch> {
   const accounts: Map<string, Account> = new Map();
   const fungibleTokenHandler = new FungibleTokenHandler(ctx, tokenEvents);
@@ -64,6 +65,16 @@ async function handleEvents(
     ctx,
     democracySecondEvents
   );
+  const democracyProposalStatusHandler = new DemocracyProposalStatusHandler(
+    ctx,
+    democracyStartedEvents
+  );
+  const democracyReferendumHandler = new DemocracyReferendumHandler(ctx, {
+    democracyStartedEvents,
+    democracyPassedEvents,
+    democracyNotPassedEvents,
+    democracyCancelledEvents,
+  });
 
   const fungibleTokens = await fungibleTokenHandler.handle();
   const { daosToInsert, policiesToInsert } = await daoHandler.handle(
@@ -86,9 +97,17 @@ async function handleEvents(
     daosToInsert,
     accounts
   );
+  const democracyProposalsToUpdate =
+    await democracyProposalStatusHandler.handle(democracyProposalsToInsert);
 
   const { democracySecondsToInsert, democracySecondsToUpdate } =
     await democracySecondsHandler.handle(democracyProposalsToInsert, accounts);
+
+  const { democracyReferendumsToInsert, democracyReferendumsToUpdate } =
+    await democracyReferendumHandler.handle(
+      democracyProposalsToInsert,
+      democracyProposalsToUpdate
+    );
 
   return {
     accounts,
@@ -98,11 +117,14 @@ async function handleEvents(
     fungibleTokens,
     councilProposalsToInsert,
     democracyProposalsToInsert,
+    democracyProposalsToUpdate,
     councilProposalsToUpdate,
     councilVotesToInsert,
     councilVotesToUpdate,
     democracySecondsToInsert,
     democracySecondsToUpdate,
+    democracyReferendumsToInsert,
+    democracyReferendumsToUpdate,
   };
 }
 
@@ -116,8 +138,11 @@ async function saveData(ctx: Ctx, dataBatch: DataBatch) {
   await ctx.store.insert([...dataBatch.councilVotesToInsert.values()]);
   await ctx.store.insert([...dataBatch.democracyProposalsToInsert.values()]);
   await ctx.store.insert([...dataBatch.democracySecondsToInsert.values()]);
+  await ctx.store.insert([...dataBatch.democracyReferendumsToInsert.values()]);
   await ctx.store.save([...dataBatch.councilProposalsToUpdate.values()]);
+  await ctx.store.save([...dataBatch.democracyProposalsToUpdate.values()]);
   await ctx.store.save([...dataBatch.democracySecondsToUpdate.values()]);
   await ctx.store.save([...dataBatch.daosToUpdate.values()]);
   await ctx.store.save([...dataBatch.councilVotesToUpdate.values()]);
+  await ctx.store.save([...dataBatch.democracyReferendumsToUpdate.values()]);
 }

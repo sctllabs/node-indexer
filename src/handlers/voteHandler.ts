@@ -19,8 +19,8 @@ export class VoteHandler {
     councilProposalsToInsert: Map<string, CouncilProposal>,
     accounts: Map<string, Account>
   ) {
-    const councilVotesToInsert: Map<string, CouncilVoteHistory> = new Map();
-    const councilVotesToUpdate: Map<string, CouncilVoteHistory> = new Map();
+    const councilVotesToInsert = new Map<string, CouncilVoteHistory>();
+    const councilVotesToUpdate = new Map<string, CouncilVoteHistory>();
     const [accountsQuery, councilProposalsQuery, votesQuery] =
       await this.getAccountsAndProposalsAndVotes(
         councilProposalsToInsert,

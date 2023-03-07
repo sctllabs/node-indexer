@@ -35,8 +35,8 @@ export class DaoHandler {
     fungibleTokensToInsert: Map<string, FungibleToken>,
     accounts: Map<string, Account>
   ) {
-    const daosToInsert: Map<string, Dao> = new Map();
-    const policiesToInsert: Map<string, Policy> = new Map();
+    const daosToInsert = new Map<string, Dao>();
+    const policiesToInsert = new Map<string, Policy>();
 
     const [accountsQuery, fungibleTokensQuery] =
       await this.getAccountsAndFungibleTokens(fungibleTokensToInsert, accounts);

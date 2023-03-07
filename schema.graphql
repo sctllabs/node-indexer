@@ -148,10 +148,7 @@ union DemocracyProposalKind = AddMember | RemoveMember | Spend | TransferToken
 
 enum DemocracyProposalStatus {
   Open
-  Started
-  Passed
-  NotPassed
-  Cancelled
+  Referendum
 }
 
 type DemocracyProposal @entity {
@@ -177,20 +174,23 @@ type DemocracySecond @entity {
 # end DemocracyProposal
 
 # start DemocracyReferendum
-type DemocracyReferendum {
-  id: ID!
-  voteThreshold: Int!
+enum DemocracyReferendumStatus {
+  Started
+  Passed
+  NotPassed
+  Cancelled
 }
 
-type DemocracyVoteHistory @entity {
-  id: ID!
-  proposal: DemocracyReferendum
-  approvedVote: Boolean!
-  voter: Account
-  votedYes: Int
-  votedNo: Int
-  createdAt: DateTime!
-  blockHash: String!
-  blockNum: Int!
+enum DemocracyReferendumVoteThreshold {
+  SuperMajorityApprove
+  SuperMajorityAgainst
+  SimpleMajority
 }
-#end DemocracyReferendum
+
+type DemocracyReferendum @entity {
+  id: ID!
+  voteThreshold: DemocracyReferendumVoteThreshold!
+  democracyProposal: DemocracyProposal!
+  status: DemocracyReferendumStatus!
+}
+# end DemocracyReferendum
