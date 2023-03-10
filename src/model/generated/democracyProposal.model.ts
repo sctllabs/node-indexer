@@ -43,6 +43,6 @@ export class DemocracyProposal {
     @Column_("int4", {nullable: false})
     blockNum!: number
 
-    @Column_("varchar", {length: 9, nullable: false})
+    @Column_("varchar", {length: 10, nullable: false})
     status!: DemocracyProposalStatus
 }

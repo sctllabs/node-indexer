@@ -18,7 +18,7 @@ export class CouncilProposalHandler {
   }
 
   async handle(daosToInsert: Map<string, Dao>, accounts: Map<string, Account>) {
-    const councilProposalsToInsert: Map<string, CouncilProposal> = new Map();
+    const councilProposalsToInsert = new Map<string, CouncilProposal>();
     const [accountsQuery, daosQuery] = await this.getAccountsAndDaos(
       daosToInsert,
       accounts

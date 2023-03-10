@@ -25,7 +25,7 @@ export class DemocracyProposalHandler {
   }
 
   async handle(daosToInsert: Map<string, Dao>, accounts: Map<string, Account>) {
-    const democracyProposals: Map<string, DemocracyProposal> = new Map();
+    const democracyProposals = new Map<string, DemocracyProposal>();
     const [accountsQuery, daosQuery] = await this.getAccountsAndDaos(
       daosToInsert,
       accounts
