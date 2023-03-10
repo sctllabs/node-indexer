@@ -12,15 +12,15 @@ type Dao @entity {
   id: ID!
   account: Account!
   founder: Account!
-  council: [String]!
-  technicalCommittee: [String]!
+  council: [String!]!
+  technicalCommittee: [String!]!
   name: String!
   purpose: String!
   metadata: String!
   fungibleToken: FungibleToken
   ethTokenAddress: String
   policy: Policy!
-  proposals: [CouncilProposal] @derivedFrom(field: "dao")
+  proposals: [CouncilProposal]! @derivedFrom(field: "dao")
   createdAt: DateTime!
   blockHash: String!
   blockNum: Int!
@@ -194,3 +194,26 @@ type DemocracyReferendum @entity {
   status: DemocracyReferendumStatus!
 }
 # end DemocracyReferendum
+
+# start DemocracyDelegation
+enum Conviction {
+  Locked1x
+  Locked2x
+  Locked3x
+  Locked4x
+  Locked5x
+  Locked6x
+}
+
+type DemocracyDelegationItem {
+  account: String!
+  lockedBalance: BigInt!
+  conviction: Conviction
+}
+
+type DemocracyDelegation @entity {
+  id: ID!
+  account: Account!
+  delegations: [DemocracyDelegationItem!]!
+}
+# end DemocracyDelegation

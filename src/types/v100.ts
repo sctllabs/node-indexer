@@ -938,12 +938,12 @@ export interface SchedulerCall_schedule_named_after {
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  */
-export type DaoCall = DaoCall_create_dao | DaoCall_approve_dao
+export type DaoCall = DaoCall_create_dao | DaoCall_approve_dao | DaoCall_update_dao_metadata | DaoCall_update_dao_policy | DaoCall_mint_dao_token
 
 export interface DaoCall_create_dao {
     __kind: 'create_dao'
-    council: MultiAddress[]
-    technicalCommittee: MultiAddress[]
+    council: Uint8Array[]
+    technicalCommittee: Uint8Array[]
     data: Uint8Array
 }
 
@@ -951,6 +951,24 @@ export interface DaoCall_approve_dao {
     __kind: 'approve_dao'
     daoHash: Uint8Array
     approve: boolean
+}
+
+export interface DaoCall_update_dao_metadata {
+    __kind: 'update_dao_metadata'
+    daoId: number
+    metadata: Uint8Array
+}
+
+export interface DaoCall_update_dao_policy {
+    __kind: 'update_dao_policy'
+    daoId: number
+    policy: Uint8Array
+}
+
+export interface DaoCall_mint_dao_token {
+    __kind: 'mint_dao_token'
+    daoId: number
+    amount: bigint
 }
 
 /**
@@ -1206,7 +1224,7 @@ export type BabeCall = BabeCall_report_equivocation | BabeCall_report_equivocati
  */
 export interface BabeCall_report_equivocation {
     __kind: 'report_equivocation'
-    equivocationProof: Type_137
+    equivocationProof: Type_136
     keyOwnerProof: MembershipProof
 }
 
@@ -1222,7 +1240,7 @@ export interface BabeCall_report_equivocation {
  */
 export interface BabeCall_report_equivocation_unsigned {
     __kind: 'report_equivocation_unsigned'
-    equivocationProof: Type_137
+    equivocationProof: Type_136
     keyOwnerProof: MembershipProof
 }
 
@@ -7526,7 +7544,7 @@ export interface SessionKeys {
     authorityDiscovery: Uint8Array
 }
 
-export interface Type_137 {
+export interface Type_136 {
     offender: Uint8Array
     slot: bigint
     firstHeader: Header
