@@ -13,7 +13,7 @@ import {
   DemocracyDelegationHandler,
 } from "./handlers";
 
-import { Account } from "./model";
+import { Account, DemocracyDelegation } from "./model";
 import { DataBatch, EventsInfo } from "./types";
 
 export async function processEvents(ctx: Ctx): Promise<void> {
@@ -115,7 +115,7 @@ async function handleEvents(
       democracyProposalsToUpdate
     );
 
-  const { democracyDelegationsToInsert, democracyDelegationsToUpdate } =
+  const { democracyDelegationsToInsert, democracyDelegationsToRemove } =
     await democracyDelegationHandler.handle(accounts);
 
   return {
@@ -135,7 +135,7 @@ async function handleEvents(
     democracyReferendumsToInsert,
     democracyReferendumsToUpdate,
     democracyDelegationsToInsert,
-    democracyDelegationsToUpdate,
+    democracyDelegationsToRemove,
   };
 }
 
@@ -156,5 +156,10 @@ async function saveData(ctx: Ctx, dataBatch: DataBatch) {
   await ctx.store.save([...dataBatch.daosToUpdate.values()]);
   await ctx.store.save([...dataBatch.councilVotesToUpdate.values()]);
   await ctx.store.save([...dataBatch.democracyReferendumsToUpdate.values()]);
-  await ctx.store.save([...dataBatch.democracyDelegationsToUpdate.values()]);
+  if (dataBatch.democracyDelegationsToRemove.length > 0) {
+    await ctx.store.remove(
+      DemocracyDelegation,
+      dataBatch.democracyDelegationsToRemove
+    );
+  }
 }

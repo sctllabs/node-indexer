@@ -205,15 +205,12 @@ enum Conviction {
   Locked6x
 }
 
-type DemocracyDelegationItem {
-  account: String!
-  lockedBalance: BigInt!
-  conviction: Conviction
-}
-
 type DemocracyDelegation @entity {
   id: ID!
+  queryId: String! @index
   account: Account!
-  delegations: [DemocracyDelegationItem!]!
+  target: Account!
+  lockedBalance: BigInt!
+  conviction: Conviction
 }
 # end DemocracyDelegation
