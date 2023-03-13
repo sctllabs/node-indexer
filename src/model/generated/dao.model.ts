@@ -22,10 +22,10 @@ export class Dao {
     founder!: Account
 
     @Column_("text", {array: true, nullable: false})
-    council!: (string | undefined | null)[]
+    council!: (string)[]
 
     @Column_("text", {array: true, nullable: false})
-    technicalCommittee!: (string | undefined | null)[]
+    technicalCommittee!: (string)[]
 
     @Column_("text", {nullable: false})
     name!: string

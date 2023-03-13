@@ -10,9 +10,10 @@ import {
   DemocracyProposalHandler,
   DemocracyProposalStatusHandler,
   DemocracyReferendumHandler,
+  DemocracyDelegationHandler,
 } from "./handlers";
 
-import { Account } from "./model";
+import { Account, DemocracyDelegation } from "./model";
 import { DataBatch, EventsInfo } from "./types";
 
 export async function processEvents(ctx: Ctx): Promise<void> {
@@ -75,6 +76,11 @@ async function handleEvents(
     democracyNotPassedEvents,
     democracyCancelledEvents,
   });
+  const democracyDelegationHandler = new DemocracyDelegationHandler(
+    ctx,
+    democracyDelegatedEvents,
+    democracyUndelegatedEvents
+  );
 
   const fungibleTokens = await fungibleTokenHandler.handle();
   const { daosToInsert, policiesToInsert } = await daoHandler.handle(
@@ -109,6 +115,9 @@ async function handleEvents(
       democracyProposalsToUpdate
     );
 
+  const { democracyDelegationsToInsert, democracyDelegationsToRemove } =
+    await democracyDelegationHandler.handle(accounts);
+
   return {
     accounts,
     daosToInsert,
@@ -125,6 +134,8 @@ async function handleEvents(
     democracySecondsToUpdate,
     democracyReferendumsToInsert,
     democracyReferendumsToUpdate,
+    democracyDelegationsToInsert,
+    democracyDelegationsToRemove,
   };
 }
 
@@ -138,10 +149,17 @@ async function saveData(ctx: Ctx, dataBatch: DataBatch) {
   await ctx.store.insert([...dataBatch.democracyProposalsToInsert.values()]);
   await ctx.store.insert([...dataBatch.democracySecondsToInsert.values()]);
   await ctx.store.insert([...dataBatch.democracyReferendumsToInsert.values()]);
+  await ctx.store.insert([...dataBatch.democracyDelegationsToInsert.values()]);
   await ctx.store.save([...dataBatch.councilProposalsToUpdate.values()]);
   await ctx.store.save([...dataBatch.democracyProposalsToUpdate.values()]);
   await ctx.store.save([...dataBatch.democracySecondsToUpdate.values()]);
   await ctx.store.save([...dataBatch.daosToUpdate.values()]);
   await ctx.store.save([...dataBatch.councilVotesToUpdate.values()]);
   await ctx.store.save([...dataBatch.democracyReferendumsToUpdate.values()]);
+  if (dataBatch.democracyDelegationsToRemove.length > 0) {
+    await ctx.store.remove(
+      DemocracyDelegation,
+      dataBatch.democracyDelegationsToRemove
+    );
+  }
 }
