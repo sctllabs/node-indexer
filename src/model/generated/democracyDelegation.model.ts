@@ -27,6 +27,6 @@ export class DemocracyDelegation {
     @Column_("numeric", {transformer: marshal.bigintTransformer, nullable: false})
     lockedBalance!: bigint
 
-    @Column_("varchar", {length: 8, nullable: true})
-    conviction!: Conviction | undefined | null
+    @Column_("varchar", {length: 8, nullable: false})
+    conviction!: Conviction
 }

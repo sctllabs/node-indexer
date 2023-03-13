@@ -35,7 +35,7 @@ export class DemocracyDelegationHandler {
     );
 
     for (const { event } of this.delegatedEvents) {
-      const { daoId, target, who } = event.asV100;
+      const { daoId, target, who, conviction, balance } = event.asV100;
 
       const targetAddress = decodeAddress(target);
       const whoAddress = decodeAddress(who);
@@ -49,8 +49,8 @@ export class DemocracyDelegationHandler {
           queryId,
           account: getAccount(accounts, whoAddress),
           target: getAccount(accounts, targetAddress),
-          lockedBalance: BigInt(100),
-          conviction: Conviction.Locked1x,
+          lockedBalance: balance,
+          conviction: Conviction[conviction.__kind],
         })
       );
     }

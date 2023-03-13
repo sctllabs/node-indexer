@@ -197,6 +197,7 @@ type DemocracyReferendum @entity {
 
 # start DemocracyDelegation
 enum Conviction {
+  None
   Locked1x
   Locked2x
   Locked3x
@@ -211,6 +212,6 @@ type DemocracyDelegation @entity {
   account: Account!
   target: Account!
   lockedBalance: BigInt!
-  conviction: Conviction
+  conviction: Conviction!
 }
 # end DemocracyDelegation
