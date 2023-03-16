@@ -63,7 +63,7 @@ export class CouncilProposalHandler {
         new CouncilProposal({
           id,
           hash,
-          index: proposalIndex.toString(),
+          index: proposalIndex,
           account: getAccount(accounts, decodeAddress(account)),
           meta: meta?.toString(),
           voteThreshold: threshold,

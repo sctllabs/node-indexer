@@ -14,8 +14,8 @@ export class CouncilProposal {
     @PrimaryColumn_()
     id!: string
 
-    @Column_("text", {nullable: false})
-    index!: string
+    @Column_("int4", {nullable: false})
+    index!: number
 
     @Column_("text", {nullable: false})
     hash!: string

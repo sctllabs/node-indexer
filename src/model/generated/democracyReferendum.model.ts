@@ -21,4 +21,7 @@ export class DemocracyReferendum {
 
     @Column_("varchar", {length: 9, nullable: false})
     status!: DemocracyReferendumStatus
+
+    @Column_("int4", {nullable: false})
+    index!: number
 }

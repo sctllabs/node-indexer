@@ -14,8 +14,8 @@ export class DemocracyProposal {
     @PrimaryColumn_()
     id!: string
 
-    @Column_("text", {nullable: false})
-    index!: string
+    @Column_("int4", {nullable: false})
+    index!: number
 
     @Index_()
     @ManyToOne_(() => Account, {nullable: true})

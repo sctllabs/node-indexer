@@ -3,7 +3,6 @@ import { AddMember, RemoveMember, Spend, TransferToken } from "../model";
 import { decodeAddress } from "./decodeAddress";
 
 export function getProposalKind(proposal: Call) {
-  console.log(proposal);
   switch (proposal.value.__kind) {
     case "add_member": {
       return new AddMember({

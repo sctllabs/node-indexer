@@ -38,12 +38,12 @@ enum GovernanceKind {
 
 type GovernanceV1 {
   kind: GovernanceKind!
-  enactmentPeriod: BigInt!
-  launchPeriod: BigInt!
-  votingPeriod: BigInt!
-  voteLockingPeriod: BigInt!
-  fastTrackVotingPeriod: BigInt!
-  cooloffPeriod: BigInt!
+  enactmentPeriod: Int!
+  launchPeriod: Int!
+  votingPeriod: Int!
+  voteLockingPeriod: Int!
+  fastTrackVotingPeriod: Int!
+  cooloffPeriod: Int!
   minimumDeposit: BigInt!
   externalOrigin: ApproveOriginType!
   externalMajorityOrigin: ApproveOriginType!
@@ -117,7 +117,7 @@ enum CouncilProposalStatus {
 
 type CouncilProposal @entity {
   id: ID!
-  index: String!
+  index: Int!
   hash: String!
   account: Account!
   dao: Dao!
@@ -153,7 +153,7 @@ enum DemocracyProposalStatus {
 
 type DemocracyProposal @entity {
   id: ID!
-  index: String!
+  index: Int!
   account: Account!
   dao: Dao!
   deposit: BigInt!
@@ -192,6 +192,7 @@ type DemocracyReferendum @entity {
   voteThreshold: DemocracyReferendumVoteThreshold!
   democracyProposal: DemocracyProposal!
   status: DemocracyReferendumStatus!
+  index: Int!
 }
 # end DemocracyReferendum
 
@@ -208,10 +209,7 @@ enum Conviction {
 
 type DemocracyDelegation @entity {
   id: ID!
-  queryId: String! @index
   account: Account!
   target: Account!
-  lockedBalance: BigInt!
-  conviction: Conviction!
 }
 # end DemocracyDelegation

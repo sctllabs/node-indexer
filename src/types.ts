@@ -73,6 +73,4 @@ export type DataBatch = {
   democracySecondsToUpdate: Map<string, DemocracySecond>;
   democracyReferendumsToInsert: Map<string, DemocracyReferendum>;
   democracyReferendumsToUpdate: Map<string, DemocracyReferendum>;
-  democracyDelegationsToInsert: Map<string, DemocracyDelegation>;
-  democracyDelegationsToRemove: string[];
 };
