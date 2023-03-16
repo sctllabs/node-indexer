@@ -1,5 +1,5 @@
 import { In } from "typeorm";
-import { Account, Dao, CouncilProposal, CouncilProposalStatus } from "../model";
+import { Dao, CouncilProposal, CouncilProposalStatus } from "../model";
 import {
   DaoCouncilApprovedEvent,
   DaoCouncilClosedEvent,
@@ -29,11 +29,7 @@ export class CouncilProposalStatusHandler {
     this.councilProposalEvents = councilProposalEvents;
   }
 
-  async handle(
-    councilProposalsToInsert: Map<string, CouncilProposal>,
-    daosToInsert: Map<string, Dao>,
-    accounts: Map<string, Account>
-  ) {
+  async handle(councilProposalsToInsert: Map<string, CouncilProposal>) {
     const councilProposalsToUpdate = new Map<string, CouncilProposal>();
 
     const proposalsQuery = await this.getProposals(councilProposalsToInsert);
@@ -54,69 +50,7 @@ export class CouncilProposalStatusHandler {
         )
     );
 
-    const daosQuery = await this.getDaos(
-      daosToInsert,
-      councilProposalsToInsert,
-      councilProposalsToUpdate
-    );
-
-    const daosQueryMap = new Map(
-      daosQuery.map((_daoQuery) => [_daoQuery.id, _daoQuery])
-    );
-    const daosToUpdate = this.updateDaos(
-      accounts,
-      councilProposalsToInsert,
-      daosToInsert,
-      daosQueryMap,
-      councilProposalsToUpdate
-    );
-
-    return { councilProposalsToUpdate, daosToUpdate };
-  }
-
-  private updateDaos(
-    accounts: Map<string, Account>,
-    councilProposalsToInsert: Map<string, CouncilProposal>,
-    daosToInsert: Map<string, Dao>,
-    daosQueryMap: Map<string, Dao>,
-    councilProposalsToUpdate: Map<string, CouncilProposal>
-  ) {
-    const daosToUpdate = new Map<string, Dao>();
-    this.councilProposalEvents.executedCouncilProposalEvents.forEach(
-      (_executedEvent) => {
-        const { daoId, proposalIndex } = _executedEvent.event.asV100;
-        const proposalId = `${daoId}-${proposalIndex}`;
-        const proposal =
-          councilProposalsToInsert.get(proposalId) ??
-          councilProposalsToUpdate.get(proposalId);
-
-        if (!proposal) {
-          throw new Error(`Proposal with id: ${proposalId} not found.`);
-        }
-
-        const dao =
-          daosToInsert.get(daoId.toString()) ??
-          daosQueryMap.get(daoId.toString());
-
-        if (!dao) {
-          throw new Error(`Dao with id: ${daoId} not found.`);
-        }
-
-        if (
-          proposal.kind.isTypeOf === "AddMember" ||
-          proposal.kind.isTypeOf === "RemoveMember"
-        ) {
-          const account = getAccount(accounts, proposal.kind.who);
-
-          dao.council =
-            proposal.kind.isTypeOf === "AddMember"
-              ? [...dao.council, account.id]
-              : dao.council.filter((_address) => _address !== account.id);
-          daosToUpdate.set(dao.id, dao);
-        }
-      }
-    );
-    return daosToUpdate;
+    return { councilProposalsToUpdate };
   }
 
   private getDaos(
