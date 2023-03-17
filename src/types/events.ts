@@ -232,6 +232,64 @@ export class DaoCouncilVotedEvent {
     }
 }
 
+export class DaoCouncilMembersMemberAddedEvent {
+    private readonly _chain: Chain
+    private readonly event: Event
+
+    constructor(ctx: EventContext)
+    constructor(ctx: ChainContext, event: Event)
+    constructor(ctx: EventContext, event?: Event) {
+        event = event || ctx.event
+        assert(event.name === 'DaoCouncilMembers.MemberAdded')
+        this._chain = ctx._chain
+        this.event = event
+    }
+
+    /**
+     * The given member was added; see the transaction for who.
+     */
+    get isV100(): boolean {
+        return this._chain.getEventHash('DaoCouncilMembers.MemberAdded') === 'afa6ba1a14465c0cacf97e93097d202040da51335eab28489474165e3254266a'
+    }
+
+    /**
+     * The given member was added; see the transaction for who.
+     */
+    get asV100(): {daoId: number, member: Uint8Array} {
+        assert(this.isV100)
+        return this._chain.decodeEvent(this.event)
+    }
+}
+
+export class DaoCouncilMembersMemberRemovedEvent {
+    private readonly _chain: Chain
+    private readonly event: Event
+
+    constructor(ctx: EventContext)
+    constructor(ctx: ChainContext, event: Event)
+    constructor(ctx: EventContext, event?: Event) {
+        event = event || ctx.event
+        assert(event.name === 'DaoCouncilMembers.MemberRemoved')
+        this._chain = ctx._chain
+        this.event = event
+    }
+
+    /**
+     * The given member was removed; see the transaction for who.
+     */
+    get isV100(): boolean {
+        return this._chain.getEventHash('DaoCouncilMembers.MemberRemoved') === 'afa6ba1a14465c0cacf97e93097d202040da51335eab28489474165e3254266a'
+    }
+
+    /**
+     * The given member was removed; see the transaction for who.
+     */
+    get asV100(): {daoId: number, member: Uint8Array} {
+        assert(this.isV100)
+        return this._chain.decodeEvent(this.event)
+    }
+}
+
 export class DaoDemocracyCancelledEvent {
     private readonly _chain: Chain
     private readonly event: Event

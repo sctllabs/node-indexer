@@ -10,6 +10,7 @@ import {
   DemocracyProposalHandler,
   DemocracyProposalStatusHandler,
   DemocracyReferendumHandler,
+  CouncilMembersEventHandler,
 } from "./handlers";
 
 import { Account } from "./model";
@@ -39,6 +40,8 @@ async function handleEvents(
     democracyPassedEvents,
     democracyNotPassedEvents,
     democracyCancelledEvents,
+    addedCouncilMembersEvents,
+    removedCouncilMembersEvents,
   }: EventsInfo
 ): Promise<DataBatch> {
   const accounts: Map<string, Account> = new Map();
@@ -54,6 +57,10 @@ async function handleEvents(
     disapprovedCouncilProposalEvents,
     closedCouncilProposalEvents,
     executedCouncilProposalEvents,
+  });
+  const councilMembersHandler = new CouncilMembersEventHandler(ctx, {
+    addedCouncilMembersEvents,
+    removedCouncilMembersEvents,
   });
   const democracyProposalHandler = new DemocracyProposalHandler(
     ctx,
@@ -85,12 +92,9 @@ async function handleEvents(
   );
   const { councilVotesToInsert, councilVotesToUpdate } =
     await voteHandler.handle(councilProposalsToInsert, accounts);
-  const { councilProposalsToUpdate, daosToUpdate } =
-    await councilProposalStatusHandler.handle(
-      councilProposalsToInsert,
-      daosToInsert,
-      accounts
-    );
+  const { councilProposalsToUpdate } =
+    await councilProposalStatusHandler.handle(councilProposalsToInsert);
+  const { daosToUpdate } = await councilMembersHandler.handle(daosToInsert);
   const democracyProposalsToInsert = await democracyProposalHandler.handle(
     daosToInsert,
     accounts

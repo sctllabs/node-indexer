@@ -10,6 +10,8 @@
     "DaoCouncil.Disapproved",
     "DaoCouncil.Executed",
     "DaoCouncil.Closed",
+    "DaoCouncilMembers.MemberAdded",
+    "DaoCouncilMembers.MemberRemoved",
     "DaoDemocracy.Proposed",
     "DaoDemocracy.Voted",
     "DaoDemocracy.Started",
