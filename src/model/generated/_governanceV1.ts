@@ -6,12 +6,12 @@ import {ApproveOriginType} from "./_approveOriginType"
 export class GovernanceV1 {
     public readonly isTypeOf = 'GovernanceV1'
     private _kind!: GovernanceKind
-    private _enactmentPeriod!: bigint
-    private _launchPeriod!: bigint
-    private _votingPeriod!: bigint
-    private _voteLockingPeriod!: bigint
-    private _fastTrackVotingPeriod!: bigint
-    private _cooloffPeriod!: bigint
+    private _enactmentPeriod!: number
+    private _launchPeriod!: number
+    private _votingPeriod!: number
+    private _voteLockingPeriod!: number
+    private _fastTrackVotingPeriod!: number
+    private _cooloffPeriod!: number
     private _minimumDeposit!: bigint
     private _externalOrigin!: ApproveOriginType
     private _externalMajorityOrigin!: ApproveOriginType
@@ -27,12 +27,12 @@ export class GovernanceV1 {
         Object.assign(this, props)
         if (json != null) {
             this._kind = marshal.enumFromJson(json.kind, GovernanceKind)
-            this._enactmentPeriod = marshal.bigint.fromJSON(json.enactmentPeriod)
-            this._launchPeriod = marshal.bigint.fromJSON(json.launchPeriod)
-            this._votingPeriod = marshal.bigint.fromJSON(json.votingPeriod)
-            this._voteLockingPeriod = marshal.bigint.fromJSON(json.voteLockingPeriod)
-            this._fastTrackVotingPeriod = marshal.bigint.fromJSON(json.fastTrackVotingPeriod)
-            this._cooloffPeriod = marshal.bigint.fromJSON(json.cooloffPeriod)
+            this._enactmentPeriod = marshal.int.fromJSON(json.enactmentPeriod)
+            this._launchPeriod = marshal.int.fromJSON(json.launchPeriod)
+            this._votingPeriod = marshal.int.fromJSON(json.votingPeriod)
+            this._voteLockingPeriod = marshal.int.fromJSON(json.voteLockingPeriod)
+            this._fastTrackVotingPeriod = marshal.int.fromJSON(json.fastTrackVotingPeriod)
+            this._cooloffPeriod = marshal.int.fromJSON(json.cooloffPeriod)
             this._minimumDeposit = marshal.bigint.fromJSON(json.minimumDeposit)
             this._externalOrigin = marshal.enumFromJson(json.externalOrigin, ApproveOriginType)
             this._externalMajorityOrigin = marshal.enumFromJson(json.externalMajorityOrigin, ApproveOriginType)
@@ -55,57 +55,57 @@ export class GovernanceV1 {
         this._kind = value
     }
 
-    get enactmentPeriod(): bigint {
+    get enactmentPeriod(): number {
         assert(this._enactmentPeriod != null, 'uninitialized access')
         return this._enactmentPeriod
     }
 
-    set enactmentPeriod(value: bigint) {
+    set enactmentPeriod(value: number) {
         this._enactmentPeriod = value
     }
 
-    get launchPeriod(): bigint {
+    get launchPeriod(): number {
         assert(this._launchPeriod != null, 'uninitialized access')
         return this._launchPeriod
     }
 
-    set launchPeriod(value: bigint) {
+    set launchPeriod(value: number) {
         this._launchPeriod = value
     }
 
-    get votingPeriod(): bigint {
+    get votingPeriod(): number {
         assert(this._votingPeriod != null, 'uninitialized access')
         return this._votingPeriod
     }
 
-    set votingPeriod(value: bigint) {
+    set votingPeriod(value: number) {
         this._votingPeriod = value
     }
 
-    get voteLockingPeriod(): bigint {
+    get voteLockingPeriod(): number {
         assert(this._voteLockingPeriod != null, 'uninitialized access')
         return this._voteLockingPeriod
     }
 
-    set voteLockingPeriod(value: bigint) {
+    set voteLockingPeriod(value: number) {
         this._voteLockingPeriod = value
     }
 
-    get fastTrackVotingPeriod(): bigint {
+    get fastTrackVotingPeriod(): number {
         assert(this._fastTrackVotingPeriod != null, 'uninitialized access')
         return this._fastTrackVotingPeriod
     }
 
-    set fastTrackVotingPeriod(value: bigint) {
+    set fastTrackVotingPeriod(value: number) {
         this._fastTrackVotingPeriod = value
     }
 
-    get cooloffPeriod(): bigint {
+    get cooloffPeriod(): number {
         assert(this._cooloffPeriod != null, 'uninitialized access')
         return this._cooloffPeriod
     }
 
-    set cooloffPeriod(value: bigint) {
+    set cooloffPeriod(value: number) {
         this._cooloffPeriod = value
     }
 
@@ -203,12 +203,12 @@ export class GovernanceV1 {
         return {
             isTypeOf: this.isTypeOf,
             kind: this.kind,
-            enactmentPeriod: marshal.bigint.toJSON(this.enactmentPeriod),
-            launchPeriod: marshal.bigint.toJSON(this.launchPeriod),
-            votingPeriod: marshal.bigint.toJSON(this.votingPeriod),
-            voteLockingPeriod: marshal.bigint.toJSON(this.voteLockingPeriod),
-            fastTrackVotingPeriod: marshal.bigint.toJSON(this.fastTrackVotingPeriod),
-            cooloffPeriod: marshal.bigint.toJSON(this.cooloffPeriod),
+            enactmentPeriod: this.enactmentPeriod,
+            launchPeriod: this.launchPeriod,
+            votingPeriod: this.votingPeriod,
+            voteLockingPeriod: this.voteLockingPeriod,
+            fastTrackVotingPeriod: this.fastTrackVotingPeriod,
+            cooloffPeriod: this.cooloffPeriod,
             minimumDeposit: marshal.bigint.toJSON(this.minimumDeposit),
             externalOrigin: this.externalOrigin,
             externalMajorityOrigin: this.externalMajorityOrigin,

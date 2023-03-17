@@ -8,3 +8,5 @@ export * from "./democracySecondHandler";
 export * from "./eventHandler";
 export * from "./democracyProposalStatusHandler";
 export * from "./democracyReferendumHandler";
+export * from "./democracyDelegationHandler";
+export * from "./councilMembersEventHandler";

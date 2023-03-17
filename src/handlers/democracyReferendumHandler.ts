@@ -216,6 +216,7 @@ export class DemocracyReferendumHandler {
           democracyProposal: democracyProposal,
           voteThreshold,
           status: DemocracyReferendumStatus.Started,
+          index: refIndex,
         })
       );
     }

@@ -4,6 +4,8 @@ import {
   DaoCouncilClosedEvent,
   DaoCouncilDisapprovedEvent,
   DaoCouncilExecutedEvent,
+  DaoCouncilMembersMemberAddedEvent,
+  DaoCouncilMembersMemberRemovedEvent,
   DaoCouncilProposedEvent,
   DaoCouncilVotedEvent,
   DaoDaoRegisteredEvent,
@@ -22,6 +24,7 @@ import {
   CouncilProposal,
   CouncilVoteHistory,
   Dao,
+  DemocracyDelegation,
   DemocracyProposal,
   DemocracyReferendum,
   DemocracySecond,
@@ -54,6 +57,8 @@ export type EventsInfo = {
   democracyDelegatedEvents: EventInfo<DaoDemocracyDelegatedEvent>[];
   democracyUndelegatedEvents: EventInfo<DaoDemocracyUndelegatedEvent>[];
   democracyVotedEvents: EventInfo<DaoDemocracyVotedEvent>[];
+  addedCouncilMembersEvents: EventInfo<DaoCouncilMembersMemberAddedEvent>[];
+  removedCouncilMembersEvents: EventInfo<DaoCouncilMembersMemberRemovedEvent>[];
 };
 
 export type DataBatch = {

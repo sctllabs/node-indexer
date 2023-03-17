@@ -60,7 +60,7 @@ export class DemocracyProposalHandler {
         id,
         new DemocracyProposal({
           id,
-          index: proposalIndex.toString(),
+          index: proposalIndex,
           account: getAccount(accounts, decodeAddress(account)),
           dao,
           deposit,

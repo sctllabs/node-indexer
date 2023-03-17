@@ -4,6 +4,8 @@ import {
   DaoCouncilClosedEvent,
   DaoCouncilDisapprovedEvent,
   DaoCouncilExecutedEvent,
+  DaoCouncilMembersMemberAddedEvent,
+  DaoCouncilMembersMemberRemovedEvent,
   DaoCouncilProposedEvent,
   DaoCouncilVotedEvent,
   DaoDaoRegisteredEvent,
@@ -41,6 +43,8 @@ export class EventHandler {
     executedCouncilProposalEvents: [],
     democracyProposalEvents: [],
     democracySecondEvents: [],
+    addedCouncilMembersEvents: [],
+    removedCouncilMembersEvents: [],
   };
 
   constructor(ctx: Ctx) {
@@ -123,6 +127,30 @@ export class EventHandler {
               case "DaoCouncil.Closed": {
                 this.events.closedCouncilProposalEvents.push({
                   event: new DaoCouncilClosedEvent(this.ctx, item.event),
+                  blockNum,
+                  blockHash,
+                  timestamp,
+                });
+                break;
+              }
+              case "DaoCouncilMembers.MemberAdded": {
+                this.events.addedCouncilMembersEvents.push({
+                  event: new DaoCouncilMembersMemberAddedEvent(
+                    this.ctx,
+                    item.event
+                  ),
+                  blockNum,
+                  blockHash,
+                  timestamp,
+                });
+                break;
+              }
+              case "DaoCouncilMembers.MemberRemoved": {
+                this.events.removedCouncilMembersEvents.push({
+                  event: new DaoCouncilMembersMemberRemovedEvent(
+                    this.ctx,
+                    item.event
+                  ),
                   blockNum,
                   blockHash,
                   timestamp,

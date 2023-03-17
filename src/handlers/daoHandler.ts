@@ -237,14 +237,12 @@ export class DaoHandler {
         const daoGovernanceValue = governance.value;
         return new GovernanceV1({
           kind: GovernanceKind.GovernanceV1,
-          enactmentPeriod: BigInt(daoGovernanceValue.enactmentPeriod),
-          launchPeriod: BigInt(daoGovernanceValue.launchPeriod),
-          votingPeriod: BigInt(daoGovernanceValue.votingPeriod),
-          voteLockingPeriod: BigInt(daoGovernanceValue.voteLockingPeriod),
-          fastTrackVotingPeriod: BigInt(
-            daoGovernanceValue.fastTrackVotingPeriod
-          ),
-          cooloffPeriod: BigInt(daoGovernanceValue.cooloffPeriod),
+          enactmentPeriod: daoGovernanceValue.enactmentPeriod,
+          launchPeriod: daoGovernanceValue.launchPeriod,
+          votingPeriod: daoGovernanceValue.votingPeriod,
+          voteLockingPeriod: daoGovernanceValue.voteLockingPeriod,
+          fastTrackVotingPeriod: daoGovernanceValue.fastTrackVotingPeriod,
+          cooloffPeriod: daoGovernanceValue.cooloffPeriod,
           minimumDeposit: daoGovernanceValue.minimumDeposit,
           externalOrigin:
             ApproveOriginType[daoGovernanceValue.externalOrigin.__kind],
