@@ -65,6 +65,8 @@ union Governance = GovernanceV1 | OwnershipWeightedVoting
 type Policy @entity {
   id: ID!
   proposalPeriod: Int!
+  bountyPayoutDelay: Int!
+  bountyUpdatePeriod: Int!
   approveOriginType: ApproveOriginType!
   approveOriginProportion: [Int!]!
   governance: Governance
