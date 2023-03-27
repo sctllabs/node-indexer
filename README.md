@@ -5,18 +5,24 @@ It accumulates [kusama](https://kusama.network) account transfers and serves the
 
 ## Summary
 
-- [Quickstart](#quickly-running-the-sample)
-- [Migrate to FireSquid](#migrate-to-firesquid)
-- [Public archives for Parachains](#public-archives-for-parachains)
-- [Self-hosted archive](#self-hosted-archive)
-- [Development flow](#dev-flow)
-  - [Database Schema](#1-define-database-schema)
-  - [Entity classes](#2-generate-typeorm-classes)
-  - [DB migrations](#3-generate-database-migration)
-  - [Typegen for Events, Extrinsics and Storage Calls](#4-generate-typescript-definitions-for-substrate-events-calls-and-storage)
-- [Deploy the Squid](#deploy-the-squid)
-- [Conventions](#project-conventions)
-- [Type Bundles](#types-bundle)
+- [Squid template project](#squid-template-project)
+  - [Summary](#summary)
+  - [Prerequisites](#prerequisites)
+  - [Quickly running the sample](#quickly-running-the-sample)
+  - [Migrate to FireSquid](#migrate-to-firesquid)
+  - [Public archives for Parachains](#public-archives-for-parachains)
+  - [Self-hosted archive](#self-hosted-archive)
+  - [Dev flow](#dev-flow)
+    - [1. Define database schema](#1-define-database-schema)
+    - [2. Generate TypeORM classes](#2-generate-typeorm-classes)
+    - [3. Generate database migration](#3-generate-database-migration)
+    - [4. Generate TypeScript definitions for substrate events, calls and storage](#4-generate-typescript-definitions-for-substrate-events-calls-and-storage)
+  - [Deploy the Squid](#deploy-the-squid)
+  - [Project conventions](#project-conventions)
+  - [Types bundle](#types-bundle)
+  - [Differences from polkadot.js](#differences-from-polkadotjs)
+  - [Graphql server extensions](#graphql-server-extensions)
+    - [Run in Docker](#run-in-docker)
 
 ## Prerequisites
 
@@ -336,3 +342,17 @@ For instance, account data is passed to the handler context as a plain byte arra
 It is possible to extend `squid-graphql-server(1)` with custom
 [type-graphql](https://typegraphql.com) resolvers and to add request validation.
 For more details, consult [Docs](https://docs.subsquid.io/reference/api-extensions)
+
+
+### Run in Docker
+
+First, install [Docker](https://docs.docker.com/get-docker/) and
+[Docker Compose](https://docs.docker.com/compose/install/).
+
+Then run the following command to start full application:
+
+```bash
+./scripts/docker-run.sh
+```
+
+You can use either the `latest` tag or specific one in the docker-compose-full configuration.
