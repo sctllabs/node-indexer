@@ -188,7 +188,7 @@ export class DaoCouncilProposedEvent {
      * `MemberCount`).
      */
     get isV100(): boolean {
-        return this._chain.getEventHash('DaoCouncil.Proposed') === '996c2d558f181bdefd2760d7fa223806623a584f72409a5d0f4c4caf4954f175'
+        return this._chain.getEventHash('DaoCouncil.Proposed') === '10c51852d0d3873355ef40f3597f9724d47fbf1dc9f38ec3f4a956e13a864df8'
     }
 
     /**
@@ -336,13 +336,13 @@ export class DaoDemocracyDelegatedEvent {
      * An account has delegated their vote to another account.
      */
     get isV100(): boolean {
-        return this._chain.getEventHash('DaoDemocracy.Delegated') === '2d07fe865fb3beb1a067d5c7f71bcf9f322e0bf98f549ddfb5f3e34cad097556'
+        return this._chain.getEventHash('DaoDemocracy.Delegated') === '7690151ebe52185c57d7c6d812c8a8529f3c7c424abcf457eb5e6445378b7206'
     }
 
     /**
      * An account has delegated their vote to another account.
      */
-    get asV100(): {daoId: number, who: Uint8Array, target: Uint8Array} {
+    get asV100(): {daoId: number, who: Uint8Array, target: Uint8Array, conviction: v100.Conviction, balance: bigint} {
         assert(this.isV100)
         return this._chain.decodeEvent(this.event)
     }
@@ -423,7 +423,7 @@ export class DaoDemocracyProposedEvent {
      * A motion has been proposed by a public account.
      */
     get isV100(): boolean {
-        return this._chain.getEventHash('DaoDemocracy.Proposed') === 'f590e26edf0d188b119559b1508a4d1a52cdc64c3369a4c9a26af39d513cf491'
+        return this._chain.getEventHash('DaoDemocracy.Proposed') === '6d1eca6b13fe15964804da74c2ead9ac59f95700d11b3e5753d657f613b4bd50'
     }
 
     /**
@@ -510,13 +510,13 @@ export class DaoDemocracyUndelegatedEvent {
      * An account has cancelled a previous delegation operation.
      */
     get isV100(): boolean {
-        return this._chain.getEventHash('DaoDemocracy.Undelegated') === '97042d6931b15da54dcaad082a787c9922bbdb55bdf63bab80a7750afddb9377'
+        return this._chain.getEventHash('DaoDemocracy.Undelegated') === '717ea835695d5be2c78ce1fc5dfd10ca96867fcfaf1b8cfcce8c70917f1b848b'
     }
 
     /**
      * An account has cancelled a previous delegation operation.
      */
-    get asV100(): {daoId: number, account: Uint8Array} {
+    get asV100(): {daoId: number, account: Uint8Array, votes: number} {
         assert(this.isV100)
         return this._chain.decodeEvent(this.event)
     }
@@ -545,7 +545,7 @@ export class DaoDemocracyVotedEvent {
     /**
      * An account has voted in a referendum
      */
-    get asV100(): {daoId: number, voter: Uint8Array, refIndex: number, vote: v100.AccountVote} {
+    get asV100(): {daoId: number, voter: Uint8Array, refIndex: number, vote: v100.Type_306} {
         assert(this.isV100)
         return this._chain.decodeEvent(this.event)
     }
