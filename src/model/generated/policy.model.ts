@@ -15,6 +15,12 @@ export class Policy {
     @Column_("int4", {nullable: false})
     proposalPeriod!: number
 
+    @Column_("int4", {nullable: false})
+    bountyPayoutDelay!: number
+
+    @Column_("int4", {nullable: false})
+    bountyUpdatePeriod!: number
+
     @Column_("varchar", {length: 8, nullable: false})
     approveOriginType!: ApproveOriginType
 

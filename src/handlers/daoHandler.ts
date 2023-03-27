@@ -209,6 +209,8 @@ export class DaoHandler {
     const policy = new Policy({
       id: daoId,
       proposalPeriod: daoPolicy.proposalPeriod,
+      bountyPayoutDelay: daoPolicy.bountyPayoutDelay,
+      bountyUpdatePeriod: daoPolicy.bountyUpdatePeriod,
       approveOriginProportion: daoPolicy.approveOrigin.value,
       approveOriginType: ApproveOriginType[daoPolicy.approveOrigin.__kind],
       governance,
