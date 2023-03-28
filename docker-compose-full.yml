@@ -1,0 +1,136 @@
+version: "3.2"
+
+services:
+  node:
+    container_name: societal-node
+    image: societal/societal-node:be877873b212ccadef3eb4df431d3013d96002cc
+    working_dir: /societal-node
+    ports:
+      - "9944:9944"
+      - "9933:9933"
+    environment:
+      - CARGO_HOME=/var/www/societal-node/.cargo
+    volumes:
+      - .:/var/www/societal-node
+      - type: bind
+        source: ./.local
+        target: /root/.local
+    command: /usr/local/bin/societal-node --dev --enable-offchain-indexing true --rpc-external --ws-external --rpc-cors=all --unsafe-ws-external --unsafe-rpc-external
+
+  archive-db:
+    container_name: indexer-archive-db
+    image: postgres:15  # CockroachDB cluster might be a better fit for production deployment
+    restart: always
+    volumes:
+      - /var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: squid-archive
+    ports:
+      - 5432:5432
+
+  ingest:
+    container_name: indexer-ingest
+    depends_on:
+      - archive-db
+      - node
+    restart: on-failure
+    image: subsquid/substrate-ingest:firesquid
+    command: [
+       "-e", "ws://host.docker.internal:9944",
+       "-c", "5", # allow up to 20 pending requests for the above endpoint (default is 5)
+       #  "--start-block", "1000000", # uncomment to specify a non-zero start block
+       "--out", "postgres://postgres:postgres@archive-db:5432/squid-archive"
+    ]
+
+  gateway:
+    container_name: indexer-gateway
+    depends_on:
+      - archive-db
+    image: subsquid/substrate-gateway:firesquid
+    environment:
+      RUST_LOG: "substrate_gateway=info,actix_server=info"
+    command: [
+       "--database-url", "postgres://postgres:postgres@archive-db:5432/squid-archive",
+       "--database-max-connections", "3", # max number of concurrent database connections
+       # "--evm-support" # uncomment for chains with Frontier EVM pallet
+                         # (e.g. Moonbeam/Moonriver or Astar/Shiden)
+    ]
+    ports:
+      - "8888:8000"
+
+  # Explorer service is optional.
+  # It provides rich GraphQL API for querying archived data.
+  # Many developers find it very useful for exploration and debugging.
+  explorer:
+    container_name: indexer-explorer
+    depends_on:
+      - archive-db
+    image: subsquid/substrate-explorer:firesquid
+    environment:
+      DB_TYPE: postgres # set to `cockroach` for Cockroach DB
+      DB_HOST: archive-db
+      DB_PORT: "5432"
+      DB_NAME: "squid-archive"
+      DB_USER: "postgres"
+      DB_PASS: "postgres"
+    ports:
+      - "4444:3000"
+
+  processor-db:
+    container_name: indexer-processor-db
+    image: postgres:15
+    environment:
+      POSTGRES_USER: squid
+      POSTGRES_DB: squid
+      POSTGRES_PASSWORD: squid
+    ports:
+      - "23798:5432"
+
+  processor:
+    container_name: indexer-processor
+    depends_on:
+      - processor-db
+      - node
+    image: societal/node-indexer:latest
+    environment:
+      APP_TYPE: processor
+      DB_NAME: squid
+      DB_USER: squid
+      DB_PASS: squid
+      DB_PORT: 23798
+      DB_HOST: host.docker.internal
+      ARCHIVE_URL: http://host.docker.internal:8888/graphql
+      WEBSOCKET_URL: ws://host.docker.internal:9944
+    ports:
+      - "4001:4000"
+  
+  processor-query-node:
+    container_name: indexer-processor-query-node
+    depends_on:
+      - processor-db
+    image: okalenyk/node-indexer:latest
+    environment:
+      APP_TYPE: query-node
+      DB_NAME: squid
+      DB_USER: squid
+      DB_PASS: squid
+      DB_PORT: 23798
+      DB_HOST: host.docker.internal
+    ports:
+      - "4350:4000"
+
+  client:
+    container_name: societal-client
+    depends_on:
+      - processor-query-node
+      - node
+    image: societal/societal-client:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_PROVIDER_SOCKET=ws://127.0.0.1:9944
+
+volumes:
+  societal-node-data:
