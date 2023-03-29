@@ -29,6 +29,12 @@ import {
   DaoDemocracyStartedEvent,
   DaoDemocracyUndelegatedEvent,
   DaoDemocracyVotedEvent,
+  DaoEthGovernanceProposedEvent,
+  DaoEthGovernanceVotedEvent,
+  DaoEthGovernanceApprovedEvent,
+  DaoEthGovernanceDisapprovedEvent,
+  DaoEthGovernanceExecutedEvent,
+  DaoEthGovernanceClosedEvent,
 } from "../types/events";
 import { DaoHandler } from "./daoHandler";
 import { FungibleTokenHandler } from "./fungibleTokenHandler";
@@ -44,6 +50,8 @@ import {
   DemocracyProposal,
   DemocracyReferendum,
   DemocracySecond,
+  EthGovernanceProposal,
+  EthGovernanceVoteHistory,
   FungibleToken,
 } from "../model";
 import { CouncilVoteHandler } from "./councilVoteHandler";
@@ -51,6 +59,8 @@ import { DemocracyProposalHandler } from "./democracyProposalHandler";
 import { DemocracyReferendumHandler } from "./democracyReferendumHandler";
 import { DemocracySecondHandler } from "./democracySecondHandler";
 import { BountyHandler } from "./bountyHandler";
+import { EthGovernanceProposalHandler } from "./ethGovernanceProposalHandler";
+import { EthGovernanceVoteHandler } from "./ethGovernanceVoteHandler";
 
 export class EventHandler {
   private readonly _ctx: Ctx;
@@ -65,6 +75,8 @@ export class EventHandler {
   private readonly _democracyReferendumHandler: DemocracyReferendumHandler;
   private readonly _democracySecondHandler: DemocracySecondHandler;
   private readonly _bountyHandler: BountyHandler;
+  private readonly _ethGovernanceProposalHandler: EthGovernanceProposalHandler;
+  private readonly _ethGovernanceVoteHandler: EthGovernanceVoteHandler;
 
   constructor(ctx: Ctx) {
     this._ctx = ctx;
@@ -79,6 +91,8 @@ export class EventHandler {
     this._democracyReferendumHandler = new DemocracyReferendumHandler(ctx);
     this._democracySecondHandler = new DemocracySecondHandler(ctx);
     this._bountyHandler = new BountyHandler(ctx);
+    this._ethGovernanceProposalHandler = new EthGovernanceProposalHandler(ctx);
+    this._ethGovernanceVoteHandler = new EthGovernanceVoteHandler(ctx);
   }
 
   async process() {
@@ -100,6 +114,8 @@ export class EventHandler {
     await this._democracyReferendumHandler.insert();
     await this._democracySecondHandler.insert();
     await this._bountyHandler.insert();
+    await this._ethGovernanceProposalHandler.insert();
+    await this._ethGovernanceVoteHandler.insert();
 
     await this._councilProposalHandler.save();
     await this._democracyProposalHandler.save();
@@ -108,6 +124,8 @@ export class EventHandler {
     await this._democracyReferendumHandler.save();
     await this._democracySecondHandler.save();
     await this._bountyHandler.save();
+    await this._ethGovernanceProposalHandler.save();
+    await this._ethGovernanceVoteHandler.save();
   }
 
   private mapData([
@@ -120,6 +138,8 @@ export class EventHandler {
     democracyReferendums,
     democracySeconds,
     bounties,
+    ethGovernanceProposals,
+    ethGovernanceVotes,
   ]: [
     Account[],
     FungibleToken[],
@@ -129,7 +149,9 @@ export class EventHandler {
     DemocracyProposal[],
     DemocracyReferendum[],
     DemocracySecond[],
-    Bounty[]
+    Bounty[],
+    EthGovernanceProposal[],
+    EthGovernanceVoteHistory[]
   ]) {
     this._accountHandler.arrayToMap(accounts);
     this._fungibleTokenHandler.arrayToMap(fungibleTokens);
@@ -140,6 +162,8 @@ export class EventHandler {
     this._democracyReferendumHandler.arrayToMap(democracyReferendums);
     this._democracySecondHandler.arrayToMap(democracySeconds);
     this._bountyHandler.arrayToMap(bounties);
+    this._ethGovernanceProposalHandler.arrayToMap(ethGovernanceProposals);
+    this._ethGovernanceVoteHandler.arrayToMap(ethGovernanceVotes);
   }
 
   private queryData() {
@@ -157,6 +181,8 @@ export class EventHandler {
       this._democracyReferendumHandler.query(),
       this._democracySecondHandler.query(),
       this._bountyHandler.query(),
+      this._ethGovernanceProposalHandler.query(),
+      this._ethGovernanceVoteHandler.query(),
     ]);
   }
 
@@ -235,6 +261,50 @@ export class EventHandler {
         this._accountHandler.accounts,
         this._councilProposalHandler.councilProposalsToInsert,
         this._councilProposalHandler.councilProposalsQueryMap
+      );
+      return;
+    }
+
+    if (event instanceof DaoEthGovernanceProposedEvent) {
+      this._ethGovernanceProposalHandler.processProposed(
+        {
+          event,
+          blockNum,
+          blockHash,
+          timestamp,
+        },
+        this._accountHandler.accounts,
+        this._daoHandler.daosToInsert,
+        this._daoHandler.daosQueryMap
+      );
+      return;
+    }
+    if (
+      event instanceof DaoEthGovernanceApprovedEvent ||
+      event instanceof DaoEthGovernanceDisapprovedEvent ||
+      event instanceof DaoEthGovernanceClosedEvent ||
+      event instanceof DaoEthGovernanceExecutedEvent
+    ) {
+      this._ethGovernanceProposalHandler.processStatus({
+        event,
+        blockNum,
+        blockHash,
+        timestamp,
+      });
+      return;
+    }
+
+    if (event instanceof DaoEthGovernanceVotedEvent) {
+      this._ethGovernanceVoteHandler.process(
+        {
+          event,
+          blockNum,
+          blockHash,
+          timestamp,
+        },
+        this._accountHandler.accounts,
+        this._ethGovernanceProposalHandler.ethGovernanceProposalsToInsert,
+        this._ethGovernanceProposalHandler.ethGovernanceProposalsQueryMap
       );
       return;
     }
@@ -399,6 +469,34 @@ export class EventHandler {
       );
       return;
     }
+    if (event instanceof DaoEthGovernanceProposedEvent) {
+      this._ethGovernanceProposalHandler.prepareProposedQuery(
+        event,
+        this._daoHandler.daoIds,
+        this._accountHandler.accountIds
+      );
+      return;
+    }
+    if (
+      event instanceof DaoEthGovernanceApprovedEvent ||
+      event instanceof DaoEthGovernanceDisapprovedEvent ||
+      event instanceof DaoEthGovernanceClosedEvent ||
+      event instanceof DaoEthGovernanceExecutedEvent
+    ) {
+      this._ethGovernanceProposalHandler.prepareStatusQuery(
+        event,
+        this._ethGovernanceProposalHandler.ethGovernanceProposalIds
+      );
+      return;
+    }
+    if (event instanceof DaoEthGovernanceVotedEvent) {
+      this._ethGovernanceVoteHandler.prepareQuery(
+        event,
+        this._accountHandler.accountIds,
+        this._ethGovernanceProposalHandler.ethGovernanceProposalIds
+      );
+      return;
+    }
     if (event instanceof DaoDemocracyProposedEvent) {
       this._democracyProposalHandler.prepareProposedQuery(
         event,
@@ -508,6 +606,24 @@ export class EventHandler {
       }
       case "DaoCouncil.Closed": {
         return new DaoCouncilClosedEvent(this._ctx, item.event);
+      }
+      case "DaoEthGovernance.Proposed": {
+        return new DaoEthGovernanceProposedEvent(this._ctx, item.event);
+      }
+      case "DaoEthGovernance.Voted": {
+        return new DaoEthGovernanceVotedEvent(this._ctx, item.event);
+      }
+      case "DaoEthGovernance.Approved": {
+        return new DaoEthGovernanceApprovedEvent(this._ctx, item.event);
+      }
+      case "DaoEthGovernance.Disapproved": {
+        return new DaoEthGovernanceDisapprovedEvent(this._ctx, item.event);
+      }
+      case "DaoEthGovernance.Executed": {
+        return new DaoEthGovernanceExecutedEvent(this._ctx, item.event);
+      }
+      case "DaoEthGovernance.Closed": {
+        return new DaoEthGovernanceClosedEvent(this._ctx, item.event);
       }
       case "DaoCouncilMembers.MemberAdded": {
         return new DaoCouncilMembersMemberAddedEvent(this._ctx, item.event);

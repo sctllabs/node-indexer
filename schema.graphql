@@ -273,3 +273,48 @@ type Bounty @entity {
 }
 
 # end Bounty
+
+# start EthGovernanceProposal
+union EthGovernanceProposalKind =
+    AddMember
+  | RemoveMember
+  | Spend
+  | TransferToken
+  | CreateBounty
+
+enum EthGovernanceProposalStatus {
+  Open
+  Approved
+  Disapproved
+  Executed
+  Closed
+}
+
+type EthGovernanceProposal @entity {
+  id: ID!
+  index: Int!
+  hash: String!
+  account: Account!
+  dao: Dao!
+  voteThreshold: BigInt!
+  kind: EthGovernanceProposalKind!
+  meta: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  blockHash: String!
+  blockNum: Int!
+  status: EthGovernanceProposalStatus!
+}
+
+type EthGovernanceVoteHistory @entity {
+  id: ID!
+  proposal: EthGovernanceProposal
+  approvedVote: Boolean!
+  account: Account
+  aye: Boolean
+  balance: BigInt
+  createdAt: DateTime!
+  blockHash: String!
+  blockNum: Int!
+}
+# end EthGovernanceProposal

@@ -425,7 +425,7 @@ export class DaoCouncilExecutedEvent {
     /**
      * A motion was executed; result will be `Ok` if it returned without error.
      */
-    get asV100(): {daoId: number, proposalIndex: number, proposalHash: Uint8Array, result: v100.Type_39} {
+    get asV100(): {daoId: number, proposalIndex: number, proposalHash: Uint8Array, result: v100.Type_41} {
         assert(this.isV100)
         return this._chain.decodeEvent(this.event)
     }
@@ -449,7 +449,7 @@ export class DaoCouncilProposedEvent {
      * `MemberCount`).
      */
     get isV100(): boolean {
-        return this._chain.getEventHash('DaoCouncil.Proposed') === 'e7e617a2b3ee323403f9d6741edc3b3cbe019eb9a4606ae323c65bea27e4d766'
+        return this._chain.getEventHash('DaoCouncil.Proposed') === 'c8d130ae3629ab8ffb31859c309107ef8f7089a1b4350b46c3a402c36f37dd87'
     }
 
     /**
@@ -684,7 +684,7 @@ export class DaoDemocracyProposedEvent {
      * A motion has been proposed by a public account.
      */
     get isV100(): boolean {
-        return this._chain.getEventHash('DaoDemocracy.Proposed') === 'ccc17c46a05a1d7def472e403399ca9ac1b7fea2b5fe24f845f6653d961207d5'
+        return this._chain.getEventHash('DaoDemocracy.Proposed') === '6f238880ffb55accfe21cbb47720f4efaf88ca53543b627cbc13fd714aa79aa5'
     }
 
     /**
@@ -806,7 +806,183 @@ export class DaoDemocracyVotedEvent {
     /**
      * An account has voted in a referendum
      */
-    get asV100(): {daoId: number, voter: Uint8Array, refIndex: number, vote: v100.Type_307} {
+    get asV100(): {daoId: number, voter: Uint8Array, refIndex: number, vote: v100.Type_283} {
+        assert(this.isV100)
+        return this._chain.decodeEvent(this.event)
+    }
+}
+
+export class DaoEthGovernanceApprovedEvent {
+    private readonly _chain: Chain
+    private readonly event: Event
+
+    constructor(ctx: EventContext)
+    constructor(ctx: ChainContext, event: Event)
+    constructor(ctx: EventContext, event?: Event) {
+        event = event || ctx.event
+        assert(event.name === 'DaoEthGovernance.Approved')
+        this._chain = ctx._chain
+        this.event = event
+    }
+
+    /**
+     * A motion was approved by the required threshold.
+     */
+    get isV100(): boolean {
+        return this._chain.getEventHash('DaoEthGovernance.Approved') === '66116e5e87427f0f23eab3119f627b9a718d060e11063fd891936b7078e661c7'
+    }
+
+    /**
+     * A motion was approved by the required threshold.
+     */
+    get asV100(): {daoId: number, proposalIndex: number, proposalHash: Uint8Array} {
+        assert(this.isV100)
+        return this._chain.decodeEvent(this.event)
+    }
+}
+
+export class DaoEthGovernanceClosedEvent {
+    private readonly _chain: Chain
+    private readonly event: Event
+
+    constructor(ctx: EventContext)
+    constructor(ctx: ChainContext, event: Event)
+    constructor(ctx: EventContext, event?: Event) {
+        event = event || ctx.event
+        assert(event.name === 'DaoEthGovernance.Closed')
+        this._chain = ctx._chain
+        this.event = event
+    }
+
+    /**
+     * A proposal was closed because its threshold was reached or after its duration was up.
+     */
+    get isV100(): boolean {
+        return this._chain.getEventHash('DaoEthGovernance.Closed') === '14272fd3c3c5fe6141f8c969952d76f50b120d82dae963d28e38d1bcb9e3115b'
+    }
+
+    /**
+     * A proposal was closed because its threshold was reached or after its duration was up.
+     */
+    get asV100(): {daoId: number, proposalIndex: number, proposalHash: Uint8Array, ayes: bigint, nays: bigint} {
+        assert(this.isV100)
+        return this._chain.decodeEvent(this.event)
+    }
+}
+
+export class DaoEthGovernanceDisapprovedEvent {
+    private readonly _chain: Chain
+    private readonly event: Event
+
+    constructor(ctx: EventContext)
+    constructor(ctx: ChainContext, event: Event)
+    constructor(ctx: EventContext, event?: Event) {
+        event = event || ctx.event
+        assert(event.name === 'DaoEthGovernance.Disapproved')
+        this._chain = ctx._chain
+        this.event = event
+    }
+
+    /**
+     * A motion was not approved by the required threshold.
+     */
+    get isV100(): boolean {
+        return this._chain.getEventHash('DaoEthGovernance.Disapproved') === '66116e5e87427f0f23eab3119f627b9a718d060e11063fd891936b7078e661c7'
+    }
+
+    /**
+     * A motion was not approved by the required threshold.
+     */
+    get asV100(): {daoId: number, proposalIndex: number, proposalHash: Uint8Array} {
+        assert(this.isV100)
+        return this._chain.decodeEvent(this.event)
+    }
+}
+
+export class DaoEthGovernanceExecutedEvent {
+    private readonly _chain: Chain
+    private readonly event: Event
+
+    constructor(ctx: EventContext)
+    constructor(ctx: ChainContext, event: Event)
+    constructor(ctx: EventContext, event?: Event) {
+        event = event || ctx.event
+        assert(event.name === 'DaoEthGovernance.Executed')
+        this._chain = ctx._chain
+        this.event = event
+    }
+
+    /**
+     * A motion was executed; result will be `Ok` if it returned without error.
+     */
+    get isV100(): boolean {
+        return this._chain.getEventHash('DaoEthGovernance.Executed') === 'd61e1e1db4a2f11e48bf202815707b3fdedce32a9b7b421eaac2353af3d0730e'
+    }
+
+    /**
+     * A motion was executed; result will be `Ok` if it returned without error.
+     */
+    get asV100(): {daoId: number, proposalIndex: number, proposalHash: Uint8Array, result: v100.Type_41} {
+        assert(this.isV100)
+        return this._chain.decodeEvent(this.event)
+    }
+}
+
+export class DaoEthGovernanceProposedEvent {
+    private readonly _chain: Chain
+    private readonly event: Event
+
+    constructor(ctx: EventContext)
+    constructor(ctx: ChainContext, event: Event)
+    constructor(ctx: EventContext, event?: Event) {
+        event = event || ctx.event
+        assert(event.name === 'DaoEthGovernance.Proposed')
+        this._chain = ctx._chain
+        this.event = event
+    }
+
+    /**
+     * A motion (given hash) has been proposed (by given account) with a threshold
+     */
+    get isV100(): boolean {
+        return this._chain.getEventHash('DaoEthGovernance.Proposed') === '4c83798f03e19f60b854e3a85ca261353ecc89ee7ee6029c48c7abf752dcf7bf'
+    }
+
+    /**
+     * A motion (given hash) has been proposed (by given account) with a threshold
+     */
+    get asV100(): {daoId: number, account: Uint8Array, proposalIndex: number, proposalHash: Uint8Array, proposal: v100.Call, threshold: bigint, meta: Uint8Array} {
+        assert(this.isV100)
+        return this._chain.decodeEvent(this.event)
+    }
+}
+
+export class DaoEthGovernanceVotedEvent {
+    private readonly _chain: Chain
+    private readonly event: Event
+
+    constructor(ctx: EventContext)
+    constructor(ctx: ChainContext, event: Event)
+    constructor(ctx: EventContext, event?: Event) {
+        event = event || ctx.event
+        assert(event.name === 'DaoEthGovernance.Voted')
+        this._chain = ctx._chain
+        this.event = event
+    }
+
+    /**
+     * A motion (given hash) has been voted on by given account, leaving
+     * a tally (yes votes and no votes given respectively as `TokenSupply`).
+     */
+    get isV100(): boolean {
+        return this._chain.getEventHash('DaoEthGovernance.Voted') === 'fdf8deae54bfef4c6c37c37b0b9937922705b3c7a365ac9ac293bb932c585419'
+    }
+
+    /**
+     * A motion (given hash) has been voted on by given account, leaving
+     * a tally (yes votes and no votes given respectively as `TokenSupply`).
+     */
+    get asV100(): {daoId: number, account: Uint8Array, proposalIndex: number, proposalHash: Uint8Array, vote: v100.Vote} {
         assert(this.isV100)
         return this._chain.decodeEvent(this.event)
     }
