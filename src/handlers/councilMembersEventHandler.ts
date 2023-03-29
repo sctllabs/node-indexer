@@ -1,96 +1,76 @@
-import { In } from "typeorm";
-import { Dao } from "../model";
 import {
   DaoCouncilMembersMemberAddedEvent,
   DaoCouncilMembersMemberRemovedEvent,
 } from "../types/events";
-import { decodeAddress, getAccount } from "../utils";
-
-import type { EventInfo } from "../types";
+import { BaseHandler } from "./baseHandler";
+import { Dao } from "../model";
+import { decodeAddress } from "../utils";
 import type { Ctx } from "../processor";
+import type { EventInfo } from "../types";
 
-type CouncilMembersEvents = {
-  addedCouncilMembersEvents: EventInfo<DaoCouncilMembersMemberAddedEvent>[];
-  removedCouncilMembersEvents: EventInfo<DaoCouncilMembersMemberRemovedEvent>[];
-};
-
-export class CouncilMembersEventHandler {
-  ctx: Ctx;
-  councilMembersEvents: CouncilMembersEvents;
-
-  constructor(ctx: Ctx, councilMembersEvents: CouncilMembersEvents) {
-    this.ctx = ctx;
-    this.councilMembersEvents = councilMembersEvents;
+export class CouncilMembersEventHandler extends BaseHandler<unknown> {
+  constructor(ctx: Ctx) {
+    super(ctx);
   }
 
-  async handle(daosToInsert: Map<string, Dao>) {
-    const [daosQuery] = await this.getDaos(daosToInsert);
-    const daosQueryMap = new Map(
-      daosQuery.map((_daoQuery) => [_daoQuery.id, _daoQuery])
-    );
-
-    const daosToUpdate = this.updateDaos(daosToInsert, daosQueryMap);
-
-    return { daosToUpdate };
+  protected arrayToMap(value: unknown[]) {
+    throw new Error("Method not implemented");
   }
 
-  private getDaos(daosToInsert: Map<string, Dao>) {
-    const daoIds = new Set<number>();
-    Object.values(this.councilMembersEvents).map(
-      (_councilMembersEventsKind) => {
-        for (const { event } of _councilMembersEventsKind) {
-          if (!event.isV100) {
-            throw new Error("Unsupported proposal spec");
-          }
-
-          const { daoId } = event.asV100;
-          if (!daosToInsert.get(daoId.toString())) {
-            daoIds.add(daoId);
-          }
-        }
-      }
-    );
-
-    return Promise.all([this.ctx.store.findBy(Dao, { id: In([...daoIds]) })]);
+  protected insert() {
+    throw new Error("Method not implemented");
   }
 
-  private updateDaos(
+  protected save() {
+    throw new Error("Method not implemented");
+  }
+
+  process(
+    {
+      event,
+      blockNum,
+      blockHash,
+      timestamp,
+    }: EventInfo<
+      DaoCouncilMembersMemberAddedEvent | DaoCouncilMembersMemberRemovedEvent
+    >,
     daosToInsert: Map<string, Dao>,
+    daosToUpdate: Map<string, Dao>,
     daosQueryMap: Map<string, Dao>
   ) {
-    const daosToUpdate = new Map<string, Dao>();
+    const { daoId, member } = event.asV100;
 
-    // TODO: cache DAO queries
-    Object.values(this.councilMembersEvents).map(
-      (_councilMembersEventsKind) => {
-        for (const { event } of _councilMembersEventsKind) {
-          const { daoId, member } = event.asV100;
+    const dao =
+      daosToInsert.get(daoId.toString()) ?? daosQueryMap.get(daoId.toString());
 
-          const dao =
-            daosToInsert.get(daoId.toString()) ??
-            daosQueryMap.get(daoId.toString());
+    if (!dao) {
+      throw new Error(`Dao with id: ${daoId} not found.`);
+    }
 
-          if (!dao) {
-            throw new Error(`Dao with id: ${daoId} not found.`);
-          }
+    const account = decodeAddress(member);
 
-          const account = decodeAddress(member);
+    if (event instanceof DaoCouncilMembersMemberAddedEvent) {
+      dao.council = dao.council.includes(account)
+        ? dao.council
+        : [...dao.council, account];
+    } else {
+      dao.council = dao.council.filter((_address) => _address !== account);
+    }
 
-          if (event instanceof DaoCouncilMembersMemberAddedEvent) {
-            dao.council = dao.council.includes(account)
-              ? dao.council
-              : [...dao.council, account];
-          } else if (event instanceof DaoCouncilMembersMemberRemovedEvent) {
-            dao.council = dao.council.filter(
-              (_address) => _address !== account
-            );
-          }
+    daosToUpdate.set(dao.id, dao);
+  }
 
-          daosToUpdate.set(dao.id, dao);
-        }
-      }
-    );
+  prepareQuery(
+    event:
+      | DaoCouncilMembersMemberAddedEvent
+      | DaoCouncilMembersMemberRemovedEvent,
+    daoIds: Set<string>
+  ) {
+    if (!event.isV100) {
+      throw new Error("Unsupported proposal spec");
+    }
 
-    return daosToUpdate;
+    const { daoId } = event.asV100;
+    daoIds.add(daoId.toString());
   }
 }

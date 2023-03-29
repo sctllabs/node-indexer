@@ -45,10 +45,271 @@ export class DaoDaoRegisteredEvent {
     }
 
     get isV100(): boolean {
-        return this._chain.getEventHash('Dao.DaoRegistered') === 'd0355a019f331abde8d4fa84a03e150fd2da637a2d1f60a6ecce59df973577f2'
+        return this._chain.getEventHash('Dao.DaoRegistered') === 'b4c94312a7532011947e551e27d572d24551e2eed6882a7d98a1a88ba73df2af'
     }
 
     get asV100(): {daoId: number, founder: Uint8Array, accountId: Uint8Array, council: Uint8Array[], technicalCommittee: Uint8Array[], token: v100.DaoToken, config: v100.DaoConfig, policy: v100.DaoPolicy} {
+        assert(this.isV100)
+        return this._chain.decodeEvent(this.event)
+    }
+}
+
+export class DaoBountiesBountyAwardedEvent {
+    private readonly _chain: Chain
+    private readonly event: Event
+
+    constructor(ctx: EventContext)
+    constructor(ctx: ChainContext, event: Event)
+    constructor(ctx: EventContext, event?: Event) {
+        event = event || ctx.event
+        assert(event.name === 'DaoBounties.BountyAwarded')
+        this._chain = ctx._chain
+        this.event = event
+    }
+
+    /**
+     * A bounty is awarded to a beneficiary.
+     */
+    get isV100(): boolean {
+        return this._chain.getEventHash('DaoBounties.BountyAwarded') === '3aa06a4a9dd48250c490e1e7226c272815e4abd47956ef781fb6267389252ed7'
+    }
+
+    /**
+     * A bounty is awarded to a beneficiary.
+     */
+    get asV100(): {daoId: number, index: number, beneficiary: Uint8Array, status: v100.BountyStatus} {
+        assert(this.isV100)
+        return this._chain.decodeEvent(this.event)
+    }
+}
+
+export class DaoBountiesBountyBecameActiveEvent {
+    private readonly _chain: Chain
+    private readonly event: Event
+
+    constructor(ctx: EventContext)
+    constructor(ctx: ChainContext, event: Event)
+    constructor(ctx: EventContext, event?: Event) {
+        event = event || ctx.event
+        assert(event.name === 'DaoBounties.BountyBecameActive')
+        this._chain = ctx._chain
+        this.event = event
+    }
+
+    /**
+     * A bounty proposal is funded and became active.
+     */
+    get isV100(): boolean {
+        return this._chain.getEventHash('DaoBounties.BountyBecameActive') === '1859f0642c00a9ae17638121a832ec8f57514348b69ffa7f2b56152ae70656b4'
+    }
+
+    /**
+     * A bounty proposal is funded and became active.
+     */
+    get asV100(): {daoId: number, index: number, status: v100.BountyStatus} {
+        assert(this.isV100)
+        return this._chain.decodeEvent(this.event)
+    }
+}
+
+export class DaoBountiesBountyCanceledEvent {
+    private readonly _chain: Chain
+    private readonly event: Event
+
+    constructor(ctx: EventContext)
+    constructor(ctx: ChainContext, event: Event)
+    constructor(ctx: EventContext, event?: Event) {
+        event = event || ctx.event
+        assert(event.name === 'DaoBounties.BountyCanceled')
+        this._chain = ctx._chain
+        this.event = event
+    }
+
+    /**
+     * A bounty is cancelled.
+     */
+    get isV100(): boolean {
+        return this._chain.getEventHash('DaoBounties.BountyCanceled') === '1c8b8b74eff9636a99f12a72bbe8264b3ebf1177cf9a8591fe0f376074b55f19'
+    }
+
+    /**
+     * A bounty is cancelled.
+     */
+    get asV100(): {daoId: number, index: number} {
+        assert(this.isV100)
+        return this._chain.decodeEvent(this.event)
+    }
+}
+
+export class DaoBountiesBountyClaimedEvent {
+    private readonly _chain: Chain
+    private readonly event: Event
+
+    constructor(ctx: EventContext)
+    constructor(ctx: ChainContext, event: Event)
+    constructor(ctx: EventContext, event?: Event) {
+        event = event || ctx.event
+        assert(event.name === 'DaoBounties.BountyClaimed')
+        this._chain = ctx._chain
+        this.event = event
+    }
+
+    /**
+     * A bounty is claimed by beneficiary.
+     */
+    get isV100(): boolean {
+        return this._chain.getEventHash('DaoBounties.BountyClaimed') === '090975e3f0d5f7f70ae7b8725f446a5c3a28e93af6c47584615e04dd0c3d9f40'
+    }
+
+    /**
+     * A bounty is claimed by beneficiary.
+     */
+    get asV100(): {daoId: number, index: number, payout: bigint, beneficiary: Uint8Array} {
+        assert(this.isV100)
+        return this._chain.decodeEvent(this.event)
+    }
+}
+
+export class DaoBountiesBountyCreatedEvent {
+    private readonly _chain: Chain
+    private readonly event: Event
+
+    constructor(ctx: EventContext)
+    constructor(ctx: ChainContext, event: Event)
+    constructor(ctx: EventContext, event?: Event) {
+        event = event || ctx.event
+        assert(event.name === 'DaoBounties.BountyCreated')
+        this._chain = ctx._chain
+        this.event = event
+    }
+
+    /**
+     * New bounty proposal.
+     */
+    get isV100(): boolean {
+        return this._chain.getEventHash('DaoBounties.BountyCreated') === '594de67e18ff4c46c7a6c1ac7a6a702e837b273842af8216c3759fb2e4ac2f92'
+    }
+
+    /**
+     * New bounty proposal.
+     */
+    get asV100(): {daoId: number, index: number, status: v100.BountyStatus, description: Uint8Array, value: bigint} {
+        assert(this.isV100)
+        return this._chain.decodeEvent(this.event)
+    }
+}
+
+export class DaoBountiesBountyCuratorAcceptedEvent {
+    private readonly _chain: Chain
+    private readonly event: Event
+
+    constructor(ctx: EventContext)
+    constructor(ctx: ChainContext, event: Event)
+    constructor(ctx: EventContext, event?: Event) {
+        event = event || ctx.event
+        assert(event.name === 'DaoBounties.BountyCuratorAccepted')
+        this._chain = ctx._chain
+        this.event = event
+    }
+
+    /**
+     * A curator is accepted for bounty.
+     */
+    get isV100(): boolean {
+        return this._chain.getEventHash('DaoBounties.BountyCuratorAccepted') === '1859f0642c00a9ae17638121a832ec8f57514348b69ffa7f2b56152ae70656b4'
+    }
+
+    /**
+     * A curator is accepted for bounty.
+     */
+    get asV100(): {daoId: number, index: number, status: v100.BountyStatus} {
+        assert(this.isV100)
+        return this._chain.decodeEvent(this.event)
+    }
+}
+
+export class DaoBountiesBountyCuratorProposedEvent {
+    private readonly _chain: Chain
+    private readonly event: Event
+
+    constructor(ctx: EventContext)
+    constructor(ctx: ChainContext, event: Event)
+    constructor(ctx: EventContext, event?: Event) {
+        event = event || ctx.event
+        assert(event.name === 'DaoBounties.BountyCuratorProposed')
+        this._chain = ctx._chain
+        this.event = event
+    }
+
+    /**
+     * A curator is proposed for bounty.
+     */
+    get isV100(): boolean {
+        return this._chain.getEventHash('DaoBounties.BountyCuratorProposed') === '1f36c76fb82bcb84a35dffc1d34fd161bad5787c23746509187c682d74600c6e'
+    }
+
+    /**
+     * A curator is proposed for bounty.
+     */
+    get asV100(): {daoId: number, index: number, fee: bigint, status: v100.BountyStatus} {
+        assert(this.isV100)
+        return this._chain.decodeEvent(this.event)
+    }
+}
+
+export class DaoBountiesBountyCuratorUnassignedEvent {
+    private readonly _chain: Chain
+    private readonly event: Event
+
+    constructor(ctx: EventContext)
+    constructor(ctx: ChainContext, event: Event)
+    constructor(ctx: EventContext, event?: Event) {
+        event = event || ctx.event
+        assert(event.name === 'DaoBounties.BountyCuratorUnassigned')
+        this._chain = ctx._chain
+        this.event = event
+    }
+
+    /**
+     * A curator is unassigned from bounty.
+     */
+    get isV100(): boolean {
+        return this._chain.getEventHash('DaoBounties.BountyCuratorUnassigned') === '1859f0642c00a9ae17638121a832ec8f57514348b69ffa7f2b56152ae70656b4'
+    }
+
+    /**
+     * A curator is unassigned from bounty.
+     */
+    get asV100(): {daoId: number, index: number, status: v100.BountyStatus} {
+        assert(this.isV100)
+        return this._chain.decodeEvent(this.event)
+    }
+}
+
+export class DaoBountiesBountyExtendedEvent {
+    private readonly _chain: Chain
+    private readonly event: Event
+
+    constructor(ctx: EventContext)
+    constructor(ctx: ChainContext, event: Event)
+    constructor(ctx: EventContext, event?: Event) {
+        event = event || ctx.event
+        assert(event.name === 'DaoBounties.BountyExtended')
+        this._chain = ctx._chain
+        this.event = event
+    }
+
+    /**
+     * A bounty expiry is extended.
+     */
+    get isV100(): boolean {
+        return this._chain.getEventHash('DaoBounties.BountyExtended') === '1c8b8b74eff9636a99f12a72bbe8264b3ebf1177cf9a8591fe0f376074b55f19'
+    }
+
+    /**
+     * A bounty expiry is extended.
+     */
+    get asV100(): {daoId: number, index: number} {
         assert(this.isV100)
         return this._chain.decodeEvent(this.event)
     }
@@ -188,7 +449,7 @@ export class DaoCouncilProposedEvent {
      * `MemberCount`).
      */
     get isV100(): boolean {
-        return this._chain.getEventHash('DaoCouncil.Proposed') === '10c51852d0d3873355ef40f3597f9724d47fbf1dc9f38ec3f4a956e13a864df8'
+        return this._chain.getEventHash('DaoCouncil.Proposed') === 'e7e617a2b3ee323403f9d6741edc3b3cbe019eb9a4606ae323c65bea27e4d766'
     }
 
     /**
@@ -423,7 +684,7 @@ export class DaoDemocracyProposedEvent {
      * A motion has been proposed by a public account.
      */
     get isV100(): boolean {
-        return this._chain.getEventHash('DaoDemocracy.Proposed') === '6d1eca6b13fe15964804da74c2ead9ac59f95700d11b3e5753d657f613b4bd50'
+        return this._chain.getEventHash('DaoDemocracy.Proposed') === 'ccc17c46a05a1d7def472e403399ca9ac1b7fea2b5fe24f845f6653d961207d5'
     }
 
     /**
@@ -545,7 +806,7 @@ export class DaoDemocracyVotedEvent {
     /**
      * An account has voted in a referendum
      */
-    get asV100(): {daoId: number, voter: Uint8Array, refIndex: number, vote: v100.Type_306} {
+    get asV100(): {daoId: number, voter: Uint8Array, refIndex: number, vote: v100.Type_307} {
         assert(this.isV100)
         return this._chain.decodeEvent(this.event)
     }

@@ -20,7 +20,16 @@
     "DaoDemocracy.Cancelled",
     "DaoDemocracy.Seconded",
     "DaoDemocracy.Delegated",
-    "DaoDemocracy.Undelegated"
+    "DaoDemocracy.Undelegated",
+    "DaoBounties.BountyCreated",
+    "DaoBounties.BountyBecameActive",
+    "DaoBounties.BountyCuratorProposed",
+    "DaoBounties.BountyCuratorUnassigned",
+    "DaoBounties.BountyCuratorAccepted",
+    "DaoBounties.BountyAwarded",
+    "DaoBounties.BountyClaimed",
+    "DaoBounties.BountyCanceled",
+    "DaoBounties.BountyExtended"
   ],
   "calls": [],
   "storage": []

@@ -1,108 +1,176 @@
 import { In } from "typeorm";
-import { Account, Dao, CouncilProposal, CouncilProposalStatus } from "../model";
-import { DaoCouncilProposedEvent } from "../types/events";
-import { decodeAddress, getAccount } from "../utils";
-import { decodeHash } from "../utils/decodeHash";
-import { getProposalKind } from "../utils/getProposalKind";
-
+import {
+  DaoCouncilApprovedEvent,
+  DaoCouncilClosedEvent,
+  DaoCouncilDisapprovedEvent,
+  DaoCouncilExecutedEvent,
+  DaoCouncilProposedEvent,
+} from "../types/events";
+import { Account, CouncilProposal, CouncilProposalStatus, Dao } from "../model";
+import {
+  decodeAddress,
+  decodeHash,
+  getAccount,
+  getProposalKind,
+} from "../utils";
+import { BaseHandler } from "./baseHandler";
 import type { EventInfo } from "../types";
 import type { Ctx } from "../processor";
 
-export class CouncilProposalHandler {
-  ctx: Ctx;
-  proposalEvents: EventInfo<DaoCouncilProposedEvent>[];
+type CouncilProposalStatusEvents =
+  | DaoCouncilApprovedEvent
+  | DaoCouncilDisapprovedEvent
+  | DaoCouncilClosedEvent
+  | DaoCouncilExecutedEvent;
 
-  constructor(ctx: Ctx, proposalEvents: EventInfo<DaoCouncilProposedEvent>[]) {
-    this.ctx = ctx;
-    this.proposalEvents = proposalEvents;
+export class CouncilProposalHandler extends BaseHandler<CouncilProposal> {
+  private readonly _councilProposalsToInsert: Map<string, CouncilProposal>;
+  private readonly _councilProposalsToUpdate: Map<string, CouncilProposal>;
+  private readonly _councilProposalsQueryMap: Map<string, CouncilProposal>;
+  private readonly _councilProposalIds: Set<string>;
+
+  constructor(ctx: Ctx) {
+    super(ctx);
+    this._councilProposalsToInsert = new Map<string, CouncilProposal>();
+    this._councilProposalsToUpdate = new Map<string, CouncilProposal>();
+    this._councilProposalsQueryMap = new Map<string, CouncilProposal>();
+    this._councilProposalIds = new Set<string>();
   }
 
-  async handle(daosToInsert: Map<string, Dao>, accounts: Map<string, Account>) {
-    const councilProposalsToInsert = new Map<string, CouncilProposal>();
-    const [accountsQuery, daosQuery] = await this.getAccountsAndDaos(
-      daosToInsert,
-      accounts
-    );
-    accountsQuery.forEach((_accountQuery) =>
-      accounts.set(_accountQuery.id, _accountQuery)
-    );
-    const daosQueryMap = new Map(
-      daosQuery.map((_daoQuery) => [_daoQuery.id, _daoQuery])
-    );
+  get councilProposalsToInsert() {
+    return this._councilProposalsToInsert;
+  }
 
-    for (const { event, timestamp, blockHash, blockNum } of this
-      .proposalEvents) {
-      if (!event.isV100) {
-        throw new Error("Unsupported proposal spec");
-      }
+  get councilProposalsQueryMap() {
+    return this._councilProposalsQueryMap;
+  }
 
-      const {
-        proposal,
-        proposalHash,
-        proposalIndex,
-        account,
-        meta,
-        threshold,
-        daoId,
-      } = event.asV100;
+  get councilProposalIds() {
+    return this._councilProposalIds;
+  }
 
-      const dao =
-        daosToInsert.get(daoId.toString()) ??
-        daosQueryMap.get(daoId.toString());
-
-      if (!dao) {
-        throw new Error(`Dao with id: ${daoId} not found`);
-      }
-
-      const kind = getProposalKind(proposal);
-      const hash = decodeHash(proposalHash);
-      const id = `${dao.id}-${proposalIndex}`;
-
-      councilProposalsToInsert.set(
-        id,
-        new CouncilProposal({
-          id,
-          hash,
-          index: proposalIndex,
-          account: getAccount(accounts, decodeAddress(account)),
-          meta: meta?.toString(),
-          voteThreshold: threshold,
-          kind,
-          dao,
-          blockHash,
-          status: CouncilProposalStatus.Open,
-          blockNum,
-          createdAt: new Date(timestamp),
-        })
-      );
+  arrayToMap(councilProposals: CouncilProposal[]) {
+    for (const councilProposal of councilProposals) {
+      this._councilProposalsQueryMap.set(councilProposal.id, councilProposal);
     }
-    return councilProposalsToInsert;
   }
 
-  private getAccountsAndDaos(
+  query() {
+    return this._ctx.store.findBy(CouncilProposal, {
+      id: In([...this._councilProposalIds]),
+    });
+  }
+
+  insert() {
+    return this._ctx.store.insert([...this._councilProposalsToInsert.values()]);
+  }
+
+  save() {
+    return this._ctx.store.save([...this._councilProposalsToUpdate.values()]);
+  }
+
+  processProposed(
+    {
+      event,
+      blockNum,
+      blockHash,
+      timestamp,
+    }: EventInfo<DaoCouncilProposedEvent>,
+    accounts: Map<string, Account>,
     daosToInsert: Map<string, Dao>,
-    accounts: Map<string, Account>
+    daosQueryMap: Map<string, Dao>
   ) {
-    const accountIds = new Set<string>();
-    const daoIds = new Set<string>();
+    const {
+      proposal,
+      proposalHash,
+      proposalIndex,
+      account,
+      meta,
+      threshold,
+      daoId,
+    } = event.asV100;
 
-    for (const { event } of this.proposalEvents) {
-      if (!event.isV100) {
-        throw new Error("Unsupported proposal spec");
-      }
+    const dao =
+      daosToInsert.get(daoId.toString()) ?? daosQueryMap.get(daoId.toString());
 
-      const { daoId, account } = event.asV100;
-      const accountAddress = decodeAddress(account);
-      if (!daosToInsert.get(daoId.toString())) {
-        daoIds.add(daoId.toString());
-      }
-      if (!accounts.get(accountAddress)) {
-        accountIds.add(accountAddress);
-      }
+    if (!dao) {
+      throw new Error(`Dao with id: ${daoId} not found`);
     }
-    return Promise.all([
-      this.ctx.store.findBy(Account, { id: In([...accountIds]) }),
-      this.ctx.store.findBy(Dao, { id: In([...daoIds]) }),
-    ]);
+
+    const kind = getProposalKind(proposal);
+    const hash = decodeHash(proposalHash);
+    const id = `${dao.id}-${proposalIndex}`;
+
+    this._councilProposalsToInsert.set(
+      id,
+      new CouncilProposal({
+        id,
+        hash,
+        index: proposalIndex,
+        account: getAccount(accounts, decodeAddress(account)),
+        meta: meta?.toString(),
+        voteThreshold: threshold,
+        kind,
+        dao,
+        blockHash,
+        status: CouncilProposalStatus.Open,
+        blockNum,
+        createdAt: new Date(timestamp),
+        updatedAt: new Date(timestamp),
+      })
+    );
+  }
+
+  processStatus({ event, timestamp }: EventInfo<CouncilProposalStatusEvents>) {
+    const { daoId, proposalIndex } = event.asV100;
+    const proposalId = `${daoId}-${proposalIndex}`;
+    const proposal =
+      this._councilProposalsToInsert.get(proposalId) ??
+      this._councilProposalsQueryMap.get(proposalId);
+
+    if (!proposal) {
+      throw new Error(`Proposal with id: ${proposalId} not found.`);
+    }
+
+    if (event instanceof DaoCouncilApprovedEvent) {
+      proposal.status = CouncilProposalStatus.Approved;
+    } else if (event instanceof DaoCouncilDisapprovedEvent) {
+      proposal.status = CouncilProposalStatus.Disapproved;
+    } else if (event instanceof DaoCouncilClosedEvent) {
+      proposal.status = CouncilProposalStatus.Closed;
+    } else {
+      proposal.status = CouncilProposalStatus.Executed;
+    }
+
+    proposal.updatedAt = new Date(timestamp);
+    this._councilProposalsToUpdate.set(proposal.id, proposal);
+  }
+
+  prepareProposedQuery(
+    event: DaoCouncilProposedEvent,
+    daoIds: Set<string>,
+    accountIds: Set<string>
+  ) {
+    if (!event.isV100) {
+      throw new Error("Unsupported proposal spec");
+    }
+
+    const { daoId, account } = event.asV100;
+    const accountAddress = decodeAddress(account);
+    daoIds.add(daoId.toString());
+    accountIds.add(accountAddress);
+  }
+
+  prepareStatusQuery(
+    event: CouncilProposalStatusEvents,
+    proposalIds: Set<string>
+  ) {
+    if (!event.isV100) {
+      throw new Error("Unsupported status spec");
+    }
+
+    const { daoId, proposalIndex } = event.asV100;
+    const proposalId = `${daoId}-${proposalIndex}`;
+    proposalIds.add(proposalId);
   }
 }

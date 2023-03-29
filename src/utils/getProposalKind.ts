@@ -1,6 +1,13 @@
 import { Call } from "../types/v100";
-import { AddMember, RemoveMember, Spend, TransferToken } from "../model";
+import {
+  AddMember,
+  CreateBounty,
+  RemoveMember,
+  Spend,
+  TransferToken,
+} from "../model";
 import { decodeAddress } from "./decodeAddress";
+import { decodeString } from "./decodeString";
 
 export function getProposalKind(proposal: Call) {
   switch (proposal.value.__kind) {
@@ -28,6 +35,12 @@ export function getProposalKind(proposal: Call) {
           proposal.value.beneficiary.value as Uint8Array
         ),
         amount: proposal.value.amount,
+      });
+    }
+    case "create_bounty": {
+      return new CreateBounty({
+        value: proposal.value.value,
+        description: decodeString(proposal.value.description),
       });
     }
     default: {

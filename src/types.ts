@@ -1,5 +1,14 @@
 import {
   AssetsMetadataSetEvent,
+  DaoBountiesBountyAwardedEvent,
+  DaoBountiesBountyBecameActiveEvent,
+  DaoBountiesBountyCanceledEvent,
+  DaoBountiesBountyClaimedEvent,
+  DaoBountiesBountyCreatedEvent,
+  DaoBountiesBountyCuratorAcceptedEvent,
+  DaoBountiesBountyCuratorProposedEvent,
+  DaoBountiesBountyCuratorUnassignedEvent,
+  DaoBountiesBountyExtendedEvent,
   DaoCouncilApprovedEvent,
   DaoCouncilClosedEvent,
   DaoCouncilDisapprovedEvent,
@@ -19,18 +28,6 @@ import {
   DaoDemocracyUndelegatedEvent,
   DaoDemocracyVotedEvent,
 } from "./types/events";
-import {
-  Account,
-  CouncilProposal,
-  CouncilVoteHistory,
-  Dao,
-  DemocracyDelegation,
-  DemocracyProposal,
-  DemocracyReferendum,
-  DemocracySecond,
-  FungibleToken,
-  Policy,
-} from "./model";
 
 export type EventInfo<T> = {
   event: T;
@@ -39,42 +36,34 @@ export type EventInfo<T> = {
   timestamp: number;
 };
 
-export type EventsInfo = {
-  daoEvents: EventInfo<DaoDaoRegisteredEvent>[];
-  tokenEvents: EventInfo<AssetsMetadataSetEvent>[];
-  voteEvents: EventInfo<DaoCouncilVotedEvent>[];
-  councilProposalEvents: EventInfo<DaoCouncilProposedEvent>[];
-  approvedCouncilProposalEvents: EventInfo<DaoCouncilApprovedEvent>[];
-  disapprovedCouncilProposalEvents: EventInfo<DaoCouncilDisapprovedEvent>[];
-  executedCouncilProposalEvents: EventInfo<DaoCouncilExecutedEvent>[];
-  closedCouncilProposalEvents: EventInfo<DaoCouncilClosedEvent>[];
-  democracyProposalEvents: EventInfo<DaoDemocracyProposedEvent>[];
-  democracySecondEvents: EventInfo<DaoDemocracySecondedEvent>[];
-  democracyPassedEvents: EventInfo<DaoDemocracyPassedEvent>[];
-  democracyNotPassedEvents: EventInfo<DaoDemocracyNotPassedEvent>[];
-  democracyStartedEvents: EventInfo<DaoDemocracyStartedEvent>[];
-  democracyCancelledEvents: EventInfo<DaoDemocracyCancelledEvent>[];
-  democracyDelegatedEvents: EventInfo<DaoDemocracyDelegatedEvent>[];
-  democracyUndelegatedEvents: EventInfo<DaoDemocracyUndelegatedEvent>[];
-  democracyVotedEvents: EventInfo<DaoDemocracyVotedEvent>[];
-  addedCouncilMembersEvents: EventInfo<DaoCouncilMembersMemberAddedEvent>[];
-  removedCouncilMembersEvents: EventInfo<DaoCouncilMembersMemberRemovedEvent>[];
-};
+export type EventType =
+  | DaoDaoRegisteredEvent
+  | AssetsMetadataSetEvent
+  | DaoCouncilVotedEvent
+  | DaoCouncilProposedEvent
+  | DaoCouncilApprovedEvent
+  | DaoCouncilDisapprovedEvent
+  | DaoCouncilExecutedEvent
+  | DaoCouncilClosedEvent
+  | DaoDemocracyProposedEvent
+  | DaoDemocracySecondedEvent
+  | DaoDemocracyPassedEvent
+  | DaoDemocracyNotPassedEvent
+  | DaoDemocracyStartedEvent
+  | DaoDemocracyCancelledEvent
+  | DaoDemocracyDelegatedEvent
+  | DaoDemocracyUndelegatedEvent
+  | DaoDemocracyVotedEvent
+  | DaoCouncilMembersMemberAddedEvent
+  | DaoCouncilMembersMemberRemovedEvent
+  | DaoBountiesBountyCreatedEvent
+  | DaoBountiesBountyBecameActiveEvent
+  | DaoBountiesBountyCuratorProposedEvent
+  | DaoBountiesBountyCuratorUnassignedEvent
+  | DaoBountiesBountyCuratorAcceptedEvent
+  | DaoBountiesBountyAwardedEvent
+  | DaoBountiesBountyClaimedEvent
+  | DaoBountiesBountyCanceledEvent
+  | DaoBountiesBountyExtendedEvent;
 
-export type DataBatch = {
-  accounts: Map<string, Account>;
-  daosToInsert: Map<string, Dao>;
-  daosToUpdate: Map<string, Dao>;
-  policiesToInsert: Map<string, Policy>;
-  fungibleTokens: Map<string, FungibleToken>;
-  councilProposalsToInsert: Map<string, CouncilProposal>;
-  councilProposalsToUpdate: Map<string, CouncilProposal>;
-  councilVotesToInsert: Map<string, CouncilVoteHistory>;
-  councilVotesToUpdate: Map<string, CouncilVoteHistory>;
-  democracyProposalsToInsert: Map<string, DemocracyProposal>;
-  democracyProposalsToUpdate: Map<string, DemocracyProposal>;
-  democracySecondsToInsert: Map<string, DemocracySecond>;
-  democracySecondsToUpdate: Map<string, DemocracySecond>;
-  democracyReferendumsToInsert: Map<string, DemocracyReferendum>;
-  democracyReferendumsToUpdate: Map<string, DemocracyReferendum>;
-};
+export type EventsInfo = EventInfo<EventType>[];
