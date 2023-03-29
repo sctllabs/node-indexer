@@ -11,255 +11,168 @@ import {
   DemocracyReferendumStatus,
   DemocracyReferendumVoteThreshold,
 } from "../model";
-import { mapArrayById } from "../utils/mapArrayById";
 
 import type { Ctx } from "../processor";
 import type { EventInfo } from "../types";
+import { BaseHandler } from "./baseHandler";
 
-type ReferendumEvents = {
-  democracyStartedEvents: EventInfo<DaoDemocracyStartedEvent>[];
-  democracyPassedEvents: EventInfo<DaoDemocracyPassedEvent>[];
-  democracyNotPassedEvents: EventInfo<DaoDemocracyNotPassedEvent>[];
-  democracyCancelledEvents: EventInfo<DaoDemocracyCancelledEvent>[];
-};
+type ReferendumStatusEvent =
+  | DaoDemocracyPassedEvent
+  | DaoDemocracyNotPassedEvent
+  | DaoDemocracyCancelledEvent;
 
-type ReferendumEventsKind = keyof ReferendumEvents;
+export class DemocracyReferendumHandler extends BaseHandler<DemocracyReferendum> {
+  private readonly _democracyReferendumsToInsert: Map<
+    string,
+    DemocracyReferendum
+  >;
+  private readonly _democracyReferendumsToUpdate: Map<
+    string,
+    DemocracyReferendum
+  >;
+  private readonly _democracyReferendumsQueryMap: Map<
+    string,
+    DemocracyReferendum
+  >;
+  private readonly _democracyReferendumsIds: Set<string>;
 
-export class DemocracyReferendumHandler {
-  ctx: Ctx;
-  referendumEvents: ReferendumEvents;
-
-  constructor(ctx: Ctx, referendumEvents: ReferendumEvents) {
-    this.ctx = ctx;
-    this.referendumEvents = referendumEvents;
+  constructor(ctx: Ctx) {
+    super(ctx);
+    this._democracyReferendumsToInsert = new Map<string, DemocracyReferendum>();
+    this._democracyReferendumsToUpdate = new Map<string, DemocracyReferendum>();
+    this._democracyReferendumsQueryMap = new Map<string, DemocracyReferendum>();
+    this._democracyReferendumsIds = new Set<string>();
   }
 
-  async handle(
-    democracyProposalsToInsert: Map<string, DemocracyProposal>,
-    democracyProposalsToUpdate: Map<string, DemocracyProposal>
-  ) {
-    const democracyProposalsQuery = await this.getDemocracyProposals(
-      democracyProposalsToInsert,
-      democracyProposalsToUpdate
-    );
-
-    const democracyProposalsQueryMap = mapArrayById(democracyProposalsQuery);
-    const democracyReferendumsToInsert = this.handleDemocracyStartedEvents(
-      democracyProposalsToInsert,
-      democracyProposalsToUpdate,
-      democracyProposalsQueryMap
-    );
-
-    const democracyReferendumsQuery = await this.getDemocracyReferendums();
-    const democracyReferendumsQueryMap = mapArrayById(
-      democracyReferendumsQuery
-    );
-    const democracyReferendumsToUpdate = await this.handleDemocracyStatuses(
-      democracyReferendumsToInsert,
-      democracyReferendumsQueryMap
-    );
-
-    return { democracyReferendumsToInsert, democracyReferendumsToUpdate };
+  insert() {
+    return this._ctx.store.insert([
+      ...this._democracyReferendumsToInsert.values(),
+    ]);
   }
 
-  private async handleDemocracyStatuses(
-    democracyReferendumsToInsert: Map<string, DemocracyReferendum>,
-    democracyReferendumsQueryMap: Map<string, DemocracyReferendum>
-  ) {
-    const democracyReferendumsToUpdate = new Map<string, DemocracyReferendum>();
-
-    Object.entries(this.referendumEvents).forEach(
-      ([_proposalEventsKindType, _proposalEvents]) =>
-        this.updateDemocracyReferendumStatuses(
-          democracyReferendumsToInsert,
-          democracyReferendumsQueryMap,
-          _proposalEvents,
-          democracyReferendumsToUpdate,
-          _proposalEventsKindType as ReferendumEventsKind
-        )
-    );
-
-    return democracyReferendumsToUpdate;
+  save() {
+    return this._ctx.store.save([
+      ...this._democracyReferendumsToUpdate.values(),
+    ]);
   }
 
-  private updateDemocracyReferendumStatuses(
-    democracyReferendumsToInsert: Map<string, DemocracyReferendum>,
-    democracyReferendumsQueryMap: Map<string, DemocracyReferendum>,
-    democracyReferendumEvents: EventInfo<
-      | DaoDemocracyStartedEvent
-      | DaoDemocracyPassedEvent
-      | DaoDemocracyNotPassedEvent
-      | DaoDemocracyCancelledEvent
-    >[],
-    democracyReferendumsToUpdate: Map<string, DemocracyReferendum>,
-    kind: ReferendumEventsKind
-  ) {
-    for (const { event } of democracyReferendumEvents) {
-      if (!event.isV100) {
-        throw new Error("Unsupported referendum event spec");
-      }
-      const { daoId, refIndex } = event.asV100;
-      const id = `${daoId}-${refIndex}`;
-
-      const democracyReferendum =
-        democracyReferendumsToInsert.get(id) ??
-        democracyReferendumsQueryMap.get(id);
-
-      if (!democracyReferendum) {
-        throw new Error(`Democracy referendum with id: ${id} not found`);
-      }
-
-      let status: DemocracyReferendumStatus;
-
-      switch (kind) {
-        case "democracyStartedEvents": {
-          status = DemocracyReferendumStatus.Started;
-          break;
-        }
-        case "democracyPassedEvents": {
-          status = DemocracyReferendumStatus.Passed;
-          break;
-        }
-        case "democracyNotPassedEvents": {
-          status = DemocracyReferendumStatus.NotPassed;
-          break;
-        }
-        case "democracyCancelledEvents": {
-          status = DemocracyReferendumStatus.Cancelled;
-          break;
-        }
-      }
-
-      democracyReferendum.status = status;
-      democracyReferendumsToUpdate.set(id, democracyReferendum);
-    }
-  }
-
-  private async getDemocracyProposals(
-    democracyProposalsToInsert: Map<string, DemocracyProposal>,
-    democracyProposalsToUpdate: Map<string, DemocracyProposal>
-  ) {
-    const democracyProposalIds = new Set<string>();
-
-    for (const { event } of this.referendumEvents.democracyStartedEvents) {
-      if (!event.isV100) {
-        throw new Error("Unsupported referendum event spec");
-      }
-
-      const { daoId, propIndex } = event.asV100;
-
-      const democracyProposalId = `${daoId}-${propIndex}`;
-
-      if (!democracyProposalsToInsert.get(democracyProposalId)) {
-        democracyProposalIds.add(democracyProposalId);
-      }
-
-      if (!democracyProposalsToUpdate.get(democracyProposalId)) {
-        democracyProposalIds.add(democracyProposalId);
-      }
-    }
-
-    return this.ctx.store.findBy(DemocracyProposal, {
-      id: In([...democracyProposalIds]),
+  query() {
+    return this._ctx.store.findBy(DemocracyReferendum, {
+      id: In([...this._democracyReferendumsIds]),
     });
   }
 
-  private handleDemocracyStartedEvents(
+  arrayToMap(democracyReferendums: DemocracyReferendum[]) {
+    for (const democracyReferendum of democracyReferendums) {
+      this._democracyReferendumsQueryMap.set(
+        democracyReferendum.id,
+        democracyReferendum
+      );
+    }
+  }
+
+  processStarted(
+    {
+      event,
+      blockNum,
+      blockHash,
+      timestamp,
+    }: EventInfo<DaoDemocracyStartedEvent>,
     democracyProposalsToInsert: Map<string, DemocracyProposal>,
     democracyProposalsToUpdate: Map<string, DemocracyProposal>,
     democracyProposalsQueryMap: Map<string, DemocracyProposal>
   ) {
-    const democracyReferendumsToInsert = new Map<string, DemocracyReferendum>();
-    for (const { event } of this.referendumEvents.democracyStartedEvents) {
-      if (!event.isV100) {
-        throw new Error("Unsupported referendum event spec");
-      }
+    const { daoId, refIndex, propIndex, threshold } = event.asV100;
 
-      const { daoId, refIndex, propIndex, threshold } = event.asV100;
+    const democracyProposalId = `${daoId}-${propIndex}`;
 
-      const democracyProposalId = `${daoId}-${propIndex}`;
+    const democracyProposal =
+      democracyProposalsToInsert.get(democracyProposalId) ??
+      democracyProposalsToUpdate.get(democracyProposalId) ??
+      democracyProposalsQueryMap.get(democracyProposalId);
 
-      const democracyProposal =
-        democracyProposalsToInsert.get(democracyProposalId) ??
-        democracyProposalsToUpdate.get(democracyProposalId) ??
-        democracyProposalsQueryMap.get(democracyProposalId);
-
-      if (!democracyProposal) {
-        throw new Error(
-          `Democracy proposal with id: ${democracyProposalId} not found`
-        );
-      }
-
-      const democracyReferendumId = `${daoId}-${refIndex}`;
-
-      let voteThreshold: DemocracyReferendumVoteThreshold;
-
-      switch (threshold.__kind) {
-        case "SimpleMajority": {
-          voteThreshold = DemocracyReferendumVoteThreshold.SimpleMajority;
-          break;
-        }
-        case "SuperMajorityAgainst": {
-          voteThreshold = DemocracyReferendumVoteThreshold.SuperMajorityAgainst;
-          break;
-        }
-        case "SuperMajorityApprove": {
-          voteThreshold = DemocracyReferendumVoteThreshold.SuperMajorityApprove;
-          break;
-        }
-      }
-
-      democracyReferendumsToInsert.set(
-        democracyReferendumId,
-        new DemocracyReferendum({
-          id: democracyReferendumId,
-          democracyProposal: democracyProposal,
-          voteThreshold,
-          status: DemocracyReferendumStatus.Started,
-          index: refIndex,
-        })
+    if (!democracyProposal) {
+      throw new Error(
+        `Democracy proposal with id: ${democracyProposalId} not found`
       );
     }
 
-    return democracyReferendumsToInsert;
-  }
+    const democracyReferendumId = `${daoId}-${refIndex}`;
 
-  private async getDemocracyReferendums() {
-    const democracyReferendumsPassedIds = this.getDemocracyReferendumIds(
-      this.referendumEvents.democracyPassedEvents
-    );
-    const democracyReferendumsNotPassedIds = this.getDemocracyReferendumIds(
-      this.referendumEvents.democracyNotPassedEvents
-    );
-    const democracyReferendumsCancelledIds = this.getDemocracyReferendumIds(
-      this.referendumEvents.democracyCancelledEvents
-    );
+    let voteThreshold: DemocracyReferendumVoteThreshold;
 
-    return this.ctx.store.findBy(DemocracyReferendum, {
-      id: In([
-        ...democracyReferendumsPassedIds,
-        ...democracyReferendumsNotPassedIds,
-        ...democracyReferendumsCancelledIds,
-      ]),
-    });
-  }
-
-  private getDemocracyReferendumIds(
-    democracyReferendumEvents: EventInfo<
-      | DaoDemocracyPassedEvent
-      | DaoDemocracyNotPassedEvent
-      | DaoDemocracyCancelledEvent
-    >[]
-  ) {
-    const democracyReferendumIds = new Set<string>();
-    for (const { event } of democracyReferendumEvents) {
-      if (!event.isV100) {
-        throw new Error("Unsupported referendum event spec");
+    switch (threshold.__kind) {
+      case "SimpleMajority": {
+        voteThreshold = DemocracyReferendumVoteThreshold.SimpleMajority;
+        break;
       }
-      const { daoId, refIndex } = event.asV100;
-      const id = `${daoId}-${refIndex}`;
-      democracyReferendumIds.add(id);
+      case "SuperMajorityAgainst": {
+        voteThreshold = DemocracyReferendumVoteThreshold.SuperMajorityAgainst;
+        break;
+      }
+      case "SuperMajorityApprove": {
+        voteThreshold = DemocracyReferendumVoteThreshold.SuperMajorityApprove;
+        break;
+      }
     }
-    return democracyReferendumIds;
+
+    this._democracyReferendumsToInsert.set(
+      democracyReferendumId,
+      new DemocracyReferendum({
+        id: democracyReferendumId,
+        democracyProposal: democracyProposal,
+        voteThreshold,
+        status: DemocracyReferendumStatus.Started,
+        index: refIndex,
+        createdAt: new Date(timestamp),
+        updatedAt: new Date(timestamp),
+      })
+    );
+  }
+
+  processStatus({ event, timestamp }: EventInfo<ReferendumStatusEvent>) {
+    const { daoId, refIndex } = event.asV100;
+    const id = `${daoId}-${refIndex}`;
+
+    const democracyReferendum =
+      this._democracyReferendumsToInsert.get(id) ??
+      this._democracyReferendumsQueryMap.get(id);
+
+    if (!democracyReferendum) {
+      throw new Error(`Democracy referendum with id: ${id} not found`);
+    }
+
+    if (event instanceof DaoDemocracyPassedEvent) {
+      democracyReferendum.status = DemocracyReferendumStatus.Passed;
+    } else if (event instanceof DaoDemocracyNotPassedEvent) {
+      democracyReferendum.status = DemocracyReferendumStatus.NotPassed;
+    } else {
+      democracyReferendum.status = DemocracyReferendumStatus.Cancelled;
+    }
+
+    democracyReferendum.updatedAt = new Date(timestamp);
+    this._democracyReferendumsToUpdate.set(id, democracyReferendum);
+  }
+
+  prepareStartedQuery(
+    event: DaoDemocracyStartedEvent,
+    democracyProposalIds: Set<string>
+  ) {
+    if (!event.isV100) {
+      throw new Error("Unsupported referendum event spec");
+    }
+
+    const { daoId, propIndex } = event.asV100;
+    const democracyProposalId = `${daoId}-${propIndex}`;
+    democracyProposalIds.add(democracyProposalId);
+  }
+
+  prepareStatusQuery(event: ReferendumStatusEvent) {
+    if (!event.isV100) {
+      throw new Error("Unsupported referendum event spec");
+    }
+    const { daoId, refIndex } = event.asV100;
+    const id = `${daoId}-${refIndex}`;
+    this._democracyReferendumsIds.add(id);
   }
 }

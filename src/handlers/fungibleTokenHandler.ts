@@ -1,44 +1,78 @@
-import { FungibleToken } from "../model";
+import { In } from "typeorm";
 import { AssetsMetadataSetEvent } from "../types/events";
-
+import { FungibleToken } from "../model";
 import type { Ctx } from "../processor";
 import type { EventInfo } from "../types";
+import { BaseHandler } from "./baseHandler";
 
-export class FungibleTokenHandler {
-  ctx: Ctx;
-  createTokenEvents: EventInfo<AssetsMetadataSetEvent>[];
+export class FungibleTokenHandler extends BaseHandler<FungibleToken> {
+  private readonly _fungibleTokensToInsert: Map<string, FungibleToken>;
+  private readonly _fungibleTokensQueryMap: Map<string, FungibleToken>;
+  private readonly _fungibleTokenIds: Set<string>;
 
-  constructor(
-    ctx: Ctx,
-    createTokenEvents: EventInfo<AssetsMetadataSetEvent>[]
-  ) {
-    this.ctx = ctx;
-    this.createTokenEvents = createTokenEvents;
+  constructor(ctx: Ctx) {
+    super(ctx);
+    this._fungibleTokensToInsert = new Map<string, FungibleToken>();
+    this._fungibleTokensQueryMap = new Map<string, FungibleToken>();
+    this._fungibleTokenIds = new Set<string>();
   }
 
-  async handle() {
-    const fungibleTokens = new Map<string, FungibleToken>();
-    for (const { event, timestamp, blockHash, blockNum } of this
-      .createTokenEvents) {
-      if (!event.isV100) {
-        throw new Error("Unsupported token spec");
-      }
+  get fungibleTokensToInsert() {
+    return this._fungibleTokensToInsert;
+  }
 
-      const { assetId, name, symbol, isFrozen, decimals } = event.asV100;
+  get fungibleTokensQueryMap() {
+    return this._fungibleTokensQueryMap;
+  }
 
-      const fungibleToken = new FungibleToken({
-        id: assetId.toString(),
-        name: name.toString(),
-        symbol: symbol.toString(),
-        isFrozen,
-        decimals,
-        blockHash,
-        blockNum,
-        createdAt: new Date(timestamp),
-      });
+  get fungibleTokenIds() {
+    return this._fungibleTokenIds;
+  }
 
-      fungibleTokens.set(fungibleToken.id, fungibleToken);
+  arrayToMap(fungibleTokens: FungibleToken[]) {
+    for (const fungibleToken of fungibleTokens) {
+      this._fungibleTokensQueryMap.set(fungibleToken.id, fungibleToken);
     }
-    return fungibleTokens;
+  }
+
+  query() {
+    return this._ctx.store.findBy(FungibleToken, {
+      id: In([...this._fungibleTokenIds]),
+    });
+  }
+
+  insert() {
+    return this._ctx.store.insert([...this._fungibleTokensToInsert.values()]);
+  }
+
+  protected save() {
+    throw new Error("Method not implemented");
+  }
+
+  process({
+    event,
+    blockHash,
+    blockNum,
+    timestamp,
+  }: EventInfo<AssetsMetadataSetEvent>) {
+    if (!event.isV100) {
+      throw new Error("Unsupported token spec");
+    }
+
+    const { assetId, name, symbol, isFrozen, decimals } = event.asV100;
+
+    const fungibleToken = new FungibleToken({
+      id: assetId.toString(),
+
+      isFrozen,
+      decimals,
+      blockHash,
+      blockNum,
+      name: name.toString(),
+      symbol: symbol.toString(),
+      createdAt: new Date(timestamp),
+    });
+
+    this._fungibleTokensToInsert.set(fungibleToken.id, fungibleToken);
   }
 }

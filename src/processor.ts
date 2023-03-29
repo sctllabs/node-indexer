@@ -67,8 +67,34 @@ const processor = new SubstrateBatchProcessor()
   } as const)
   .addEvent("DaoDemocracy.Undelegated", {
     data: { event: { args: true } },
+  } as const)
+  .addEvent("DaoBounties.BountyCreated", {
+    data: { event: { args: true, call: true } },
+  } as const)
+  .addEvent("DaoBounties.BountyBecameActive", {
+    data: { event: { args: true } },
+  } as const)
+  .addEvent("DaoBounties.BountyCuratorProposed", {
+    data: { event: { args: true } },
+  } as const)
+  .addEvent("DaoBounties.BountyCuratorUnassigned", {
+    data: { event: { args: true } },
+  } as const)
+  .addEvent("DaoBounties.BountyCuratorAccepted", {
+    data: { event: { args: true } },
+  } as const)
+  .addEvent("DaoBounties.BountyAwarded", {
+    data: { event: { args: true } },
+  } as const)
+  .addEvent("DaoBounties.BountyClaimed", {
+    data: { event: { args: true } },
+  } as const)
+  .addEvent("DaoBounties.BountyCanceled", {
+    data: { event: { args: true } },
+  } as const)
+  .addEvent("DaoBounties.BountyExtended", {
+    data: { event: { args: true } },
   } as const);
-
 export type Item = BatchProcessorItem<typeof processor>;
 export type Ctx = BatchContext<Store, Item>;
 

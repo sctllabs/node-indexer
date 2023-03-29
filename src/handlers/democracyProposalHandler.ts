@@ -1,106 +1,160 @@
 import { In } from "typeorm";
-import { DaoDemocracyProposedEvent } from "../types/events";
+import { BaseHandler } from "./baseHandler";
+import {
+  DaoDemocracyProposedEvent,
+  DaoDemocracyStartedEvent,
+} from "../types/events";
 import {
   Account,
   Dao,
   DemocracyProposal,
   DemocracyProposalStatus,
 } from "../model";
-import { decodeAddress, getAccount } from "../utils";
-import { getProposalKind } from "../utils/getProposalKind";
+import { decodeAddress, getAccount, getProposalKind } from "../utils";
 
 import type { Ctx } from "../processor";
 import type { EventInfo } from "../types";
 
-export class DemocracyProposalHandler {
-  ctx: Ctx;
-  democracyProposedEvents: EventInfo<DaoDemocracyProposedEvent>[];
+export class DemocracyProposalHandler extends BaseHandler<DemocracyProposal> {
+  private readonly _democracyProposalsToInsert: Map<string, DemocracyProposal>;
+  private readonly _democracyProposalsToUpdate: Map<string, DemocracyProposal>;
+  private readonly _democracyProposalsQueryMap: Map<string, DemocracyProposal>;
+  private readonly _democracyProposalsIds: Set<string>;
 
-  constructor(
-    ctx: Ctx,
-    democracyProposedEvents: EventInfo<DaoDemocracyProposedEvent>[]
-  ) {
-    this.ctx = ctx;
-    this.democracyProposedEvents = democracyProposedEvents;
+  constructor(ctx: Ctx) {
+    super(ctx);
+    this._democracyProposalsToInsert = new Map<string, DemocracyProposal>();
+    this._democracyProposalsToUpdate = new Map<string, DemocracyProposal>();
+    this._democracyProposalsQueryMap = new Map<string, DemocracyProposal>();
+    this._democracyProposalsIds = new Set<string>();
   }
 
-  async handle(daosToInsert: Map<string, Dao>, accounts: Map<string, Account>) {
-    const democracyProposals = new Map<string, DemocracyProposal>();
-    const [accountsQuery, daosQuery] = await this.getAccountsAndDaos(
-      daosToInsert,
-      accounts
-    );
-    accountsQuery.forEach((_accountsQuery) =>
-      accounts.set(_accountsQuery.id, _accountsQuery)
-    );
-    const daosQueryMap = new Map(
-      daosQuery.map((_daoQuery) => [_daoQuery.id, _daoQuery])
-    );
+  get democracyProposalsQueryMap() {
+    return this._democracyProposalsQueryMap;
+  }
 
-    for (const { event, timestamp, blockHash, blockNum } of this
-      .democracyProposedEvents) {
-      if (!event.isV100) {
-        throw new Error("Unsupported proposal spec");
-      }
+  get democracyProposalsToInsert() {
+    return this._democracyProposalsToInsert;
+  }
 
-      const { daoId, account, proposalIndex, proposal, deposit, meta } =
-        event.asV100;
+  get democracyProposalsToUpdate() {
+    return this._democracyProposalsToUpdate;
+  }
 
-      const dao =
-        daosToInsert.get(daoId.toString()) ??
-        daosQueryMap.get(daoId.toString());
+  get democracyProposalIds() {
+    return this._democracyProposalsIds;
+  }
 
-      if (!dao) {
-        throw new Error(`Dao with id: ${daoId} not found`);
-      }
-
-      const kind = getProposalKind(proposal);
-      const id = `${dao.id}-${proposalIndex}`;
-      democracyProposals.set(
-        id,
-        new DemocracyProposal({
-          id,
-          index: proposalIndex,
-          account: getAccount(accounts, decodeAddress(account)),
-          dao,
-          deposit,
-          kind,
-          meta: meta?.toString(),
-          createdAt: new Date(timestamp),
-          blockHash,
-          blockNum,
-          status: DemocracyProposalStatus.Open,
-        })
+  arrayToMap(democracyProposals: DemocracyProposal[]) {
+    for (const democracyProposal of democracyProposals) {
+      this._democracyProposalsQueryMap.set(
+        democracyProposal.id,
+        democracyProposal
       );
     }
-    return democracyProposals;
   }
 
-  private getAccountsAndDaos(
+  insert() {
+    return this._ctx.store.insert([
+      ...this._democracyProposalsToInsert.values(),
+    ]);
+  }
+
+  save() {
+    return this._ctx.store.save([...this._democracyProposalsToUpdate.values()]);
+  }
+
+  query() {
+    return this._ctx.store.findBy(DemocracyProposal, {
+      id: In([...this._democracyProposalsIds]),
+    });
+  }
+
+  processProposed(
+    {
+      event,
+      blockNum,
+      blockHash,
+      timestamp,
+    }: EventInfo<DaoDemocracyProposedEvent>,
     daosToInsert: Map<string, Dao>,
+    daosQueryMap: Map<string, Dao>,
     accounts: Map<string, Account>
   ) {
-    const accountIds = new Set<string>();
-    const daoIds = new Set<string>();
+    const { daoId, account, proposalIndex, proposal, deposit, meta } =
+      event.asV100;
 
-    for (const { event } of this.democracyProposedEvents) {
-      if (!event.isV100) {
-        throw new Error("Unsupported proposal spec");
-      }
+    const dao =
+      daosToInsert.get(daoId.toString()) ?? daosQueryMap.get(daoId.toString());
 
-      const { daoId, account } = event.asV100;
-      const accountAddress = decodeAddress(account);
-
-      if (!daosToInsert.get(daoId.toString())) {
-        daoIds.add(daoId.toString());
-      }
-      if (!accounts.get(accountAddress)) {
-        accountIds.add(accountAddress);
-      }
+    if (!dao) {
+      throw new Error(`Dao with id: ${daoId} not found`);
     }
-    return Promise.all([
-      this.ctx.store.findBy(Account, { id: In([...accountIds]) }),
-      this.ctx.store.findBy(Dao, { id: In([...daoIds]) }),
-    ]);
+
+    const kind = getProposalKind(proposal);
+    const id = `${dao.id}-${proposalIndex}`;
+    this._democracyProposalsToInsert.set(
+      id,
+      new DemocracyProposal({
+        id,
+        index: proposalIndex,
+        account: getAccount(accounts, decodeAddress(account)),
+        dao,
+        deposit,
+        kind,
+        meta: meta?.toString(),
+        blockHash,
+        blockNum,
+        status: DemocracyProposalStatus.Open,
+        createdAt: new Date(timestamp),
+        updatedAt: new Date(timestamp),
+      })
+    );
+  }
+
+  processStatus({ event, timestamp }: EventInfo<DaoDemocracyStartedEvent>) {
+    const { daoId, propIndex } = event.asV100;
+
+    const id = `${daoId}-${propIndex}`;
+
+    const proposal =
+      this._democracyProposalsToInsert.get(id) ??
+      this._democracyProposalsQueryMap.get(id);
+
+    if (!proposal) {
+      throw new Error(`Democracy proposal with id: ${id} not found`);
+    }
+
+    proposal.status = DemocracyProposalStatus.Referendum;
+    proposal.updatedAt = new Date(timestamp);
+    this._democracyProposalsToUpdate.set(id, proposal);
+  }
+
+  prepareProposedQuery(
+    event: DaoDemocracyProposedEvent,
+    daoIds: Set<string>,
+    accountIds: Set<string>
+  ) {
+    if (!event.isV100) {
+      throw new Error("Unsupported proposal spec");
+    }
+
+    const { daoId, account } = event.asV100;
+    const accountAddress = decodeAddress(account);
+
+    daoIds.add(daoId.toString());
+    accountIds.add(accountAddress);
+  }
+
+  prepareStatusQuery(event: DaoDemocracyStartedEvent) {
+    if (!event.isV100) {
+      throw new Error("Unsupported democracy proposal status spec");
+    }
+
+    const { daoId, propIndex } = event.asV100;
+
+    const democracyProposalId = `${daoId}-${propIndex}`;
+
+    this._democracyProposalsIds.add(democracyProposalId);
   }
 }

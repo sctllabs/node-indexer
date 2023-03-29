@@ -1,122 +1,141 @@
 import { In } from "typeorm";
+import { DaoDaoRegisteredEvent } from "../types/events";
+import { decodeAddress, getAccount } from "../utils";
 import {
   Account,
   ApproveOriginType,
   Dao,
-  Policy,
+  FungibleToken,
   GovernanceKind,
   GovernanceV1,
   OwnershipWeightedVoting,
-  FungibleToken,
+  Policy,
 } from "../model";
-import { DaoDaoRegisteredEvent } from "../types/events";
-import { getAccount, decodeAddress } from "../utils";
-
+import { DaoGovernance } from "../types/v100";
+import { BaseHandler } from "./baseHandler";
 import type { Ctx } from "../processor";
 import type { EventInfo } from "../types";
 
-import type {
-  DaoConfig,
-  DaoGovernance,
-  DaoPolicy,
-  DaoToken,
-} from "../types/v100";
+export class DaoHandler extends BaseHandler<Dao> {
+  private readonly _daosToInsert: Map<string, Dao>;
+  private readonly _daosToUpdate: Map<string, Dao>;
+  private readonly _policiesToInsert: Map<string, Policy>;
+  private readonly _daosQueryMap: Map<string, Dao>;
+  private readonly _daoIds: Set<string>;
 
-export class DaoHandler {
-  ctx: Ctx;
-  createDaoEvents: EventInfo<DaoDaoRegisteredEvent>[];
-
-  constructor(ctx: Ctx, createDaoEvents: EventInfo<DaoDaoRegisteredEvent>[]) {
-    this.ctx = ctx;
-    this.createDaoEvents = createDaoEvents;
+  constructor(ctx: Ctx) {
+    super(ctx);
+    this._daosToInsert = new Map<string, Dao>();
+    this._daosToUpdate = new Map<string, Dao>();
+    this._daosQueryMap = new Map<string, Dao>();
+    this._policiesToInsert = new Map<string, Policy>();
+    this._daoIds = new Set<string>();
   }
 
-  async handle(
-    fungibleTokensToInsert: Map<string, FungibleToken>,
-    accounts: Map<string, Account>
-  ) {
-    const daosToInsert = new Map<string, Dao>();
-    const policiesToInsert = new Map<string, Policy>();
+  get daosQueryMap() {
+    return this._daosQueryMap;
+  }
 
-    const [accountsQuery, fungibleTokensQuery] =
-      await this.getAccountsAndFungibleTokens(fungibleTokensToInsert, accounts);
+  get daoIds() {
+    return this._daoIds;
+  }
 
-    accountsQuery.map((_account: Account) =>
-      accounts.set(_account.id, _account)
-    );
+  get daosToInsert() {
+    return this._daosToInsert;
+  }
 
-    const fungibleTokensQueryMap = new Map(
-      fungibleTokensQuery.map((_fungibleTokenQuery) => [
-        _fungibleTokenQuery.id,
-        _fungibleTokenQuery,
-      ])
-    );
+  get daosToUpdate() {
+    return this._daosToUpdate;
+  }
 
-    for (const { event, timestamp, blockNum, blockHash } of this
-      .createDaoEvents) {
-      if (!event.isV100) {
-        throw new Error("Unsupported dao spec");
-      }
-
-      const {
-        daoId,
-        founder: encodedFounderAddress,
-        accountId: encodedDaoAddress,
-        config: daoConfig,
-        policy: daoPolicy,
-        council: encodedCouncil,
-        technicalCommittee: encodedTechnicalCommittee,
-        token,
-      } = event.asV100;
-      const founderAddress = decodeAddress(encodedFounderAddress);
-      const daoAccount = decodeAddress(encodedDaoAddress);
-
-      const founder = getAccount(accounts, founderAddress);
-      const account = getAccount(accounts, daoAccount);
-
-      const dao = this.createDao(
-        daoId.toString(),
-        account,
-        founder,
-        daoPolicy,
-        daoConfig,
-        blockHash,
-        blockNum,
-        timestamp
-      );
-
-      dao.council = encodedCouncil.map(
-        (_encodedCouncil) =>
-          getAccount(accounts, decodeAddress(_encodedCouncil)).id
-      );
-      dao.technicalCommittee = encodedTechnicalCommittee.map(
-        (_encodedTechnicalCommittee) =>
-          getAccount(accounts, decodeAddress(_encodedTechnicalCommittee)).id
-      );
-
-      this.mapTokenToDao(
-        dao,
-        token,
-        fungibleTokensQueryMap,
-        fungibleTokensToInsert
-      );
-
-      policiesToInsert.set(dao.policy.id, dao.policy);
-      daosToInsert.set(dao.id, dao);
+  arrayToMap(daos: Dao[]) {
+    for (const dao of daos) {
+      this._daosQueryMap.set(dao.id, dao);
     }
-    return {
-      daosToInsert,
-      policiesToInsert,
-      accounts,
-    };
   }
 
-  private mapTokenToDao(
-    dao: Dao,
-    token: DaoToken,
-    fungibleTokensQuery: Map<string, FungibleToken>,
-    candidateFungibleTokens: Map<string, FungibleToken>
+  insertPolicies() {
+    return this._ctx.store.insert([...this._policiesToInsert.values()]);
+  }
+
+  insertDaos() {
+    return this._ctx.store.insert([...this._daosToInsert.values()]);
+  }
+
+  protected insert() {
+    throw new Error("Method not implemented");
+  }
+
+  save() {
+    return this._ctx.store.save([...this._daosToUpdate.values()]);
+  }
+
+  query() {
+    return this._ctx.store.findBy(Dao, { id: In([...this._daoIds]) });
+  }
+
+  process(
+    { event, blockHash, blockNum, timestamp }: EventInfo<DaoDaoRegisteredEvent>,
+    accounts: Map<string, Account>,
+    fungibleTokensToInsert: Map<string, FungibleToken>,
+    fungibleTokensQueryMap: Map<string, FungibleToken>
   ) {
+    if (!event.isV100) {
+      throw new Error("Unsupported dao spec");
+    }
+
+    const {
+      daoId,
+      founder: encodedFounderAddress,
+      accountId: encodedDaoAddress,
+      config: daoConfig,
+      policy: daoPolicy,
+      council: encodedCouncil,
+      technicalCommittee: encodedTechnicalCommittee,
+      token,
+    } = event.asV100;
+    const founderAddress = decodeAddress(encodedFounderAddress);
+    const daoAccount = decodeAddress(encodedDaoAddress);
+
+    const founder = getAccount(accounts, founderAddress);
+    const account = getAccount(accounts, daoAccount);
+
+    const governance = this.createGovernance(daoPolicy.governance);
+    const policy = new Policy({
+      id: daoId.toString(),
+      proposalPeriod: daoPolicy.proposalPeriod,
+      bountyPayoutDelay: daoPolicy.bountyPayoutDelay,
+      bountyUpdatePeriod: daoPolicy.bountyUpdatePeriod,
+      approveOriginProportion: daoPolicy.approveOrigin.value,
+      approveOriginType: ApproveOriginType[daoPolicy.approveOrigin.__kind],
+      governance,
+    });
+
+    const council = encodedCouncil.map(
+      (_encodedCouncil) =>
+        getAccount(accounts, decodeAddress(_encodedCouncil)).id
+    );
+    const technicalCommittee = encodedTechnicalCommittee.map(
+      (_encodedTechnicalCommittee) =>
+        getAccount(accounts, decodeAddress(_encodedTechnicalCommittee)).id
+    );
+
+    const dao = new Dao({
+      id: daoId.toString(),
+      account,
+      founder,
+
+      council,
+      technicalCommittee,
+      policy,
+      blockHash,
+      blockNum,
+      name: daoConfig.name.toString(),
+      purpose: daoConfig.purpose.toString(),
+      metadata: daoConfig.metadata.toString(),
+      createdAt: new Date(timestamp),
+    });
+
     switch (token.__kind) {
       case "EthTokenAddress": {
         dao.ethTokenAddress = token.value.toString();
@@ -124,8 +143,8 @@ export class DaoHandler {
       }
       case "FungibleToken": {
         const fungibleToken =
-          fungibleTokensQuery.get(token.value.toString()) ??
-          candidateFungibleTokens.get(token.value.toString());
+          fungibleTokensQueryMap.get(token.value.toString()) ??
+          fungibleTokensToInsert.get(token.value.toString());
         if (!fungibleToken) {
           throw new Error(
             `Fungible token with id :${token.value.toString()} does not exist.`
@@ -135,98 +154,44 @@ export class DaoHandler {
         break;
       }
     }
+
+    this._policiesToInsert.set(dao.policy.id, dao.policy);
+    this._daosToInsert.set(dao.id, dao);
   }
 
-  private async getAccountsAndFungibleTokens(
-    fungibleTokensToInsert: Map<string, FungibleToken>,
-    accounts: Map<string, Account>
+  prepareQuery(
+    event: DaoDaoRegisteredEvent,
+    accountIds: Set<string>,
+    fungibleTokenIds: Set<string>
   ) {
-    const accountIds = new Set<string>();
-    const fungibleTokenIds = new Set<string>();
-
-    for (const { event } of this.createDaoEvents) {
-      if (!event.isV100) {
-        throw new Error("Unsupported dao spec");
-      }
-      const {
-        founder: encodedFounderAddress,
-        accountId: encodedDaoAddress,
-        council: encodedCouncil,
-        technicalCommittee: encodedTechnicalCommittee,
-        token,
-      } = event.asV100;
-      const founder = decodeAddress(encodedFounderAddress);
-      const daoAddress = decodeAddress(encodedDaoAddress);
-      encodedCouncil.forEach((_encodedCouncilAddress) => {
-        const decodedAddress = decodeAddress(_encodedCouncilAddress);
-        if (!accounts.get(decodedAddress)) {
-          accountIds.add(decodedAddress);
-        }
-      });
-      encodedTechnicalCommittee.forEach((_encodedTechnicalCommitteeAddress) => {
-        const decodedAddress = decodeAddress(_encodedTechnicalCommitteeAddress);
-        if (!accounts.get(decodedAddress)) {
-          accountIds.add(decodedAddress);
-        }
-      });
-      if (!accounts.get(founder)) {
-        accountIds.add(founder);
-      }
-
-      if (!accounts.get(daoAddress)) {
-        accountIds.add(daoAddress);
-      }
-
-      if (
-        token.__kind === "FungibleToken" &&
-        !fungibleTokensToInsert.get(token.value.toString())
-      ) {
-        fungibleTokenIds.add(token.value.toString());
-      }
+    if (!event.isV100) {
+      throw new Error("Unsupported dao spec");
     }
 
-    return Promise.all([
-      this.ctx.store.findBy(Account, {
-        id: In([...accountIds]),
-      }),
-      this.ctx.store.findBy(FungibleToken, {
-        id: In([...fungibleTokenIds]),
-      }),
-    ]);
-  }
+    const {
+      founder: encodedFounderAddress,
+      accountId: encodedDaoAddress,
+      council: encodedCouncil,
+      technicalCommittee: encodedTechnicalCommittee,
+      token,
+    } = event.asV100;
+    const founder = decodeAddress(encodedFounderAddress);
+    const daoAddress = decodeAddress(encodedDaoAddress);
+    encodedCouncil.forEach((_encodedCouncilAddress) => {
+      const decodedAddress = decodeAddress(_encodedCouncilAddress);
+      accountIds.add(decodedAddress);
+    });
+    encodedTechnicalCommittee.forEach((_encodedTechnicalCommitteeAddress) => {
+      const decodedAddress = decodeAddress(_encodedTechnicalCommitteeAddress);
+      accountIds.add(decodedAddress);
+    });
+    accountIds.add(founder);
 
-  private createDao(
-    daoId: string,
-    account: Account,
-    founder: Account,
-    daoPolicy: DaoPolicy,
-    daoConfig: DaoConfig,
-    blockHash: string,
-    blockNum: number,
-    timestamp: number
-  ) {
-    const governance = this.createGovernance(daoPolicy.governance);
-    const policy = new Policy({
-      id: daoId,
-      proposalPeriod: daoPolicy.proposalPeriod,
-      bountyPayoutDelay: daoPolicy.bountyPayoutDelay,
-      bountyUpdatePeriod: daoPolicy.bountyUpdatePeriod,
-      approveOriginProportion: daoPolicy.approveOrigin.value,
-      approveOriginType: ApproveOriginType[daoPolicy.approveOrigin.__kind],
-      governance,
-    });
-    return new Dao({
-      id: daoId,
-      account,
-      founder,
-      name: daoConfig.name.toString(),
-      purpose: daoConfig.purpose.toString(),
-      metadata: daoConfig.metadata.toString(),
-      policy,
-      blockHash,
-      blockNum,
-      createdAt: new Date(timestamp),
-    });
+    accountIds.add(daoAddress);
+
+    if (token.__kind === "FungibleToken") {
+      fungibleTokenIds.add(token.value.toString());
+    }
   }
 
   private createGovernance(governance: DaoGovernance | undefined) {

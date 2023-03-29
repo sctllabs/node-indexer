@@ -24,6 +24,35 @@ export interface DaoPolicy {
     governance: (DaoGovernance | undefined)
     bountyPayoutDelay: number
     bountyUpdatePeriod: number
+    spendPeriod: number
+}
+
+export type BountyStatus = BountyStatus_Approved | BountyStatus_Funded | BountyStatus_CuratorProposed | BountyStatus_Active | BountyStatus_PendingPayout
+
+export interface BountyStatus_Approved {
+    __kind: 'Approved'
+}
+
+export interface BountyStatus_Funded {
+    __kind: 'Funded'
+}
+
+export interface BountyStatus_CuratorProposed {
+    __kind: 'CuratorProposed'
+    curator: Uint8Array
+}
+
+export interface BountyStatus_Active {
+    __kind: 'Active'
+    curator: Uint8Array
+    updateDue: number
+}
+
+export interface BountyStatus_PendingPayout {
+    __kind: 'PendingPayout'
+    curator: Uint8Array
+    beneficiary: Uint8Array
+    unlockAt: number
 }
 
 export type Type_39 = Type_39_Ok | Type_39_Err
@@ -328,15 +357,15 @@ export interface VoteThreshold_SimpleMajority {
     __kind: 'SimpleMajority'
 }
 
-export type Type_306 = Type_306_Standard | Type_306_Split
+export type Type_307 = Type_307_Standard | Type_307_Split
 
-export interface Type_306_Standard {
+export interface Type_307_Standard {
     __kind: 'Standard'
     vote: number
     balance: bigint
 }
 
-export interface Type_306_Split {
+export interface Type_307_Split {
     __kind: 'Split'
     aye: bigint
     nay: bigint
@@ -960,7 +989,7 @@ export interface SchedulerCall_schedule_named_after {
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  */
-export type DaoCall = DaoCall_create_dao | DaoCall_approve_dao | DaoCall_update_dao_metadata | DaoCall_update_dao_policy | DaoCall_mint_dao_token
+export type DaoCall = DaoCall_create_dao | DaoCall_approve_dao | DaoCall_update_dao_metadata | DaoCall_update_dao_policy | DaoCall_mint_dao_token | DaoCall_spend_dao_funds
 
 export interface DaoCall_create_dao {
     __kind: 'create_dao'
@@ -991,6 +1020,11 @@ export interface DaoCall_mint_dao_token {
     __kind: 'mint_dao_token'
     daoId: number
     amount: bigint
+}
+
+export interface DaoCall_spend_dao_funds {
+    __kind: 'spend_dao_funds'
+    daoId: number
 }
 
 /**
@@ -1251,7 +1285,7 @@ export type BabeCall = BabeCall_report_equivocation | BabeCall_report_equivocati
  */
 export interface BabeCall_report_equivocation {
     __kind: 'report_equivocation'
-    equivocationProof: Type_140
+    equivocationProof: Type_141
     keyOwnerProof: MembershipProof
 }
 
@@ -1267,7 +1301,7 @@ export interface BabeCall_report_equivocation {
  */
 export interface BabeCall_report_equivocation_unsigned {
     __kind: 'report_equivocation_unsigned'
-    equivocationProof: Type_140
+    equivocationProof: Type_141
     keyOwnerProof: MembershipProof
 }
 
@@ -1719,10 +1753,10 @@ export interface StakingCall_set_staking_configs {
     __kind: 'set_staking_configs'
     minNominatorBond: ConfigOp
     minValidatorBond: ConfigOp
-    maxNominatorCount: Type_152
-    maxValidatorCount: Type_152
-    chillThreshold: Type_153
-    minCommission: Type_154
+    maxNominatorCount: Type_153
+    maxValidatorCount: Type_153
+    chillThreshold: Type_154
+    minCommission: Type_155
 }
 
 /**
@@ -2662,9 +2696,9 @@ export interface NominationPoolsCall_set_configs {
     __kind: 'set_configs'
     minJoinBond: ConfigOp
     minCreateBond: ConfigOp
-    maxPools: Type_171
-    maxMembers: Type_171
-    maxMembersPerPool: Type_171
+    maxPools: Type_172
+    maxMembers: Type_172
+    maxMembersPerPool: Type_172
 }
 
 /**
@@ -2679,9 +2713,9 @@ export interface NominationPoolsCall_set_configs {
 export interface NominationPoolsCall_update_roles {
     __kind: 'update_roles'
     poolId: number
-    newRoot: Type_172
-    newNominator: Type_172
-    newStateToggler: Type_172
+    newRoot: Type_173
+    newNominator: Type_173
+    newStateToggler: Type_173
 }
 
 /**
@@ -4180,7 +4214,7 @@ export interface DemocracyCall_second {
 export interface DemocracyCall_vote {
     __kind: 'vote'
     refIndex: number
-    vote: Type_255
+    vote: Type_256
 }
 
 /**
@@ -6816,7 +6850,7 @@ export interface DaoDemocracyCall_vote {
     __kind: 'vote'
     daoId: number
     refIndex: number
-    vote: Type_306
+    vote: Type_307
 }
 
 /**
@@ -7253,7 +7287,7 @@ export interface DaoBountiesCall_propose_curator {
     __kind: 'propose_curator'
     daoId: number
     bountyId: number
-    curator: MultiAddress
+    curator: Uint8Array
     fee: bigint
 }
 
@@ -7316,7 +7350,7 @@ export interface DaoBountiesCall_award_bounty {
     __kind: 'award_bounty'
     daoId: number
     bountyId: number
-    beneficiary: MultiAddress
+    beneficiary: Uint8Array
 }
 
 /**
@@ -7691,7 +7725,7 @@ export interface SessionKeys {
     authorityDiscovery: Uint8Array
 }
 
-export interface Type_140 {
+export interface Type_141 {
     offender: Uint8Array
     slot: bigint
     firstHeader: Header
@@ -7755,21 +7789,6 @@ export interface ConfigOp_Remove {
     __kind: 'Remove'
 }
 
-export type Type_152 = Type_152_Noop | Type_152_Set | Type_152_Remove
-
-export interface Type_152_Noop {
-    __kind: 'Noop'
-}
-
-export interface Type_152_Set {
-    __kind: 'Set'
-    value: number
-}
-
-export interface Type_152_Remove {
-    __kind: 'Remove'
-}
-
 export type Type_153 = Type_153_Noop | Type_153_Set | Type_153_Remove
 
 export interface Type_153_Noop {
@@ -7797,6 +7816,21 @@ export interface Type_154_Set {
 }
 
 export interface Type_154_Remove {
+    __kind: 'Remove'
+}
+
+export type Type_155 = Type_155_Noop | Type_155_Set | Type_155_Remove
+
+export interface Type_155_Noop {
+    __kind: 'Noop'
+}
+
+export interface Type_155_Set {
+    __kind: 'Set'
+    value: number
+}
+
+export interface Type_155_Remove {
     __kind: 'Remove'
 }
 
@@ -7833,21 +7867,6 @@ export interface PoolState_Destroying {
     __kind: 'Destroying'
 }
 
-export type Type_171 = Type_171_Noop | Type_171_Set | Type_171_Remove
-
-export interface Type_171_Noop {
-    __kind: 'Noop'
-}
-
-export interface Type_171_Set {
-    __kind: 'Set'
-    value: number
-}
-
-export interface Type_171_Remove {
-    __kind: 'Remove'
-}
-
 export type Type_172 = Type_172_Noop | Type_172_Set | Type_172_Remove
 
 export interface Type_172_Noop {
@@ -7856,10 +7875,25 @@ export interface Type_172_Noop {
 
 export interface Type_172_Set {
     __kind: 'Set'
-    value: Uint8Array
+    value: number
 }
 
 export interface Type_172_Remove {
+    __kind: 'Remove'
+}
+
+export type Type_173 = Type_173_Noop | Type_173_Set | Type_173_Remove
+
+export interface Type_173_Noop {
+    __kind: 'Noop'
+}
+
+export interface Type_173_Set {
+    __kind: 'Set'
+    value: Uint8Array
+}
+
+export interface Type_173_Remove {
     __kind: 'Remove'
 }
 
@@ -7894,32 +7928,32 @@ export interface OriginCaller_system {
 
 export interface OriginCaller_Dao {
     __kind: 'Dao'
-    value: Type_240
+    value: Type_241
 }
 
 export interface OriginCaller_Council {
     __kind: 'Council'
-    value: Type_241
+    value: Type_242
 }
 
 export interface OriginCaller_TechnicalCommittee {
     __kind: 'TechnicalCommittee'
-    value: Type_242
+    value: Type_243
 }
 
 export interface OriginCaller_Ethereum {
     __kind: 'Ethereum'
-    value: Type_243
+    value: Type_244
 }
 
 export interface OriginCaller_DaoCouncil {
     __kind: 'DaoCouncil'
-    value: Type_245
+    value: Type_246
 }
 
 export interface OriginCaller_DaoTechnicalCommittee {
     __kind: 'DaoTechnicalCommittee'
-    value: Type_246
+    value: Type_247
 }
 
 export interface OriginCaller_Void {
@@ -7978,15 +8012,15 @@ export interface AccountVote_SplitAbstain {
     abstain: bigint
 }
 
-export type Type_255 = Type_255_Standard | Type_255_Split
+export type Type_256 = Type_256_Standard | Type_256_Split
 
-export interface Type_255_Standard {
+export interface Type_256_Standard {
     __kind: 'Standard'
     vote: number
     balance: bigint
 }
 
-export interface Type_255_Split {
+export interface Type_256_Split {
     __kind: 'Split'
     aye: bigint
     nay: bigint
@@ -8082,12 +8116,12 @@ export type Equivocation = Equivocation_Prevote | Equivocation_Precommit
 
 export interface Equivocation_Prevote {
     __kind: 'Prevote'
-    value: Type_106
+    value: Type_107
 }
 
 export interface Equivocation_Precommit {
     __kind: 'Precommit'
-    value: Type_112
+    value: Type_113
 }
 
 export interface Digest {
@@ -8147,27 +8181,11 @@ export interface RawOrigin_None {
     __kind: 'None'
 }
 
-export type Type_240 = Type_240_Dao
+export type Type_241 = Type_241_Dao
 
-export interface Type_240_Dao {
+export interface Type_241_Dao {
     __kind: 'Dao'
     value: Uint8Array
-}
-
-export type Type_241 = Type_241_Members | Type_241_Member | Type_241__Phantom
-
-export interface Type_241_Members {
-    __kind: 'Members'
-    value: [number, number]
-}
-
-export interface Type_241_Member {
-    __kind: 'Member'
-    value: Uint8Array
-}
-
-export interface Type_241__Phantom {
-    __kind: '_Phantom'
 }
 
 export type Type_242 = Type_242_Members | Type_242_Member | Type_242__Phantom
@@ -8186,27 +8204,27 @@ export interface Type_242__Phantom {
     __kind: '_Phantom'
 }
 
-export type Type_243 = Type_243_EthereumTransaction
+export type Type_243 = Type_243_Members | Type_243_Member | Type_243__Phantom
 
-export interface Type_243_EthereumTransaction {
-    __kind: 'EthereumTransaction'
-    value: Uint8Array
-}
-
-export type Type_245 = Type_245_Members | Type_245_Member | Type_245__Phantom
-
-export interface Type_245_Members {
+export interface Type_243_Members {
     __kind: 'Members'
     value: [number, number]
 }
 
-export interface Type_245_Member {
+export interface Type_243_Member {
     __kind: 'Member'
     value: Uint8Array
 }
 
-export interface Type_245__Phantom {
+export interface Type_243__Phantom {
     __kind: '_Phantom'
+}
+
+export type Type_244 = Type_244_EthereumTransaction
+
+export interface Type_244_EthereumTransaction {
+    __kind: 'EthereumTransaction'
+    value: Uint8Array
 }
 
 export type Type_246 = Type_246_Members | Type_246_Member | Type_246__Phantom
@@ -8222,6 +8240,22 @@ export interface Type_246_Member {
 }
 
 export interface Type_246__Phantom {
+    __kind: '_Phantom'
+}
+
+export type Type_247 = Type_247_Members | Type_247_Member | Type_247__Phantom
+
+export interface Type_247_Members {
+    __kind: 'Members'
+    value: [number, number]
+}
+
+export interface Type_247_Member {
+    __kind: 'Member'
+    value: Uint8Array
+}
+
+export interface Type_247__Phantom {
     __kind: '_Phantom'
 }
 
@@ -8264,14 +8298,14 @@ export interface EIP1559Transaction {
     s: Uint8Array
 }
 
-export interface Type_106 {
+export interface Type_107 {
     roundNumber: bigint
     identity: Uint8Array
     first: [Prevote, Uint8Array]
     second: [Prevote, Uint8Array]
 }
 
-export interface Type_112 {
+export interface Type_113 {
     roundNumber: bigint
     identity: Uint8Array
     first: [Precommit, Uint8Array]

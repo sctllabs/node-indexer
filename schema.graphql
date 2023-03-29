@@ -104,10 +104,20 @@ type TransferToken {
   amount: BigInt!
   beneficiary: String!
 }
+
+type CreateBounty {
+  value: BigInt!
+  description: String!
+}
 # end Proposal types
 
 # start CouncilProposal
-union CouncilProposalKind = AddMember | RemoveMember | Spend | TransferToken
+union CouncilProposalKind =
+    AddMember
+  | RemoveMember
+  | Spend
+  | TransferToken
+  | CreateBounty
 
 enum CouncilProposalStatus {
   Open
@@ -127,6 +137,7 @@ type CouncilProposal @entity {
   kind: CouncilProposalKind!
   meta: String
   createdAt: DateTime!
+  updatedAt: DateTime!
   blockHash: String!
   blockNum: Int!
   status: CouncilProposalStatus!
@@ -146,7 +157,12 @@ type CouncilVoteHistory @entity {
 # end CouncilProposal
 
 # start DemocracyProposal
-union DemocracyProposalKind = AddMember | RemoveMember | Spend | TransferToken
+union DemocracyProposalKind =
+    AddMember
+  | RemoveMember
+  | Spend
+  | TransferToken
+  | CreateBounty
 
 enum DemocracyProposalStatus {
   Open
@@ -162,6 +178,7 @@ type DemocracyProposal @entity {
   kind: DemocracyProposalKind!
   meta: String
   createdAt: DateTime!
+  updatedAt: DateTime!
   blockHash: String!
   blockNum: Int!
   status: DemocracyProposalStatus!
@@ -195,6 +212,8 @@ type DemocracyReferendum @entity {
   democracyProposal: DemocracyProposal!
   status: DemocracyReferendumStatus!
   index: Int!
+  createdAt: DateTime!
+  updatedAt: DateTime!
 }
 # end DemocracyReferendum
 
@@ -215,3 +234,42 @@ type DemocracyDelegation @entity {
   target: Account!
 }
 # end DemocracyDelegation
+
+# start Bounty
+
+enum BountyStatus {
+  Created
+  BecameActive
+  CuratorProposed
+  CuratorUnassigned
+  CuratorAccepted
+  Awarded
+  Claimed
+  Cancelled
+  Extended
+}
+
+enum BountyTag {
+  Council
+  Democracy
+}
+
+type Bounty @entity {
+  id: ID!
+  dao: Dao!
+  tag: BountyTag!
+  index: Int!
+  status: BountyStatus!
+  description: String!
+  value: BigInt!
+  curator: Account
+  beneficiary: Account
+  updateDue: Int
+  unlockAt: Int
+  fee: BigInt
+  payout: BigInt
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+# end Bounty

@@ -40,6 +40,9 @@ export class CouncilProposal {
     @Column_("timestamp with time zone", {nullable: false})
     createdAt!: Date
 
+    @Column_("timestamp with time zone", {nullable: false})
+    updatedAt!: Date
+
     @Column_("text", {nullable: false})
     blockHash!: string
 

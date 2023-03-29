@@ -24,4 +24,10 @@ export class DemocracyReferendum {
 
     @Column_("int4", {nullable: false})
     index!: number
+
+    @Column_("timestamp with time zone", {nullable: false})
+    createdAt!: Date
+
+    @Column_("timestamp with time zone", {nullable: false})
+    updatedAt!: Date
 }
