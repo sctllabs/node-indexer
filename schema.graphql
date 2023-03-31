@@ -314,6 +314,7 @@ type EthGovernanceVoteHistory @entity {
   aye: Boolean
   balance: BigInt
   createdAt: DateTime!
+  updatedAt: DateTime!
   blockHash: String!
   blockNum: Int!
 }

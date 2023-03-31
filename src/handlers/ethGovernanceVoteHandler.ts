@@ -95,7 +95,12 @@ export class EthGovernanceVoteHandler extends BaseHandler<EthGovernanceVoteHisto
     if (existingVote) {
       this._ethGovernanceVotesToUpdate.set(
         id,
-        new EthGovernanceVoteHistory({ ...existingVote, aye, balance })
+        new EthGovernanceVoteHistory({
+          ...existingVote,
+          aye,
+          balance,
+          updatedAt: new Date(timestamp),
+        })
       );
     } else {
       this._ethGovernanceVotesToInsert.set(
