@@ -93,7 +93,7 @@ services:
     depends_on:
       - processor-db
       - node
-    image: societal/node-indexer:latest
+    image: societal/node-indexer:release-democracy-latest
     environment:
       APP_TYPE: processor
       DB_NAME: squid
@@ -110,7 +110,7 @@ services:
     container_name: indexer-processor-query-node
     depends_on:
       - processor-db
-    image: okalenyk/node-indexer:latest
+    image: societal/node-indexer:release-democracy-latest
     environment:
       APP_TYPE: query-node
       DB_NAME: squid
