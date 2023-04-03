@@ -27,6 +27,12 @@ import {
   DaoDemocracyStartedEvent,
   DaoDemocracyUndelegatedEvent,
   DaoDemocracyVotedEvent,
+  DaoEthGovernanceApprovedEvent,
+  DaoEthGovernanceClosedEvent,
+  DaoEthGovernanceDisapprovedEvent,
+  DaoEthGovernanceExecutedEvent,
+  DaoEthGovernanceProposedEvent,
+  DaoEthGovernanceVotedEvent,
 } from "./types/events";
 
 export type EventInfo<T> = {
@@ -64,6 +70,12 @@ export type EventType =
   | DaoBountiesBountyAwardedEvent
   | DaoBountiesBountyClaimedEvent
   | DaoBountiesBountyCanceledEvent
-  | DaoBountiesBountyExtendedEvent;
+  | DaoBountiesBountyExtendedEvent
+  | DaoEthGovernanceApprovedEvent
+  | DaoEthGovernanceClosedEvent
+  | DaoEthGovernanceDisapprovedEvent
+  | DaoEthGovernanceExecutedEvent
+  | DaoEthGovernanceProposedEvent
+  | DaoEthGovernanceVotedEvent;
 
 export type EventsInfo = EventInfo<EventType>[];

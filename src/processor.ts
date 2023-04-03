@@ -35,6 +35,24 @@ const processor = new SubstrateBatchProcessor()
   .addEvent("DaoCouncil.Closed", {
     data: { event: { args: true } },
   } as const)
+  .addEvent("DaoEthGovernance.Proposed", {
+    data: { event: { args: true } },
+  } as const)
+  .addEvent("DaoEthGovernance.Voted", {
+    data: { event: { args: true } },
+  } as const)
+  .addEvent("DaoEthGovernance.Approved", {
+    data: { event: { args: true } },
+  } as const)
+  .addEvent("DaoEthGovernance.Disapproved", {
+    data: { event: { args: true } },
+  } as const)
+  .addEvent("DaoEthGovernance.Executed", {
+    data: { event: { args: true } },
+  } as const)
+  .addEvent("DaoEthGovernance.Closed", {
+    data: { event: { args: true } },
+  } as const)
   .addEvent("DaoCouncilMembers.MemberAdded", {
     data: { event: { args: true } },
   } as const)
