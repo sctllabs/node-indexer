@@ -126,7 +126,7 @@ services:
     depends_on:
       - processor-query-node
       - node
-    image: societal/societal-client:latest
+    image: societal/societal-client:release-democracy-latest
     ports:
       - "3000:3000"
     environment:
