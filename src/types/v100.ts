@@ -7192,7 +7192,7 @@ export interface HotfixSufficientsCall_hotfix_inc_account_sufficients {
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  */
-export type DaoCall = DaoCall_create_dao | DaoCall_approve_dao | DaoCall_update_dao_metadata | DaoCall_update_dao_policy | DaoCall_mint_dao_token | DaoCall_spend_dao_funds
+export type DaoCall = DaoCall_create_dao | DaoCall_approve_dao | DaoCall_update_dao_metadata | DaoCall_update_dao_policy | DaoCall_mint_dao_token | DaoCall_spend_dao_funds | DaoCall_launch_dao_referendum | DaoCall_bake_dao_referendum
 
 export interface DaoCall_create_dao {
     __kind: 'create_dao'
@@ -7227,6 +7227,16 @@ export interface DaoCall_mint_dao_token {
 
 export interface DaoCall_spend_dao_funds {
     __kind: 'spend_dao_funds'
+    daoId: number
+}
+
+export interface DaoCall_launch_dao_referendum {
+    __kind: 'launch_dao_referendum'
+    daoId: number
+}
+
+export interface DaoCall_bake_dao_referendum {
+    __kind: 'bake_dao_referendum'
     daoId: number
 }
 
