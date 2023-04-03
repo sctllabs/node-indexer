@@ -187,13 +187,13 @@ export class DaoBountiesBountyCreatedEvent {
      * New bounty proposal.
      */
     get isV100(): boolean {
-        return this._chain.getEventHash('DaoBounties.BountyCreated') === '594de67e18ff4c46c7a6c1ac7a6a702e837b273842af8216c3759fb2e4ac2f92'
+        return this._chain.getEventHash('DaoBounties.BountyCreated') === '3a7cfd24eb009cc94e43618beeab5954dc4936b3b68e554c8717328119dd9828'
     }
 
     /**
      * New bounty proposal.
      */
-    get asV100(): {daoId: number, index: number, status: v100.BountyStatus, description: Uint8Array, value: bigint} {
+    get asV100(): {daoId: number, index: number, status: v100.BountyStatus, description: Uint8Array, value: bigint, tokenId: (bigint | undefined)} {
         assert(this.isV100)
         return this._chain.decodeEvent(this.event)
     }
