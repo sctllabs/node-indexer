@@ -7281,7 +7281,7 @@ export interface DaoTreasuryCall_transfer_token_by_id {
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  */
-export type DaoCouncilCall = DaoCouncilCall_set_members | DaoCouncilCall_propose | DaoCouncilCall_propose_with_meta | DaoCouncilCall_vote | DaoCouncilCall_close
+export type DaoCouncilCall = DaoCouncilCall_set_members | DaoCouncilCall_propose | DaoCouncilCall_propose_with_meta | DaoCouncilCall_vote | DaoCouncilCall_close | DaoCouncilCall_close_scheduled_proposal
 
 /**
  * Set the collective's membership.
@@ -7436,10 +7436,19 @@ export interface DaoCouncilCall_close {
     lengthBound: number
 }
 
+export interface DaoCouncilCall_close_scheduled_proposal {
+    __kind: 'close_scheduled_proposal'
+    daoId: number
+    proposalHash: Uint8Array
+    index: number
+    proposalWeightBound: Weight
+    lengthBound: number
+}
+
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  */
-export type DaoTechnicalCommitteeCall = DaoTechnicalCommitteeCall_set_members | DaoTechnicalCommitteeCall_propose | DaoTechnicalCommitteeCall_propose_with_meta | DaoTechnicalCommitteeCall_vote | DaoTechnicalCommitteeCall_close
+export type DaoTechnicalCommitteeCall = DaoTechnicalCommitteeCall_set_members | DaoTechnicalCommitteeCall_propose | DaoTechnicalCommitteeCall_propose_with_meta | DaoTechnicalCommitteeCall_vote | DaoTechnicalCommitteeCall_close | DaoTechnicalCommitteeCall_close_scheduled_proposal
 
 /**
  * Set the collective's membership.
@@ -7587,6 +7596,15 @@ export interface DaoTechnicalCommitteeCall_vote {
  */
 export interface DaoTechnicalCommitteeCall_close {
     __kind: 'close'
+    daoId: number
+    proposalHash: Uint8Array
+    index: number
+    proposalWeightBound: Weight
+    lengthBound: number
+}
+
+export interface DaoTechnicalCommitteeCall_close_scheduled_proposal {
+    __kind: 'close_scheduled_proposal'
     daoId: number
     proposalHash: Uint8Array
     index: number
@@ -8085,7 +8103,7 @@ export interface DaoDemocracyCall_cancel_proposal {
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  */
-export type DaoEthGovernanceCall = DaoEthGovernanceCall_propose | DaoEthGovernanceCall_propose_with_meta | DaoEthGovernanceCall_vote | DaoEthGovernanceCall_close | DaoEthGovernanceCall_approve_propose | DaoEthGovernanceCall_approve_vote
+export type DaoEthGovernanceCall = DaoEthGovernanceCall_propose | DaoEthGovernanceCall_propose_with_meta | DaoEthGovernanceCall_vote | DaoEthGovernanceCall_close | DaoEthGovernanceCall_approve_propose | DaoEthGovernanceCall_approve_vote | DaoEthGovernanceCall_close_scheduled_proposal
 
 /**
  * Add a new proposal to either be voted on or executed directly.
@@ -8163,6 +8181,15 @@ export interface DaoEthGovernanceCall_approve_vote {
     daoId: number
     hash: Uint8Array
     approve: boolean
+}
+
+export interface DaoEthGovernanceCall_close_scheduled_proposal {
+    __kind: 'close_scheduled_proposal'
+    daoId: number
+    proposalHash: Uint8Array
+    index: number
+    proposalWeightBound: Weight
+    lengthBound: number
 }
 
 /**

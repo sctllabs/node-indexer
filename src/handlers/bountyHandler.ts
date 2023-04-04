@@ -12,7 +12,7 @@ import {
   DaoBountiesBountyCuratorUnassignedEvent,
   DaoBountiesBountyExtendedEvent,
 } from "../types/events";
-import { Account, Bounty, BountyStatus, BountyTag, Dao } from "../model";
+import { Account, Bounty, BountyStatus, Dao } from "../model";
 import { decodeAddress, decodeString, getAccount } from "../utils";
 import { BaseHandler } from "./baseHandler";
 
@@ -166,7 +166,7 @@ export class BountyHandler extends BaseHandler<Bounty> {
     daosToUpdate: Map<string, Dao>,
     daosQueryMap: Map<string, Dao>
   ) {
-    const { daoId, index, description, value } = event.asV100;
+    const { daoId, index, description, value, tokenId } = event.asV100;
 
     const id = `${daoId}-${index}`;
 
@@ -179,8 +179,7 @@ export class BountyHandler extends BaseHandler<Bounty> {
       throw new Error(`Dao with id: ${daoId} not found.`);
     }
 
-    // TODO figure out how to find out a tag
-    const tag = BountyTag.Council;
+    const nativeToken = tokenId === undefined;
 
     this._bountiesToInsert.set(
       id,
@@ -189,7 +188,9 @@ export class BountyHandler extends BaseHandler<Bounty> {
         index,
         value,
         dao,
-        tag,
+        nativeToken,
+        blockHash,
+        blockNum,
         description: decodeString(description),
         status: BountyStatus.Created,
         createdAt: new Date(timestamp),

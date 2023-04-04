@@ -113,8 +113,8 @@ export class CouncilProposalHandler extends BaseHandler<CouncilProposal> {
         kind,
         dao,
         blockHash,
-        status: CouncilProposalStatus.Open,
         blockNum,
+        status: CouncilProposalStatus.Open,
         createdAt: new Date(timestamp),
         updatedAt: new Date(timestamp),
       })

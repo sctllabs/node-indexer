@@ -106,8 +106,22 @@ type TransferToken {
 }
 
 type CreateBounty {
+  daoId: Int!
   value: BigInt!
   description: String!
+}
+
+type CreateTokenBounty {
+  daoId: Int!
+  tokenId: BigInt
+  value: BigInt!
+  description: String!
+}
+
+type ProposeCurator {
+  bountyId: Int!
+  curator: String!
+  fee: BigInt
 }
 # end Proposal types
 
@@ -118,6 +132,8 @@ union CouncilProposalKind =
   | Spend
   | TransferToken
   | CreateBounty
+  | CreateTokenBounty
+  | ProposeCurator
 
 enum CouncilProposalStatus {
   Open
@@ -151,6 +167,7 @@ type CouncilVoteHistory @entity {
   votedYes: Int
   votedNo: Int
   createdAt: DateTime!
+  updatedAt: DateTime!
   blockHash: String!
   blockNum: Int!
 }
@@ -163,6 +180,8 @@ union DemocracyProposalKind =
   | Spend
   | TransferToken
   | CreateBounty
+  | CreateTokenBounty
+  | ProposeCurator
 
 enum DemocracyProposalStatus {
   Open
@@ -189,6 +208,10 @@ type DemocracySecond @entity {
   seconder: Account!
   count: Int!
   proposal: DemocracyProposal!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  blockHash: String!
+  blockNum: Int!
 }
 # end DemocracyProposal
 
@@ -212,6 +235,8 @@ type DemocracyReferendum @entity {
   democracyProposal: DemocracyProposal!
   status: DemocracyReferendumStatus!
   index: Int!
+  blockHash: String!
+  blockNum: Int!
   createdAt: DateTime!
   updatedAt: DateTime!
 }
@@ -249,17 +274,12 @@ enum BountyStatus {
   Extended
 }
 
-enum BountyTag {
-  Council
-  Democracy
-}
-
 type Bounty @entity {
   id: ID!
   dao: Dao!
-  tag: BountyTag!
   index: Int!
   status: BountyStatus!
+  nativeToken: Boolean!
   description: String!
   value: BigInt!
   curator: Account
@@ -268,6 +288,8 @@ type Bounty @entity {
   unlockAt: Int
   fee: BigInt
   payout: BigInt
+  blockHash: String!
+  blockNum: Int!
   createdAt: DateTime!
   updatedAt: DateTime!
 }

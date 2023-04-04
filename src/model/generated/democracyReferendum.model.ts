@@ -25,6 +25,12 @@ export class DemocracyReferendum {
     @Column_("int4", {nullable: false})
     index!: number
 
+    @Column_("text", {nullable: false})
+    blockHash!: string
+
+    @Column_("int4", {nullable: false})
+    blockNum!: number
+
     @Column_("timestamp with time zone", {nullable: false})
     createdAt!: Date
 

@@ -124,6 +124,8 @@ export class DemocracyReferendumHandler extends BaseHandler<DemocracyReferendum>
         voteThreshold,
         status: DemocracyReferendumStatus.Started,
         index: refIndex,
+        blockHash,
+        blockNum,
         createdAt: new Date(timestamp),
         updatedAt: new Date(timestamp),
       })
