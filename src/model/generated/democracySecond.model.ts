@@ -21,4 +21,16 @@ export class DemocracySecond {
     @Index_()
     @ManyToOne_(() => DemocracyProposal, {nullable: true})
     proposal!: DemocracyProposal
+
+    @Column_("timestamp with time zone", {nullable: false})
+    createdAt!: Date
+
+    @Column_("timestamp with time zone", {nullable: false})
+    updatedAt!: Date
+
+    @Column_("text", {nullable: false})
+    blockHash!: string
+
+    @Column_("int4", {nullable: false})
+    blockNum!: number
 }

@@ -303,13 +303,13 @@ export class DaoBountiesBountyExtendedEvent {
      * A bounty expiry is extended.
      */
     get isV100(): boolean {
-        return this._chain.getEventHash('DaoBounties.BountyExtended') === '1c8b8b74eff9636a99f12a72bbe8264b3ebf1177cf9a8591fe0f376074b55f19'
+        return this._chain.getEventHash('DaoBounties.BountyExtended') === 'e9eeb18bd16c99d284e1226ac648eaca22e47eb332014e2aee7bcf6e57fdf7ba'
     }
 
     /**
      * A bounty expiry is extended.
      */
-    get asV100(): {daoId: number, index: number} {
+    get asV100(): {daoId: number, index: number, updateDue: number} {
         assert(this.isV100)
         return this._chain.decodeEvent(this.event)
     }
@@ -449,7 +449,7 @@ export class DaoCouncilProposedEvent {
      * `MemberCount`).
      */
     get isV100(): boolean {
-        return this._chain.getEventHash('DaoCouncil.Proposed') === '395d590380220848dfebc85885a599f6cadd4ac2e12cbad634f39a45e6e3880a'
+        return this._chain.getEventHash('DaoCouncil.Proposed') === 'fa9187c2b3b9176a5828fc0384eb9c14df26c6bc4c7ecdb7adfcf51c259e34d5'
     }
 
     /**
@@ -684,7 +684,7 @@ export class DaoDemocracyProposedEvent {
      * A motion has been proposed by a public account.
      */
     get isV100(): boolean {
-        return this._chain.getEventHash('DaoDemocracy.Proposed') === '663ab702554312a3d000873e2b41ae8e9bedb6091a1f563542deabab340ceb43'
+        return this._chain.getEventHash('DaoDemocracy.Proposed') === '72d4d43199d0045c5fbbf9cfa3ce9eadb69cf675a45496aadc6fb4bb199be2cd'
     }
 
     /**
@@ -945,7 +945,7 @@ export class DaoEthGovernanceProposedEvent {
      * A motion (given hash) has been proposed (by given account) with a threshold
      */
     get isV100(): boolean {
-        return this._chain.getEventHash('DaoEthGovernance.Proposed') === 'c2674559ccbff0c740767095b5faff7a020f042b35464dcba7dfb8f6ef067911'
+        return this._chain.getEventHash('DaoEthGovernance.Proposed') === 'c09a91f613e64536ef93ed525871d6a5ac5220f05009ec72e8ffe307f86f0028'
     }
 
     /**

@@ -1,7 +1,6 @@
 import {Entity as Entity_, Column as Column_, PrimaryColumn as PrimaryColumn_, ManyToOne as ManyToOne_, Index as Index_} from "typeorm"
 import * as marshal from "./marshal"
 import {Dao} from "./dao.model"
-import {BountyTag} from "./_bountyTag"
 import {BountyStatus} from "./_bountyStatus"
 import {Account} from "./account.model"
 
@@ -18,14 +17,14 @@ export class Bounty {
     @ManyToOne_(() => Dao, {nullable: true})
     dao!: Dao
 
-    @Column_("varchar", {length: 9, nullable: false})
-    tag!: BountyTag
-
     @Column_("int4", {nullable: false})
     index!: number
 
     @Column_("varchar", {length: 17, nullable: false})
     status!: BountyStatus
+
+    @Column_("bool", {nullable: false})
+    nativeToken!: boolean
 
     @Column_("text", {nullable: false})
     description!: string
@@ -52,6 +51,12 @@ export class Bounty {
 
     @Column_("numeric", {transformer: marshal.bigintTransformer, nullable: true})
     payout!: bigint | undefined | null
+
+    @Column_("text", {nullable: false})
+    blockHash!: string
+
+    @Column_("int4", {nullable: false})
+    blockNum!: number
 
     @Column_("timestamp with time zone", {nullable: false})
     createdAt!: Date

@@ -419,6 +419,7 @@ export class EventHandler {
         },
         this._accountHandler.accounts
       );
+      return;
     }
   }
 
