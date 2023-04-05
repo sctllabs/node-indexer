@@ -303,6 +303,8 @@ union EthGovernanceProposalKind =
   | Spend
   | TransferToken
   | CreateBounty
+  | CreateTokenBounty
+  | ProposeCurator
 
 enum EthGovernanceProposalStatus {
   Open
