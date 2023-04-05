@@ -303,13 +303,13 @@ export class DaoBountiesBountyExtendedEvent {
      * A bounty expiry is extended.
      */
     get isV100(): boolean {
-        return this._chain.getEventHash('DaoBounties.BountyExtended') === '1c8b8b74eff9636a99f12a72bbe8264b3ebf1177cf9a8591fe0f376074b55f19'
+        return this._chain.getEventHash('DaoBounties.BountyExtended') === 'e9eeb18bd16c99d284e1226ac648eaca22e47eb332014e2aee7bcf6e57fdf7ba'
     }
 
     /**
      * A bounty expiry is extended.
      */
-    get asV100(): {daoId: number, index: number} {
+    get asV100(): {daoId: number, index: number, updateDue: number} {
         assert(this.isV100)
         return this._chain.decodeEvent(this.event)
     }

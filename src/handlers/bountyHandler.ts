@@ -96,8 +96,9 @@ export class BountyHandler extends BaseHandler<Bounty> {
     } else if (event instanceof DaoBountiesBountyCuratorAcceptedEvent) {
       bounty.status = BountyStatus.CuratorAccepted;
     } else if (event instanceof DaoBountiesBountyExtendedEvent) {
-      // TODO update updateDue when field added to ExtendedEvent
+      const { updateDue } = event.asV100;
       bounty.status = BountyStatus.Extended;
+      bounty.updateDue = updateDue;
     } else if (event instanceof DaoBountiesBountyClaimedEvent) {
       const { payout, beneficiary } = event.asV100;
       const beneficiaryAddress = decodeAddress(beneficiary);
