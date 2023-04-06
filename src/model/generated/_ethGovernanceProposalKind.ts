@@ -5,8 +5,9 @@ import {TransferToken} from "./_transferToken"
 import {CreateBounty} from "./_createBounty"
 import {CreateTokenBounty} from "./_createTokenBounty"
 import {ProposeCurator} from "./_proposeCurator"
+import {UnassignCurator} from "./_unassignCurator"
 
-export type EthGovernanceProposalKind = AddMember | RemoveMember | Spend | TransferToken | CreateBounty | CreateTokenBounty | ProposeCurator
+export type EthGovernanceProposalKind = AddMember | RemoveMember | Spend | TransferToken | CreateBounty | CreateTokenBounty | ProposeCurator | UnassignCurator
 
 export function fromJsonEthGovernanceProposalKind(json: any): EthGovernanceProposalKind {
     switch(json?.isTypeOf) {
@@ -17,6 +18,7 @@ export function fromJsonEthGovernanceProposalKind(json: any): EthGovernancePropo
         case 'CreateBounty': return new CreateBounty(undefined, json)
         case 'CreateTokenBounty': return new CreateTokenBounty(undefined, json)
         case 'ProposeCurator': return new ProposeCurator(undefined, json)
+        case 'UnassignCurator': return new UnassignCurator(undefined, json)
         default: throw new TypeError('Unknown json object passed as EthGovernanceProposalKind')
     }
 }

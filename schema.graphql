@@ -123,6 +123,11 @@ type ProposeCurator {
   curator: String!
   fee: BigInt
 }
+
+type UnassignCurator {
+  daoId: Int!
+  bountyId: Int!
+}
 # end Proposal types
 
 # start CouncilProposal
@@ -134,6 +139,7 @@ union CouncilProposalKind =
   | CreateBounty
   | CreateTokenBounty
   | ProposeCurator
+  | UnassignCurator
 
 enum CouncilProposalStatus {
   Open
@@ -182,6 +188,7 @@ union DemocracyProposalKind =
   | CreateBounty
   | CreateTokenBounty
   | ProposeCurator
+  | UnassignCurator
 
 enum DemocracyProposalStatus {
   Open
@@ -305,6 +312,7 @@ union EthGovernanceProposalKind =
   | CreateBounty
   | CreateTokenBounty
   | ProposeCurator
+  | UnassignCurator
 
 enum EthGovernanceProposalStatus {
   Open

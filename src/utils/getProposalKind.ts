@@ -1,4 +1,8 @@
-import { Call, DaoBountiesCall_propose_curator } from "../types/v100";
+import {
+  Call,
+  DaoBountiesCall_propose_curator,
+  DaoBountiesCall_unassign_curator,
+} from "../types/v100";
 import {
   AddMember,
   CreateBounty,
@@ -7,6 +11,7 @@ import {
   RemoveMember,
   Spend,
   TransferToken,
+  UnassignCurator,
 } from "../model";
 import { decodeAddress } from "./decodeAddress";
 import { decodeString } from "./decodeString";
@@ -61,6 +66,14 @@ export function getProposalKind(proposal: Call) {
         bountyId,
         fee,
         curator: decodeAddress(curator),
+      });
+    }
+    case "unassign_curator": {
+      const { daoId, bountyId } =
+        proposal.value as DaoBountiesCall_unassign_curator;
+      return new UnassignCurator({
+        bountyId,
+        daoId,
       });
     }
     default: {
