@@ -29,6 +29,9 @@ export class EthGovernanceProposal {
     dao!: Dao
 
     @Column_("numeric", {transformer: marshal.bigintTransformer, nullable: false})
+    blockNumber!: bigint
+
+    @Column_("numeric", {transformer: marshal.bigintTransformer, nullable: false})
     voteThreshold!: bigint
 
     @Column_("jsonb", {transformer: {to: obj => obj.toJSON(), from: obj => obj == null ? undefined : fromJsonEthGovernanceProposalKind(obj)}, nullable: false})

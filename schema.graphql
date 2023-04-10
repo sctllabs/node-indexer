@@ -330,6 +330,7 @@ type EthGovernanceProposal @entity {
   hash: String!
   account: Account!
   dao: Dao!
+  blockNumber: BigInt!
   voteThreshold: BigInt!
   kind: EthGovernanceProposalKind!
   meta: String

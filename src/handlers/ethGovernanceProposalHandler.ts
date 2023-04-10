@@ -118,6 +118,7 @@ export class EthGovernanceProposalHandler extends BaseHandler<EthGovernancePropo
       meta,
       threshold,
       daoId,
+      blockNumber,
     } = event.asV100;
 
     const dao =
@@ -139,6 +140,7 @@ export class EthGovernanceProposalHandler extends BaseHandler<EthGovernancePropo
         index: proposalIndex,
         account: getAccount(accounts, decodeAddress(account)),
         meta: meta?.toString(),
+        blockNumber: BigInt(blockNumber),
         voteThreshold: threshold,
         kind,
         dao,
