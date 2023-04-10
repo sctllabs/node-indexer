@@ -6,6 +6,7 @@ module.exports = class Data1681121373673 {
         await db.query(`ALTER TABLE "council_proposal" ADD "reason" text`)
         await db.query(`ALTER TABLE "eth_governance_proposal" ADD "executed" boolean`)
         await db.query(`ALTER TABLE "eth_governance_proposal" ADD "reason" text`)
+        await db.query(`ALTER TABLE "eth_governance_vote_history" DROP COLUMN "approved_vote"`)
     }
 
     async down(db) {
@@ -13,5 +14,6 @@ module.exports = class Data1681121373673 {
         await db.query(`ALTER TABLE "council_proposal" DROP COLUMN "reason"`)
         await db.query(`ALTER TABLE "eth_governance_proposal" DROP COLUMN "executed"`)
         await db.query(`ALTER TABLE "eth_governance_proposal" DROP COLUMN "reason"`)
+        await db.query(`ALTER TABLE "eth_governance_vote_history" ADD "approved_vote" boolean NOT NULL`)
     }
 }

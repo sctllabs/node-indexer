@@ -345,7 +345,6 @@ type EthGovernanceProposal @entity {
 type EthGovernanceVoteHistory @entity {
   id: ID!
   proposal: EthGovernanceProposal
-  approvedVote: Boolean!
   account: Account
   aye: Boolean
   balance: BigInt
