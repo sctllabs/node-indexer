@@ -163,6 +163,8 @@ type CouncilProposal @entity {
   blockHash: String!
   blockNum: Int!
   status: CouncilProposalStatus!
+  executed: Boolean
+  reason: String
 }
 
 type CouncilVoteHistory @entity {
@@ -336,6 +338,8 @@ type EthGovernanceProposal @entity {
   blockHash: String!
   blockNum: Int!
   status: EthGovernanceProposalStatus!
+  executed: Boolean
+  reason: String
 }
 
 type EthGovernanceVoteHistory @entity {

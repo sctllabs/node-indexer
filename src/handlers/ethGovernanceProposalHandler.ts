@@ -6,7 +6,12 @@ import {
   DaoEthGovernanceExecutedEvent,
   DaoEthGovernanceProposedEvent,
 } from "../types/events";
-import { Account, Dao, EthGovernanceProposalStatus } from "../model";
+import {
+  Account,
+  Dao,
+  EthGovernanceProposalStatus,
+  EthGovernanceProposal,
+} from "../model";
 import {
   decodeAddress,
   decodeHash,
@@ -16,7 +21,6 @@ import {
 import { BaseHandler } from "./baseHandler";
 import type { EventInfo } from "../types";
 import type { Ctx } from "../processor";
-import { EthGovernanceProposal } from "../model/generated/ethGovernanceProposal.model";
 
 type EthGovernanceProposalStatusEvents =
   | DaoEthGovernanceApprovedEvent
@@ -168,6 +172,18 @@ export class EthGovernanceProposalHandler extends BaseHandler<EthGovernancePropo
     } else if (event instanceof DaoEthGovernanceClosedEvent) {
       proposal.status = EthGovernanceProposalStatus.Closed;
     } else {
+      const { result } = event.asV100;
+      switch (result.__kind) {
+        case "Ok": {
+          proposal.executed = true;
+          break;
+        }
+        case "Err": {
+          proposal.executed = false;
+          proposal.reason = result.value.__kind;
+          break;
+        }
+      }
       proposal.status = EthGovernanceProposalStatus.Executed;
     }
 
