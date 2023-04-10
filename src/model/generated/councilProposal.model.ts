@@ -51,10 +51,4 @@ export class CouncilProposal {
 
     @Column_("varchar", {length: 11, nullable: false})
     status!: CouncilProposalStatus
-
-    @Column_("bool", {nullable: true})
-    executed!: boolean | undefined | null
-
-    @Column_("text", {nullable: true})
-    reason!: string | undefined | null
 }

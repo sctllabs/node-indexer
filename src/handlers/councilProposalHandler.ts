@@ -139,18 +139,6 @@ export class CouncilProposalHandler extends BaseHandler<CouncilProposal> {
     } else if (event instanceof DaoCouncilClosedEvent) {
       proposal.status = CouncilProposalStatus.Closed;
     } else {
-      const { result } = event.asV100;
-      switch (result.__kind) {
-        case "Ok": {
-          proposal.executed = true;
-          break;
-        }
-        case "Err": {
-          proposal.executed = false;
-          proposal.reason = result.value.__kind;
-          break;
-        }
-      }
       proposal.status = CouncilProposalStatus.Executed;
     }
 
