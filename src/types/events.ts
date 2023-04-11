@@ -945,13 +945,13 @@ export class DaoEthGovernanceProposedEvent {
      * A motion (given hash) has been proposed (by given account) with a threshold
      */
     get isV100(): boolean {
-        return this._chain.getEventHash('DaoEthGovernance.Proposed') === 'c09a91f613e64536ef93ed525871d6a5ac5220f05009ec72e8ffe307f86f0028'
+        return this._chain.getEventHash('DaoEthGovernance.Proposed') === '763d9e76c31bb49d2f985ef16cf8ca5a52a0e3a1cfb8c5c31dc7957e3dd2446f'
     }
 
     /**
      * A motion (given hash) has been proposed (by given account) with a threshold
      */
-    get asV100(): {daoId: number, account: Uint8Array, proposalIndex: number, proposalHash: Uint8Array, proposal: v100.Call, threshold: bigint, meta: Uint8Array} {
+    get asV100(): {daoId: number, account: Uint8Array, proposalIndex: number, proposalHash: Uint8Array, proposal: v100.Call, blockNumber: number, threshold: bigint, meta: Uint8Array} {
         assert(this.isV100)
         return this._chain.decodeEvent(this.event)
     }

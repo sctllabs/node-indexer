@@ -29,6 +29,9 @@ export class EthGovernanceProposal {
     dao!: Dao
 
     @Column_("numeric", {transformer: marshal.bigintTransformer, nullable: false})
+    blockNumber!: bigint
+
+    @Column_("numeric", {transformer: marshal.bigintTransformer, nullable: false})
     voteThreshold!: bigint
 
     @Column_("jsonb", {transformer: {to: obj => obj.toJSON(), from: obj => obj == null ? undefined : fromJsonEthGovernanceProposalKind(obj)}, nullable: false})
@@ -51,4 +54,10 @@ export class EthGovernanceProposal {
 
     @Column_("varchar", {length: 11, nullable: false})
     status!: EthGovernanceProposalStatus
+
+    @Column_("bool", {nullable: true})
+    executed!: boolean | undefined | null
+
+    @Column_("text", {nullable: true})
+    reason!: string | undefined | null
 }

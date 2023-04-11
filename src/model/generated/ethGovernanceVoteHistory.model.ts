@@ -16,9 +16,6 @@ export class EthGovernanceVoteHistory {
     @ManyToOne_(() => EthGovernanceProposal, {nullable: true})
     proposal!: EthGovernanceProposal | undefined | null
 
-    @Column_("bool", {nullable: false})
-    approvedVote!: boolean
-
     @Index_()
     @ManyToOne_(() => Account, {nullable: true})
     account!: Account | undefined | null
