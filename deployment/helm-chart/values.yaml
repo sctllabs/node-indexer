@@ -403,7 +403,7 @@ archiveExplorer:
   service:
     type: ClusterIP
     port: 80
-    targetPort: 4444
+    targetPort: 3000
 
   ingress:
     host: "explorer.dev.sctl.link"
