@@ -128,6 +128,21 @@ type UnassignCurator {
   daoId: Int!
   bountyId: Int!
 }
+
+type UpdateDaoMetadata {
+  daoId: Int!
+  metadata: String!
+}
+
+type UpdateDaoPolicy {
+  daoId: Int!
+  policy: String!
+}
+
+type MintDaoToken {
+  daoId: Int!
+  amount: BigInt
+}
 # end Proposal types
 
 # start CouncilProposal
@@ -140,6 +155,9 @@ union CouncilProposalKind =
   | CreateTokenBounty
   | ProposeCurator
   | UnassignCurator
+  | UpdateDaoMetadata
+  | UpdateDaoPolicy
+  | MintDaoToken
 
 enum CouncilProposalStatus {
   Open
@@ -191,6 +209,9 @@ union DemocracyProposalKind =
   | CreateTokenBounty
   | ProposeCurator
   | UnassignCurator
+  | UpdateDaoMetadata
+  | UpdateDaoPolicy
+  | MintDaoToken
 
 enum DemocracyProposalStatus {
   Open
@@ -315,6 +336,9 @@ union EthGovernanceProposalKind =
   | CreateTokenBounty
   | ProposeCurator
   | UnassignCurator
+  | UpdateDaoMetadata
+  | UpdateDaoPolicy
+  | MintDaoToken
 
 enum EthGovernanceProposalStatus {
   Open
