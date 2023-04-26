@@ -13,7 +13,7 @@ processor:
   replicaCount: 1
 
   image:
-    repository: okalenyk
+    repository: societal
     tag: latest
     name: node-indexer
     pullPolicy: Always
@@ -97,7 +97,7 @@ queryNode:
   replicaCount: 1
 
   image:
-    repository: okalenyk
+    repository: societal
     tag: latest
     name: node-indexer
     pullPolicy: Always
