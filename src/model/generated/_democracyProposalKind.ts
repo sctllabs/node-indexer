@@ -6,8 +6,11 @@ import {CreateBounty} from "./_createBounty"
 import {CreateTokenBounty} from "./_createTokenBounty"
 import {ProposeCurator} from "./_proposeCurator"
 import {UnassignCurator} from "./_unassignCurator"
+import {UpdateDaoMetadata} from "./_updateDaoMetadata"
+import {UpdateDaoPolicy} from "./_updateDaoPolicy"
+import {MintDaoToken} from "./_mintDaoToken"
 
-export type DemocracyProposalKind = AddMember | RemoveMember | Spend | TransferToken | CreateBounty | CreateTokenBounty | ProposeCurator | UnassignCurator
+export type DemocracyProposalKind = AddMember | RemoveMember | Spend | TransferToken | CreateBounty | CreateTokenBounty | ProposeCurator | UnassignCurator | UpdateDaoMetadata | UpdateDaoPolicy | MintDaoToken
 
 export function fromJsonDemocracyProposalKind(json: any): DemocracyProposalKind {
     switch(json?.isTypeOf) {
@@ -19,6 +22,9 @@ export function fromJsonDemocracyProposalKind(json: any): DemocracyProposalKind 
         case 'CreateTokenBounty': return new CreateTokenBounty(undefined, json)
         case 'ProposeCurator': return new ProposeCurator(undefined, json)
         case 'UnassignCurator': return new UnassignCurator(undefined, json)
+        case 'UpdateDaoMetadata': return new UpdateDaoMetadata(undefined, json)
+        case 'UpdateDaoPolicy': return new UpdateDaoPolicy(undefined, json)
+        case 'MintDaoToken': return new MintDaoToken(undefined, json)
         default: throw new TypeError('Unknown json object passed as DemocracyProposalKind')
     }
 }

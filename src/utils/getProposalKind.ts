@@ -2,16 +2,22 @@ import {
   Call,
   DaoBountiesCall_propose_curator,
   DaoBountiesCall_unassign_curator,
+  DaoCall_mint_dao_token,
+  DaoCall_update_dao_metadata,
+  DaoCall_update_dao_policy,
 } from "../types/v100";
 import {
   AddMember,
   CreateBounty,
   CreateTokenBounty,
+  MintDaoToken,
   ProposeCurator,
   RemoveMember,
   Spend,
   TransferToken,
   UnassignCurator,
+  UpdateDaoMetadata,
+  UpdateDaoPolicy,
 } from "../model";
 import { decodeAddress } from "./decodeAddress";
 import { decodeString } from "./decodeString";
@@ -74,6 +80,27 @@ export function getProposalKind(proposal: Call) {
       return new UnassignCurator({
         bountyId,
         daoId,
+      });
+    }
+    case "update_dao_metadata": {
+      const { daoId, metadata } = proposal.value as DaoCall_update_dao_metadata;
+      return new UpdateDaoMetadata({
+        daoId,
+        metadata: decodeString(metadata),
+      });
+    }
+    case "update_dao_policy": {
+      const { daoId, policy } = proposal.value as DaoCall_update_dao_policy;
+      return new UpdateDaoPolicy({
+        daoId,
+        policy: decodeString(policy),
+      });
+    }
+    case "mint_dao_token": {
+      const { daoId, amount } = proposal.value as DaoCall_mint_dao_token;
+      return new MintDaoToken({
+        daoId,
+        amount,
       });
     }
     default: {
