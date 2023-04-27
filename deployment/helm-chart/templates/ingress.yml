@@ -14,6 +14,9 @@ spec:
   - hosts:
     - {{ .Values.archiveExplorer.ingress.host }}
     secretName: {{ include "archiveExplorer.fullname" . }}-tls-secret
+  - hosts:
+    - {{ .Values.archiveGateway.ingress.host }}
+    secretName: {{ include "archiveGateway.fullname" . }}-tls-secret
   rules:
   - host: {{ .Values.queryNode.ingress.host }}
     http:
@@ -32,6 +35,16 @@ spec:
           backend:
             service:
               name: {{ include "archiveExplorer.fullname" . }}
+              port:
+                number: 80
+          pathType: ImplementationSpecific
+  - host: {{ .Values.archiveGateway.ingress.host }}
+    http:
+      paths:
+        - path: /
+          backend:
+            service:
+              name: {{ include "archiveGateway.fullname" . }}
               port:
                 number: 80
           pathType: ImplementationSpecific
