@@ -147,7 +147,18 @@ export class CouncilProposalHandler extends BaseHandler<CouncilProposal> {
         }
         case "Err": {
           proposal.executed = false;
-          proposal.reason = result.value.__kind;
+
+          switch (result.value.__kind) {
+            case "Module":
+              proposal.reason = JSON.stringify(result.value.value);
+
+              break;
+            default:
+              proposal.reason = result.value.__kind;
+
+              break;
+          }
+
           break;
         }
       }
