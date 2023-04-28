@@ -77,6 +77,8 @@ export class DemocracySecondHandler extends BaseHandler<DemocracySecond> {
           proposal,
           seconder: account,
           count: 1,
+          blockHash,
+          blockNum,
           createdAt: new Date(timestamp),
           updatedAt: new Date(timestamp),
         })
