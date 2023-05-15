@@ -59,9 +59,18 @@ export class CouncilVoteHandler extends BaseHandler<CouncilVoteHistory> {
     const existingVote = this.councilVotesQueryMap.get(id);
 
     if (existingVote) {
-      existingVote.approvedVote = voted;
-      existingVote.updatedAt = new Date(timestamp);
-      this._councilVotesToUpdate.set(id, existingVote);
+      this._councilVotesToUpdate.set(
+        id,
+        new CouncilVoteHistory({
+          ...existingVote,
+          approvedVote: voted,
+          votedNo: no,
+          votedYes: yes,
+          blockNum,
+          blockHash,
+          updatedAt: new Date(timestamp),
+        })
+      );
     } else {
       this._councilVotesToInsert.set(
         id,

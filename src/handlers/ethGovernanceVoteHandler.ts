@@ -99,6 +99,8 @@ export class EthGovernanceVoteHandler extends BaseHandler<EthGovernanceVoteHisto
           ...existingVote,
           aye,
           balance,
+          blockNum,
+          blockHash,
           updatedAt: new Date(timestamp),
         })
       );
