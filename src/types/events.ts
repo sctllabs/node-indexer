@@ -449,7 +449,7 @@ export class DaoCouncilProposedEvent {
      * `MemberCount`).
      */
     get isV100(): boolean {
-        return this._chain.getEventHash('DaoCouncil.Proposed') === 'fa9187c2b3b9176a5828fc0384eb9c14df26c6bc4c7ecdb7adfcf51c259e34d5'
+        return this._chain.getEventHash('DaoCouncil.Proposed') === '229bb1cc81fe18351b574843a13d4735d605faea0cacd13dde5736748295b5c4'
     }
 
     /**
@@ -684,7 +684,7 @@ export class DaoDemocracyProposedEvent {
      * A motion has been proposed by a public account.
      */
     get isV100(): boolean {
-        return this._chain.getEventHash('DaoDemocracy.Proposed') === '72d4d43199d0045c5fbbf9cfa3ce9eadb69cf675a45496aadc6fb4bb199be2cd'
+        return this._chain.getEventHash('DaoDemocracy.Proposed') === '670d6a12280c9940e01bd18123abcc2c818e4d1ac079def8b67f2680e23fa470'
     }
 
     /**
@@ -806,7 +806,7 @@ export class DaoDemocracyVotedEvent {
     /**
      * An account has voted in a referendum
      */
-    get asV100(): {daoId: number, voter: Uint8Array, refIndex: number, vote: v100.Type_283} {
+    get asV100(): {daoId: number, voter: Uint8Array, refIndex: number, vote: v100.Type_305} {
         assert(this.isV100)
         return this._chain.decodeEvent(this.event)
     }
@@ -945,7 +945,7 @@ export class DaoEthGovernanceProposedEvent {
      * A motion (given hash) has been proposed (by given account) with a threshold
      */
     get isV100(): boolean {
-        return this._chain.getEventHash('DaoEthGovernance.Proposed') === '763d9e76c31bb49d2f985ef16cf8ca5a52a0e3a1cfb8c5c31dc7957e3dd2446f'
+        return this._chain.getEventHash('DaoEthGovernance.Proposed') === '661870a288fa5cbebeb900f4c07a2c9e1e8686acfd1ea19c455a4cf80c9040fb'
     }
 
     /**
