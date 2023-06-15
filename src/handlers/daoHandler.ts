@@ -80,20 +80,29 @@ export class DaoHandler extends BaseHandler<Dao> {
     fungibleTokensToInsert: Map<string, FungibleToken>,
     fungibleTokensQueryMap: Map<string, FungibleToken>
   ) {
-    if (!event.isV100) {
+    let daoId,
+      encodedFounderAddress,
+      encodedDaoAddress,
+      daoConfig,
+      daoPolicy,
+      encodedCouncil,
+      encodedTechnicalCommittee,
+      token;
+    if (event.isV100) {
+      ({
+        daoId,
+        founder: encodedFounderAddress,
+        accountId: encodedDaoAddress,
+        config: daoConfig,
+        policy: daoPolicy,
+        council: encodedCouncil,
+        technicalCommittee: encodedTechnicalCommittee,
+        token,
+      } = event.asV100);
+    } else {
       throw new Error("Unsupported dao spec");
     }
 
-    const {
-      daoId,
-      founder: encodedFounderAddress,
-      accountId: encodedDaoAddress,
-      config: daoConfig,
-      policy: daoPolicy,
-      council: encodedCouncil,
-      technicalCommittee: encodedTechnicalCommittee,
-      token,
-    } = event.asV100;
     const founderAddress = decodeAddress(encodedFounderAddress);
     const daoAccount = decodeAddress(encodedDaoAddress);
 
@@ -164,17 +173,23 @@ export class DaoHandler extends BaseHandler<Dao> {
     accountIds: Set<string>,
     fungibleTokenIds: Set<string>
   ) {
-    if (!event.isV100) {
+    let encodedFounderAddress,
+      encodedDaoAddress,
+      encodedCouncil,
+      encodedTechnicalCommittee,
+      token;
+    if (event.isV100) {
+      ({
+        founder: encodedFounderAddress,
+        accountId: encodedDaoAddress,
+        council: encodedCouncil,
+        technicalCommittee: encodedTechnicalCommittee,
+        token,
+      } = event.asV100);
+    } else {
       throw new Error("Unsupported dao spec");
     }
 
-    const {
-      founder: encodedFounderAddress,
-      accountId: encodedDaoAddress,
-      council: encodedCouncil,
-      technicalCommittee: encodedTechnicalCommittee,
-      token,
-    } = event.asV100;
     const founder = decodeAddress(encodedFounderAddress);
     const daoAddress = decodeAddress(encodedDaoAddress);
     encodedCouncil.forEach((_encodedCouncilAddress) => {

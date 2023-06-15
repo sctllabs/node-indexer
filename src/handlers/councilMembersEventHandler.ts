@@ -38,7 +38,12 @@ export class CouncilMembersEventHandler extends BaseHandler<unknown> {
     daosToUpdate: Map<string, Dao>,
     daosQueryMap: Map<string, Dao>
   ) {
-    const { daoId, member } = event.asV100;
+    let daoId, member;
+    if (event.isV100) {
+      ({ daoId, member } = event.asV100);
+    } else {
+      throw new Error("Unsupported council members spec");
+    }
 
     const dao =
       daosToInsert.get(daoId.toString()) ?? daosQueryMap.get(daoId.toString());
@@ -66,11 +71,11 @@ export class CouncilMembersEventHandler extends BaseHandler<unknown> {
       | DaoCouncilMembersMemberRemovedEvent,
     daoIds: Set<string>
   ) {
-    if (!event.isV100) {
-      throw new Error("Unsupported proposal spec");
+    if (event.isV100) {
+      const { daoId } = event.asV100;
+      daoIds.add(daoId.toString());
+    } else {
+      throw new Error("Unsupported council members spec");
     }
-
-    const { daoId } = event.asV100;
-    daoIds.add(daoId.toString());
   }
 }

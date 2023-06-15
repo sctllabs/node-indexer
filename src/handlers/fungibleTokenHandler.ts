@@ -55,11 +55,12 @@ export class FungibleTokenHandler extends BaseHandler<FungibleToken> {
     blockNum,
     timestamp,
   }: EventInfo<AssetsMetadataSetEvent>) {
-    if (!event.isV100) {
+    let assetId, name, symbol, isFrozen, decimals;
+    if (event.isV100) {
+      ({ assetId, name, symbol, isFrozen, decimals } = event.asV100);
+    } else {
       throw new Error("Unsupported token spec");
     }
-
-    const { assetId, name, symbol, isFrozen, decimals } = event.asV100;
 
     const fungibleToken = new FungibleToken({
       id: assetId.toString(),
