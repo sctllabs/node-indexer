@@ -82,7 +82,12 @@ export class DemocracyReferendumHandler extends BaseHandler<DemocracyReferendum>
     democracyProposalsToUpdate: Map<string, DemocracyProposal>,
     democracyProposalsQueryMap: Map<string, DemocracyProposal>
   ) {
-    const { daoId, refIndex, propIndex, threshold } = event.asV100;
+    let daoId, refIndex, propIndex, threshold;
+    if (event.isV100) {
+      ({ daoId, refIndex, propIndex, threshold } = event.asV100);
+    } else {
+      throw new Error("Unsupported referendum event spec");
+    }
 
     const democracyProposalId = `${daoId}-${propIndex}`;
 
@@ -133,7 +138,13 @@ export class DemocracyReferendumHandler extends BaseHandler<DemocracyReferendum>
   }
 
   processStatus({ event, timestamp }: EventInfo<ReferendumStatusEvent>) {
-    const { daoId, refIndex } = event.asV100;
+    let daoId, refIndex;
+    if (event.isV100) {
+      ({ daoId, refIndex } = event.asV100);
+    } else {
+      throw new Error("Unsupported referendum status spec");
+    }
+
     const id = `${daoId}-${refIndex}`;
 
     const democracyReferendum =
@@ -160,20 +171,25 @@ export class DemocracyReferendumHandler extends BaseHandler<DemocracyReferendum>
     event: DaoDemocracyStartedEvent,
     democracyProposalIds: Set<string>
   ) {
-    if (!event.isV100) {
+    let daoId, propIndex;
+    if (event.isV100) {
+      ({ daoId, propIndex } = event.asV100);
+    } else {
       throw new Error("Unsupported referendum event spec");
     }
 
-    const { daoId, propIndex } = event.asV100;
     const democracyProposalId = `${daoId}-${propIndex}`;
     democracyProposalIds.add(democracyProposalId);
   }
 
   prepareStatusQuery(event: ReferendumStatusEvent) {
-    if (!event.isV100) {
+    let daoId, refIndex;
+    if (event.isV100) {
+      ({ daoId, refIndex } = event.asV100);
+    } else {
       throw new Error("Unsupported referendum event spec");
     }
-    const { daoId, refIndex } = event.asV100;
+
     const id = `${daoId}-${refIndex}`;
     this._democracyReferendumsIds.add(id);
   }

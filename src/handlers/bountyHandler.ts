@@ -64,7 +64,12 @@ export class BountyHandler extends BaseHandler<Bounty> {
     { event, timestamp }: EventInfo<BountyStatusEvents>,
     accounts: Map<string, Account>
   ) {
-    const { daoId, index } = event.asV100;
+    let daoId, index, beneficiary;
+    if (event.isV100) {
+      ({ daoId, index } = event.asV100);
+    } else {
+      throw new Error("Unsupported bounty spec");
+    }
     const id = `${daoId}-${index}`;
 
     const bounty =
@@ -81,12 +86,24 @@ export class BountyHandler extends BaseHandler<Bounty> {
     } else if (event instanceof DaoBountiesBountyCanceledEvent) {
       bounty.status = BountyStatus.Cancelled;
     } else if (event instanceof DaoBountiesBountyAwardedEvent) {
-      const { beneficiary } = event.asV100;
+      let beneficiary;
+      if (event.isV100) {
+        ({ beneficiary } = event.asV100);
+      } else {
+        throw new Error("Unsupported bounty spec");
+      }
+
       const beneficiaryAddress = decodeAddress(beneficiary);
       bounty.beneficiary = getAccount(accounts, beneficiaryAddress);
       bounty.status = BountyStatus.Awarded;
     } else if (event instanceof DaoBountiesBountyCuratorProposedEvent) {
-      const { fee } = event.asV100;
+      let fee;
+      if (event.isV100) {
+        ({ fee } = event.asV100);
+      } else {
+        throw new Error("Unsupported bounty spec");
+      }
+
       bounty.fee = fee;
       bounty.status = BountyStatus.CuratorProposed;
     } else if (event instanceof DaoBountiesBountyCuratorUnassignedEvent) {
@@ -96,11 +113,23 @@ export class BountyHandler extends BaseHandler<Bounty> {
     } else if (event instanceof DaoBountiesBountyCuratorAcceptedEvent) {
       bounty.status = BountyStatus.CuratorAccepted;
     } else if (event instanceof DaoBountiesBountyExtendedEvent) {
-      const { updateDue } = event.asV100;
+      let updateDue;
+      if (event.isV100) {
+        ({ updateDue } = event.asV100);
+      } else {
+        throw new Error("Unsupported bounty spec");
+      }
+
       bounty.status = BountyStatus.Extended;
       bounty.updateDue = updateDue;
     } else if (event instanceof DaoBountiesBountyClaimedEvent) {
-      const { payout, beneficiary } = event.asV100;
+      let payout, beneficiary;
+      if (event.isV100) {
+        ({ payout, beneficiary } = event.asV100);
+      } else {
+        throw new Error("Unsupported bounty spec");
+      }
+
       const beneficiaryAddress = decodeAddress(beneficiary);
       bounty.beneficiary = getAccount(accounts, beneficiaryAddress);
       bounty.payout = payout;
@@ -116,7 +145,13 @@ export class BountyHandler extends BaseHandler<Bounty> {
         event instanceof DaoBountiesBountyCanceledEvent
       )
     ) {
-      const { status } = event.asV100;
+      let status;
+      if (event.isV100) {
+        ({ status } = event.asV100);
+      } else {
+        throw new Error("Unsupported bounty spec");
+      }
+
       switch (status.__kind) {
         case "Active": {
           const { curator, updateDue } = status;
@@ -205,11 +240,12 @@ export class BountyHandler extends BaseHandler<Bounty> {
     daoIds: Set<string>,
     accountIds: Set<string>
   ) {
-    if (!event.asV100) {
+    let daoId, index;
+    if (event.asV100) {
+      ({ daoId, index } = event.asV100);
+    } else {
       throw new Error("Unsupported bounty event spec");
     }
-
-    const { daoId, index } = event.asV100;
 
     const id = `${daoId}-${index}`;
 
@@ -225,7 +261,12 @@ export class BountyHandler extends BaseHandler<Bounty> {
       return;
     }
 
-    const { status } = event.asV100;
+    let status;
+    if (event.isV100) {
+      ({ status } = event.asV100);
+    } else {
+      throw new Error("Unsupported bounty event spec");
+    }
 
     switch (status.__kind) {
       case "Approved": {

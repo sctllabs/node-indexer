@@ -45,7 +45,13 @@ export class CouncilVoteHandler extends BaseHandler<CouncilVoteHistory> {
     councilProposalsToInsert: Map<string, CouncilProposal>,
     councilProposalsQueryMap: Map<string, CouncilProposal>
   ) {
-    const { account, proposalIndex, voted, yes, no, daoId } = event.asV100;
+    let account, proposalIndex, voted, yes, no, daoId;
+    if (event.isV100) {
+      ({ account, proposalIndex, voted, yes, no, daoId } = event.asV100);
+    } else {
+      throw new Error("Unsupported council vote spec");
+    }
+
     const accountAddress = decodeAddress(account);
     const proposalId = `${daoId}-${proposalIndex}`;
     const proposal =
@@ -101,11 +107,13 @@ export class CouncilVoteHandler extends BaseHandler<CouncilVoteHistory> {
     accountIds: Set<string>,
     councilProposalIds: Set<string>
   ) {
-    if (!event.isV100) {
-      throw new Error("Unsupported vote spec");
+    let daoId, account, proposalIndex;
+    if (event.isV100) {
+      ({ daoId, account, proposalIndex } = event.asV100);
+    } else {
+      throw new Error("Unsupported council vote spec");
     }
 
-    const { daoId, account, proposalIndex } = event.asV100;
     const accountAddress = decodeAddress(account);
     const proposalId = `${daoId}-${proposalIndex}`;
     const voteId = `${daoId}-${proposalIndex}-${accountAddress}`;

@@ -46,7 +46,13 @@ export class DemocracySecondHandler extends BaseHandler<DemocracySecond> {
     democracyProposalsToInsert: Map<string, DemocracyProposal>,
     democracyProposalsQueryMap: Map<string, DemocracyProposal>
   ) {
-    const { daoId, propIndex, seconder } = event.asV100;
+    let daoId, propIndex, seconder;
+    if (event.isV100) {
+      ({ daoId, propIndex, seconder } = event.asV100);
+    } else {
+      throw new Error("Unsupported democracy second spec");
+    }
+
     const accountAddress = decodeAddress(seconder);
     const democracyProposalId = `${daoId}-${propIndex}`;
     const proposal =
@@ -97,11 +103,12 @@ export class DemocracySecondHandler extends BaseHandler<DemocracySecond> {
     accountIds: Set<string>,
     democracyProposalIds: Set<string>
   ) {
-    if (!event.isV100) {
-      throw new Error("Unsupported second spec");
+    let daoId, seconder, propIndex;
+    if (event.isV100) {
+      ({ daoId, seconder, propIndex } = event.asV100);
+    } else {
+      throw new Error("Unsupported democracy second spec");
     }
-
-    const { daoId, seconder, propIndex } = event.asV100;
 
     const accountAddress = decodeAddress(seconder);
     const democracyProposalId = `${daoId}-${propIndex}`;

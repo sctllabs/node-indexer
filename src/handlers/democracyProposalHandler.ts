@@ -81,8 +81,16 @@ export class DemocracyProposalHandler extends BaseHandler<DemocracyProposal> {
     daosQueryMap: Map<string, Dao>,
     accounts: Map<string, Account>
   ) {
-    const { daoId, account, proposalIndex, proposal, deposit, meta } =
-      event.asV100;
+    let daoId, account, proposalIndex, proposal, deposit, meta;
+    if (event.isV100) {
+      ({ daoId, account, proposalIndex, proposal, deposit, meta } =
+        event.asV100);
+    } else if (event.isV101) {
+      ({ daoId, account, proposalIndex, proposal, deposit, meta } =
+        event.asV101);
+    } else {
+      throw new Error("Unsupported democracy proposal spec");
+    }
 
     const dao =
       daosToInsert.get(daoId.toString()) ?? daosQueryMap.get(daoId.toString());
@@ -113,7 +121,12 @@ export class DemocracyProposalHandler extends BaseHandler<DemocracyProposal> {
   }
 
   processStatus({ event, timestamp }: EventInfo<DaoDemocracyStartedEvent>) {
-    const { daoId, propIndex } = event.asV100;
+    let daoId, propIndex;
+    if (event.isV100) {
+      ({ daoId, propIndex } = event.asV100);
+    } else {
+      throw new Error("Unsupported democracy proposal status spec");
+    }
 
     const id = `${daoId}-${propIndex}`;
 
@@ -135,11 +148,15 @@ export class DemocracyProposalHandler extends BaseHandler<DemocracyProposal> {
     daoIds: Set<string>,
     accountIds: Set<string>
   ) {
-    if (!event.isV100) {
-      throw new Error("Unsupported proposal spec");
+    let daoId, account;
+    if (event.isV100) {
+      ({ daoId, account } = event.asV100);
+    } else if (event.isV101) {
+      ({ daoId, account } = event.asV101);
+    } else {
+      throw new Error("Unsupported democracy proposal spec");
     }
 
-    const { daoId, account } = event.asV100;
     const accountAddress = decodeAddress(account);
 
     daoIds.add(daoId.toString());
@@ -147,11 +164,12 @@ export class DemocracyProposalHandler extends BaseHandler<DemocracyProposal> {
   }
 
   prepareStatusQuery(event: DaoDemocracyStartedEvent) {
-    if (!event.isV100) {
+    let daoId, propIndex;
+    if (event.isV100) {
+      ({ daoId, propIndex } = event.asV100);
+    } else {
       throw new Error("Unsupported democracy proposal status spec");
     }
-
-    const { daoId, propIndex } = event.asV100;
 
     const democracyProposalId = `${daoId}-${propIndex}`;
 

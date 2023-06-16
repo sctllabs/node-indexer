@@ -77,7 +77,13 @@ export class EthGovernanceVoteHandler extends BaseHandler<EthGovernanceVoteHisto
     ethGovernanceProposalsToInsert: Map<string, EthGovernanceProposal>,
     ethGovernanceProposalsQueryMap: Map<string, EthGovernanceProposal>
   ) {
-    const { account, proposalIndex, daoId, vote, proposalHash } = event.asV100;
+    let account, proposalIndex, daoId, vote, proposalHash;
+    if (event.isV100) {
+      ({ account, proposalIndex, daoId, vote, proposalHash } = event.asV100);
+    } else {
+      throw new Error("Unsupported eth governance vote spec");
+    }
+
     const accountAddress = decodeAddress(account);
     const proposalId = `${daoId}-${proposalIndex}`;
     const proposal =
@@ -133,11 +139,13 @@ export class EthGovernanceVoteHandler extends BaseHandler<EthGovernanceVoteHisto
     accountIds: Set<string>,
     ethGovernanceProposalIds: Set<string>
   ) {
-    if (!event.isV100) {
-      throw new Error("Unsupported vote spec");
+    let daoId, account, proposalIndex;
+    if (event.isV100) {
+      ({ daoId, account, proposalIndex } = event.asV100);
+    } else {
+      throw new Error("Unsupported eth governance vote spec");
     }
 
-    const { daoId, account, proposalIndex } = event.asV100;
     const accountAddress = decodeAddress(account);
     const proposalId = `${daoId}-${proposalIndex}`;
     const voteId = `${daoId}-${proposalIndex}-${accountAddress}`;
