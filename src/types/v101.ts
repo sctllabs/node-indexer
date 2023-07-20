@@ -1,6 +1,6 @@
 import type {Result, Option} from './support'
 
-export type Call = Call_System | Call_Timestamp | Call_Balances | Call_CollatorSelection | Call_Session | Call_Grandpa | Call_Sudo | Call_Assets | Call_Nicks | Call_Scheduler | Call_Contracts | Call_Staking | Call_Council | Call_TechnicalCommittee | Call_Treasury | Call_BagsList | Call_NominationPools | Call_ElectionProviderMultiPhase | Call_Bounties | Call_ChildBounties | Call_TechnicalMembership | Call_Referenda | Call_ConvictionVoting | Call_Democracy | Call_Indices | Call_Elections | Call_Proxy | Call_Vesting | Call_Uniques | Call_Society | Call_Multisig | Call_Preimage | Call_Utility | Call_Nfts | Call_EVM | Call_Ethereum | Call_BaseFee | Call_DynamicFee | Call_HotfixSufficients | Call_Dao | Call_DaoTreasury | Call_DaoCouncil | Call_DaoTechnicalCommittee | Call_DaoCouncilMembers | Call_DaoTechnicalCommitteeMembers | Call_DaoDemocracy | Call_DaoEthGovernance | Call_DaoBounties
+export type Call = Call_System | Call_Timestamp | Call_Balances | Call_CollatorSelection | Call_Session | Call_Grandpa | Call_Sudo | Call_Assets | Call_Scheduler | Call_Contracts | Call_Staking | Call_Council | Call_TechnicalCommittee | Call_Treasury | Call_BagsList | Call_NominationPools | Call_ElectionProviderMultiPhase | Call_Bounties | Call_ChildBounties | Call_TechnicalMembership | Call_Referenda | Call_ConvictionVoting | Call_Democracy | Call_Indices | Call_Elections | Call_Proxy | Call_Vesting | Call_Uniques | Call_Society | Call_Multisig | Call_Preimage | Call_Utility | Call_Nfts | Call_EVM | Call_Ethereum | Call_BaseFee | Call_DynamicFee | Call_HotfixSufficients | Call_Dao | Call_DaoTreasury | Call_DaoCouncil | Call_DaoTechnicalCommittee | Call_DaoCouncilMembers | Call_DaoTechnicalCommitteeMembers | Call_DaoDemocracy | Call_DaoEthGovernance | Call_DaoBounties
 
 export interface Call_System {
     __kind: 'System'
@@ -40,11 +40,6 @@ export interface Call_Sudo {
 export interface Call_Assets {
     __kind: 'Assets'
     value: AssetsCall
-}
-
-export interface Call_Nicks {
-    __kind: 'Nicks'
-    value: NicksCall
 }
 
 export interface Call_Scheduler {
@@ -1305,74 +1300,6 @@ export interface AssetsCall_refund {
 /**
  * Contains one variant per dispatchable that can be called by an extrinsic.
  */
-export type NicksCall = NicksCall_set_name | NicksCall_clear_name | NicksCall_kill_name | NicksCall_force_name
-
-/**
- * Set an account's name. The name should be a UTF-8-encoded string by convention, though
- * we don't check it.
- * 
- * The name may not be more than `T::MaxLength` bytes, nor less than `T::MinLength` bytes.
- * 
- * If the account doesn't already have a name, then a fee of `ReservationFee` is reserved
- * in the account.
- * 
- * The dispatch origin for this call must be _Signed_.
- * 
- * ## Complexity
- * - O(1).
- */
-export interface NicksCall_set_name {
-    __kind: 'set_name'
-    name: Uint8Array
-}
-
-/**
- * Clear an account's name and return the deposit. Fails if the account was not named.
- * 
- * The dispatch origin for this call must be _Signed_.
- * 
- * ## Complexity
- * - O(1).
- */
-export interface NicksCall_clear_name {
-    __kind: 'clear_name'
-}
-
-/**
- * Remove an account's name and take charge of the deposit.
- * 
- * Fails if `target` has not been named. The deposit is dealt with through `T::Slashed`
- * imbalance handler.
- * 
- * The dispatch origin for this call must match `T::ForceOrigin`.
- * 
- * ## Complexity
- * - O(1).
- */
-export interface NicksCall_kill_name {
-    __kind: 'kill_name'
-    target: MultiAddress
-}
-
-/**
- * Set a third-party account's name with no deposit.
- * 
- * No length checking is done on the name.
- * 
- * The dispatch origin for this call must match `T::ForceOrigin`.
- * 
- * ## Complexity
- * - O(1).
- */
-export interface NicksCall_force_name {
-    __kind: 'force_name'
-    target: MultiAddress
-    name: Uint8Array
-}
-
-/**
- * Contains one variant per dispatchable that can be called by an extrinsic.
- */
 export type SchedulerCall = SchedulerCall_schedule | SchedulerCall_cancel | SchedulerCall_schedule_named | SchedulerCall_cancel_named | SchedulerCall_schedule_after | SchedulerCall_schedule_named_after
 
 /**
@@ -2023,10 +1950,10 @@ export interface StakingCall_set_staking_configs {
     __kind: 'set_staking_configs'
     minNominatorBond: ConfigOp
     minValidatorBond: ConfigOp
-    maxNominatorCount: Type_125
-    maxValidatorCount: Type_125
-    chillThreshold: Type_126
-    minCommission: Type_127
+    maxNominatorCount: Type_123
+    maxValidatorCount: Type_123
+    chillThreshold: Type_124
+    minCommission: Type_125
 }
 
 /**
@@ -2801,10 +2728,10 @@ export interface NominationPoolsCall_set_configs {
     __kind: 'set_configs'
     minJoinBond: ConfigOp
     minCreateBond: ConfigOp
-    maxPools: Type_135
-    maxMembers: Type_135
-    maxMembersPerPool: Type_135
-    globalMaxCommission: Type_136
+    maxPools: Type_133
+    maxMembers: Type_133
+    maxMembersPerPool: Type_133
+    globalMaxCommission: Type_134
 }
 
 /**
@@ -2819,9 +2746,9 @@ export interface NominationPoolsCall_set_configs {
 export interface NominationPoolsCall_update_roles {
     __kind: 'update_roles'
     poolId: number
-    newRoot: Type_137
-    newNominator: Type_137
-    newBouncer: Type_137
+    newRoot: Type_135
+    newNominator: Type_135
+    newBouncer: Type_135
 }
 
 /**
@@ -3798,7 +3725,7 @@ export interface DemocracyCall_second {
 export interface DemocracyCall_vote {
     __kind: 'vote'
     refIndex: number
-    vote: Type_222
+    vote: Type_220
 }
 
 /**
@@ -5899,7 +5826,7 @@ export interface NftsCall_force_create {
 export interface NftsCall_destroy {
     __kind: 'destroy'
     collection: number
-    witness: Type_257
+    witness: Type_255
 }
 
 /**
@@ -7219,7 +7146,7 @@ export interface DaoDemocracyCall_vote {
     __kind: 'vote'
     daoId: number
     refIndex: number
-    vote: Type_305
+    vote: Type_303
 }
 
 /**
@@ -7873,6 +7800,36 @@ export interface ConfigOp_Remove {
     __kind: 'Remove'
 }
 
+export type Type_123 = Type_123_Noop | Type_123_Set | Type_123_Remove
+
+export interface Type_123_Noop {
+    __kind: 'Noop'
+}
+
+export interface Type_123_Set {
+    __kind: 'Set'
+    value: number
+}
+
+export interface Type_123_Remove {
+    __kind: 'Remove'
+}
+
+export type Type_124 = Type_124_Noop | Type_124_Set | Type_124_Remove
+
+export interface Type_124_Noop {
+    __kind: 'Noop'
+}
+
+export interface Type_124_Set {
+    __kind: 'Set'
+    value: number
+}
+
+export interface Type_124_Remove {
+    __kind: 'Remove'
+}
+
 export type Type_125 = Type_125_Noop | Type_125_Set | Type_125_Remove
 
 export interface Type_125_Noop {
@@ -7885,36 +7842,6 @@ export interface Type_125_Set {
 }
 
 export interface Type_125_Remove {
-    __kind: 'Remove'
-}
-
-export type Type_126 = Type_126_Noop | Type_126_Set | Type_126_Remove
-
-export interface Type_126_Noop {
-    __kind: 'Noop'
-}
-
-export interface Type_126_Set {
-    __kind: 'Set'
-    value: number
-}
-
-export interface Type_126_Remove {
-    __kind: 'Remove'
-}
-
-export type Type_127 = Type_127_Noop | Type_127_Set | Type_127_Remove
-
-export interface Type_127_Noop {
-    __kind: 'Noop'
-}
-
-export interface Type_127_Set {
-    __kind: 'Set'
-    value: number
-}
-
-export interface Type_127_Remove {
     __kind: 'Remove'
 }
 
@@ -7943,6 +7870,36 @@ export interface PoolState_Destroying {
     __kind: 'Destroying'
 }
 
+export type Type_133 = Type_133_Noop | Type_133_Set | Type_133_Remove
+
+export interface Type_133_Noop {
+    __kind: 'Noop'
+}
+
+export interface Type_133_Set {
+    __kind: 'Set'
+    value: number
+}
+
+export interface Type_133_Remove {
+    __kind: 'Remove'
+}
+
+export type Type_134 = Type_134_Noop | Type_134_Set | Type_134_Remove
+
+export interface Type_134_Noop {
+    __kind: 'Noop'
+}
+
+export interface Type_134_Set {
+    __kind: 'Set'
+    value: number
+}
+
+export interface Type_134_Remove {
+    __kind: 'Remove'
+}
+
 export type Type_135 = Type_135_Noop | Type_135_Set | Type_135_Remove
 
 export interface Type_135_Noop {
@@ -7951,40 +7908,10 @@ export interface Type_135_Noop {
 
 export interface Type_135_Set {
     __kind: 'Set'
-    value: number
-}
-
-export interface Type_135_Remove {
-    __kind: 'Remove'
-}
-
-export type Type_136 = Type_136_Noop | Type_136_Set | Type_136_Remove
-
-export interface Type_136_Noop {
-    __kind: 'Noop'
-}
-
-export interface Type_136_Set {
-    __kind: 'Set'
-    value: number
-}
-
-export interface Type_136_Remove {
-    __kind: 'Remove'
-}
-
-export type Type_137 = Type_137_Noop | Type_137_Set | Type_137_Remove
-
-export interface Type_137_Noop {
-    __kind: 'Noop'
-}
-
-export interface Type_137_Set {
-    __kind: 'Set'
     value: Uint8Array
 }
 
-export interface Type_137_Remove {
+export interface Type_135_Remove {
     __kind: 'Remove'
 }
 
@@ -8042,32 +7969,32 @@ export interface OriginCaller_system {
 
 export interface OriginCaller_Council {
     __kind: 'Council'
-    value: Type_206
+    value: Type_204
 }
 
 export interface OriginCaller_TechnicalCommittee {
     __kind: 'TechnicalCommittee'
-    value: Type_207
+    value: Type_205
 }
 
 export interface OriginCaller_Ethereum {
     __kind: 'Ethereum'
-    value: Type_208
+    value: Type_206
 }
 
 export interface OriginCaller_Dao {
     __kind: 'Dao'
-    value: Type_210
+    value: Type_208
 }
 
 export interface OriginCaller_DaoCouncil {
     __kind: 'DaoCouncil'
-    value: Type_211
+    value: Type_209
 }
 
 export interface OriginCaller_DaoTechnicalCommittee {
     __kind: 'DaoTechnicalCommittee'
-    value: Type_212
+    value: Type_210
 }
 
 export interface OriginCaller_Void {
@@ -8156,15 +8083,15 @@ export interface Conviction_Locked6x {
     __kind: 'Locked6x'
 }
 
-export type Type_222 = Type_222_Standard | Type_222_Split
+export type Type_220 = Type_220_Standard | Type_220_Split
 
-export interface Type_222_Standard {
+export interface Type_220_Standard {
     __kind: 'Standard'
     vote: number
     balance: bigint
 }
 
-export interface Type_222_Split {
+export interface Type_220_Split {
     __kind: 'Split'
     aye: bigint
     nay: bigint
@@ -8256,7 +8183,7 @@ export interface CollectionConfig {
     mintSettings: MintSettings
 }
 
-export interface Type_257 {
+export interface Type_255 {
     itemMetadatas: number
     itemConfigs: number
     attributes: number
@@ -8364,15 +8291,15 @@ export interface TransactionV2_EIP1559 {
     value: EIP1559Transaction
 }
 
-export type Type_305 = Type_305_Standard | Type_305_Split
+export type Type_303 = Type_303_Standard | Type_303_Split
 
-export interface Type_305_Standard {
+export interface Type_303_Standard {
     __kind: 'Standard'
     vote: number
     balance: bigint
 }
 
-export interface Type_305_Split {
+export interface Type_303_Split {
     __kind: 'Split'
     aye: bigint
     nay: bigint
@@ -8387,12 +8314,12 @@ export type Equivocation = Equivocation_Prevote | Equivocation_Precommit
 
 export interface Equivocation_Prevote {
     __kind: 'Prevote'
-    value: Type_98
+    value: Type_97
 }
 
 export interface Equivocation_Precommit {
     __kind: 'Precommit'
-    value: Type_104
+    value: Type_103
 }
 
 export interface NposSolution16 {
@@ -8429,81 +8356,81 @@ export interface RawOrigin_None {
     __kind: 'None'
 }
 
-export type Type_206 = Type_206_Members | Type_206_Member | Type_206__Phantom
+export type Type_204 = Type_204_Members | Type_204_Member | Type_204__Phantom
 
-export interface Type_206_Members {
+export interface Type_204_Members {
     __kind: 'Members'
     value: [number, number]
 }
 
-export interface Type_206_Member {
+export interface Type_204_Member {
     __kind: 'Member'
     value: Uint8Array
 }
 
-export interface Type_206__Phantom {
+export interface Type_204__Phantom {
     __kind: '_Phantom'
 }
 
-export type Type_207 = Type_207_Members | Type_207_Member | Type_207__Phantom
+export type Type_205 = Type_205_Members | Type_205_Member | Type_205__Phantom
 
-export interface Type_207_Members {
+export interface Type_205_Members {
     __kind: 'Members'
     value: [number, number]
 }
 
-export interface Type_207_Member {
+export interface Type_205_Member {
     __kind: 'Member'
     value: Uint8Array
 }
 
-export interface Type_207__Phantom {
+export interface Type_205__Phantom {
     __kind: '_Phantom'
 }
 
-export type Type_208 = Type_208_EthereumTransaction
+export type Type_206 = Type_206_EthereumTransaction
 
-export interface Type_208_EthereumTransaction {
+export interface Type_206_EthereumTransaction {
     __kind: 'EthereumTransaction'
     value: Uint8Array
 }
 
-export type Type_210 = Type_210_Dao
+export type Type_208 = Type_208_Dao
 
-export interface Type_210_Dao {
+export interface Type_208_Dao {
     __kind: 'Dao'
     value: Uint8Array
 }
 
-export type Type_211 = Type_211_Members | Type_211_Member | Type_211__Phantom
+export type Type_209 = Type_209_Members | Type_209_Member | Type_209__Phantom
 
-export interface Type_211_Members {
+export interface Type_209_Members {
     __kind: 'Members'
     value: [number, number]
 }
 
-export interface Type_211_Member {
+export interface Type_209_Member {
     __kind: 'Member'
     value: Uint8Array
 }
 
-export interface Type_211__Phantom {
+export interface Type_209__Phantom {
     __kind: '_Phantom'
 }
 
-export type Type_212 = Type_212_Members | Type_212_Member | Type_212__Phantom
+export type Type_210 = Type_210_Members | Type_210_Member | Type_210__Phantom
 
-export interface Type_212_Members {
+export interface Type_210_Members {
     __kind: 'Members'
     value: [number, number]
 }
 
-export interface Type_212_Member {
+export interface Type_210_Member {
     __kind: 'Member'
     value: Uint8Array
 }
 
-export interface Type_212__Phantom {
+export interface Type_210__Phantom {
     __kind: '_Phantom'
 }
 
@@ -8573,14 +8500,14 @@ export interface EIP1559Transaction {
     s: Uint8Array
 }
 
-export interface Type_98 {
+export interface Type_97 {
     roundNumber: bigint
     identity: Uint8Array
     first: [Prevote, Uint8Array]
     second: [Prevote, Uint8Array]
 }
 
-export interface Type_104 {
+export interface Type_103 {
     roundNumber: bigint
     identity: Uint8Array
     first: [Precommit, Uint8Array]

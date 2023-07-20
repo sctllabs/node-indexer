@@ -31,6 +31,8 @@ codegen:
 typegen:
 	@npx squid-substrate-typegen typegen.json
 
+metadata-explorer:
+	@npx squid-substrate-metadata-explorer --out ./metadata/$(spec).json --chain $(chain)
 
 up:
 	@docker-compose up -d
