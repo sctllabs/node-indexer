@@ -2,6 +2,8 @@ import assert from 'assert'
 import {Chain, ChainContext, EventContext, Event, Result, Option} from './support'
 import * as v100 from './v100'
 import * as v101 from './v101'
+import * as v102 from './v102'
+import * as v103 from './v103'
 
 export class AssetsMetadataSetEvent {
     private readonly _chain: Chain
@@ -478,6 +480,40 @@ export class DaoCouncilProposedEvent {
         assert(this.isV101)
         return this._chain.decodeEvent(this.event)
     }
+
+    /**
+     * A motion (given hash) has been proposed (by given account) with a threshold (given
+     * `MemberCount`).
+     */
+    get isV102(): boolean {
+        return this._chain.getEventHash('DaoCouncil.Proposed') === '83dd8da6c09d810a8163d3ffcc35ec20b0f1440a260bd4b1c93445e2cf835ac8'
+    }
+
+    /**
+     * A motion (given hash) has been proposed (by given account) with a threshold (given
+     * `MemberCount`).
+     */
+    get asV102(): {daoId: number, account: Uint8Array, proposalIndex: number, proposalHash: Uint8Array, proposal: v102.Call, threshold: number, meta: (Uint8Array | undefined)} {
+        assert(this.isV102)
+        return this._chain.decodeEvent(this.event)
+    }
+
+    /**
+     * A motion (given hash) has been proposed (by given account) with a threshold (given
+     * `MemberCount`).
+     */
+    get isV103(): boolean {
+        return this._chain.getEventHash('DaoCouncil.Proposed') === 'b4c50bb597f6b0aa9d78d32c6b48f1c835823ce81b982f0f31e5dd358c1f8656'
+    }
+
+    /**
+     * A motion (given hash) has been proposed (by given account) with a threshold (given
+     * `MemberCount`).
+     */
+    get asV103(): {daoId: number, account: Uint8Array, proposalIndex: number, proposalHash: Uint8Array, proposal: v103.Call, threshold: number, meta: (Uint8Array | undefined)} {
+        assert(this.isV103)
+        return this._chain.decodeEvent(this.event)
+    }
 }
 
 export class DaoCouncilVotedEvent {
@@ -725,6 +761,36 @@ export class DaoDemocracyProposedEvent {
      */
     get asV101(): {daoId: number, account: Uint8Array, proposalIndex: number, proposal: v101.Call, deposit: bigint, meta: (Uint8Array | undefined)} {
         assert(this.isV101)
+        return this._chain.decodeEvent(this.event)
+    }
+
+    /**
+     * A motion has been proposed by a public account.
+     */
+    get isV102(): boolean {
+        return this._chain.getEventHash('DaoDemocracy.Proposed') === '65fe8aa220122f1311bc7c1f04dbc0c217a1c5d9f51b61126756cc602ec81062'
+    }
+
+    /**
+     * A motion has been proposed by a public account.
+     */
+    get asV102(): {daoId: number, account: Uint8Array, proposalIndex: number, proposal: v102.Call, deposit: bigint, meta: (Uint8Array | undefined)} {
+        assert(this.isV102)
+        return this._chain.decodeEvent(this.event)
+    }
+
+    /**
+     * A motion has been proposed by a public account.
+     */
+    get isV103(): boolean {
+        return this._chain.getEventHash('DaoDemocracy.Proposed') === 'eed6745563520020d35a0b580b7992086938efdac3e4cc883565fce7a30e0fe4'
+    }
+
+    /**
+     * A motion has been proposed by a public account.
+     */
+    get asV103(): {daoId: number, account: Uint8Array, proposalIndex: number, proposal: v103.Call, deposit: bigint, meta: (Uint8Array | undefined)} {
+        assert(this.isV103)
         return this._chain.decodeEvent(this.event)
     }
 }
@@ -1001,6 +1067,36 @@ export class DaoEthGovernanceProposedEvent {
      */
     get asV101(): {daoId: number, account: Uint8Array, proposalIndex: number, proposalHash: Uint8Array, proposal: v101.Call, blockNumber: number, threshold: bigint, meta: Uint8Array} {
         assert(this.isV101)
+        return this._chain.decodeEvent(this.event)
+    }
+
+    /**
+     * A motion (given hash) has been proposed (by given account) with a threshold
+     */
+    get isV102(): boolean {
+        return this._chain.getEventHash('DaoEthGovernance.Proposed') === 'c7bc79555558b0f2a71d5614579dccd7a8067fc1523b6a2cb1e5679d74259fe3'
+    }
+
+    /**
+     * A motion (given hash) has been proposed (by given account) with a threshold
+     */
+    get asV102(): {daoId: number, account: Uint8Array, proposalIndex: number, proposalHash: Uint8Array, proposal: v102.Call, blockNumber: number, threshold: bigint, meta: Uint8Array} {
+        assert(this.isV102)
+        return this._chain.decodeEvent(this.event)
+    }
+
+    /**
+     * A motion (given hash) has been proposed (by given account) with a threshold
+     */
+    get isV103(): boolean {
+        return this._chain.getEventHash('DaoEthGovernance.Proposed') === '3b44f7945adddf9468635844982e6b575bf8495132441a11a56213112e1fe413'
+    }
+
+    /**
+     * A motion (given hash) has been proposed (by given account) with a threshold
+     */
+    get asV103(): {daoId: number, account: Uint8Array, proposalIndex: number, proposalHash: Uint8Array, proposal: v103.Call, blockNumber: number, threshold: bigint, meta: Uint8Array} {
+        assert(this.isV103)
         return this._chain.decodeEvent(this.event)
     }
 }
