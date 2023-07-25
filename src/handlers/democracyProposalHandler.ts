@@ -15,6 +15,11 @@ import { decodeAddress, getAccount, getProposalKind } from "../utils";
 import type { Ctx } from "../processor";
 import type { EventInfo } from "../types";
 
+import { Call as CallV100 } from "../types/v100";
+import { Call as CallV101 } from "../types/v101";
+import { Call as CallV102 } from "../types/v102";
+import { Call as CallV103 } from "../types/v103";
+
 export class DemocracyProposalHandler extends BaseHandler<DemocracyProposal> {
   private readonly _democracyProposalsToInsert: Map<string, DemocracyProposal>;
   private readonly _democracyProposalsToUpdate: Map<string, DemocracyProposal>;
@@ -81,16 +86,8 @@ export class DemocracyProposalHandler extends BaseHandler<DemocracyProposal> {
     daosQueryMap: Map<string, Dao>,
     accounts: Map<string, Account>
   ) {
-    let daoId, account, proposalIndex, proposal, deposit, meta;
-    if (event.isV100) {
-      ({ daoId, account, proposalIndex, proposal, deposit, meta } =
-        event.asV100);
-    } else if (event.isV101) {
-      ({ daoId, account, proposalIndex, proposal, deposit, meta } =
-        event.asV101);
-    } else {
-      throw new Error("Unsupported democracy proposal spec");
-    }
+    const { daoId, account, proposalIndex, proposal, deposit, meta } =
+      this.decodeDaoDemocracyProposedEvent(event);
 
     const dao =
       daosToInsert.get(daoId.toString()) ?? daosQueryMap.get(daoId.toString());
@@ -148,14 +145,7 @@ export class DemocracyProposalHandler extends BaseHandler<DemocracyProposal> {
     daoIds: Set<string>,
     accountIds: Set<string>
   ) {
-    let daoId, account;
-    if (event.isV100) {
-      ({ daoId, account } = event.asV100);
-    } else if (event.isV101) {
-      ({ daoId, account } = event.asV101);
-    } else {
-      throw new Error("Unsupported democracy proposal spec");
-    }
+    const { daoId, account } = this.decodeDaoDemocracyProposedEvent(event);
 
     const accountAddress = decodeAddress(account);
 
@@ -174,5 +164,26 @@ export class DemocracyProposalHandler extends BaseHandler<DemocracyProposal> {
     const democracyProposalId = `${daoId}-${propIndex}`;
 
     this._democracyProposalsIds.add(democracyProposalId);
+  }
+
+  decodeDaoDemocracyProposedEvent(event: DaoDemocracyProposedEvent): {
+    daoId: number;
+    account: Uint8Array;
+    proposalIndex: number;
+    proposal: CallV100 | CallV101 | CallV102 | CallV103;
+    deposit: bigint;
+    meta: Uint8Array | undefined;
+  } {
+    if (event.isV100) {
+      return event.asV100;
+    } else if (event.isV101) {
+      return event.asV101;
+    } else if (event.isV102) {
+      return event.asV102;
+    } else if (event.isV103) {
+      return event.asV103;
+    } else {
+      throw new Error("Unsupported democracy proposal spec");
+    }
   }
 }

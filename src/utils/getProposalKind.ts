@@ -1,11 +1,14 @@
 import {
-  Call,
+  Call as CallV100,
   DaoBountiesCall_propose_curator,
   DaoBountiesCall_unassign_curator,
   DaoCall_mint_dao_token,
   DaoCall_update_dao_metadata,
   DaoCall_update_dao_policy,
 } from "../types/v100";
+import { Call as CallV101 } from "../types/v101";
+import { Call as CallV102 } from "../types/v102";
+import { Call as CallV103 } from "../types/v103";
 import {
   AddMember,
   CreateBounty,
@@ -22,7 +25,9 @@ import {
 import { decodeAddress } from "./decodeAddress";
 import { decodeString } from "./decodeString";
 
-export function getProposalKind(proposal: Call) {
+export function getProposalKind(
+  proposal: CallV100 | CallV101 | CallV102 | CallV103
+) {
   switch (proposal.value.__kind) {
     case "add_member": {
       return new AddMember({

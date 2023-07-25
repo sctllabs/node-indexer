@@ -22,6 +22,11 @@ import { BaseHandler } from "./baseHandler";
 import type { EventInfo } from "../types";
 import type { Ctx } from "../processor";
 
+import { Call as CallV100 } from "../types/v100";
+import { Call as CallV101 } from "../types/v101";
+import { Call as CallV102 } from "../types/v102";
+import { Call as CallV103 } from "../types/v103";
+
 type EthGovernanceProposalStatusEvents =
   | DaoEthGovernanceApprovedEvent
   | DaoEthGovernanceDisapprovedEvent
@@ -110,39 +115,16 @@ export class EthGovernanceProposalHandler extends BaseHandler<EthGovernancePropo
     daosToInsert: Map<string, Dao>,
     daosQueryMap: Map<string, Dao>
   ) {
-    let proposal,
+    const {
+      proposal,
       proposalHash,
       proposalIndex,
       account,
       meta,
       threshold,
       daoId,
-      blockNumber;
-    if (event.isV100) {
-      ({
-        proposal,
-        proposalHash,
-        proposalIndex,
-        account,
-        meta,
-        threshold,
-        daoId,
-        blockNumber,
-      } = event.asV100);
-    } else if (event.isV101) {
-      ({
-        proposal,
-        proposalHash,
-        proposalIndex,
-        account,
-        meta,
-        threshold,
-        daoId,
-        blockNumber,
-      } = event.asV101);
-    } else {
-      throw new Error("Unsupported eth governance proposal spec");
-    }
+      blockNumber,
+    } = this.decodeDaoEthGovernanceProposedEvent(event);
 
     const dao =
       daosToInsert.get(daoId.toString()) ?? daosQueryMap.get(daoId.toString());
@@ -238,14 +220,7 @@ export class EthGovernanceProposalHandler extends BaseHandler<EthGovernancePropo
     daoIds: Set<string>,
     accountIds: Set<string>
   ) {
-    let daoId, account;
-    if (event.isV100) {
-      ({ daoId, account } = event.asV100);
-    } else if (event.isV101) {
-      ({ daoId, account } = event.asV101);
-    } else {
-      throw new Error("Unsupported eth governance proposal spec");
-    }
+    const { daoId, account } = this.decodeDaoEthGovernanceProposedEvent(event);
 
     const accountAddress = decodeAddress(account);
     daoIds.add(daoId.toString());
@@ -265,5 +240,28 @@ export class EthGovernanceProposalHandler extends BaseHandler<EthGovernancePropo
 
     const proposalId = `${daoId}-${proposalIndex}`;
     proposalIds.add(proposalId);
+  }
+
+  decodeDaoEthGovernanceProposedEvent(event: DaoEthGovernanceProposedEvent): {
+    daoId: number;
+    account: Uint8Array;
+    proposalIndex: number;
+    proposalHash: Uint8Array;
+    proposal: CallV100 | CallV101 | CallV102 | CallV103;
+    blockNumber: number;
+    threshold: bigint;
+    meta: Uint8Array;
+  } {
+    if (event.isV100) {
+      return event.asV100;
+    } else if (event.isV101) {
+      return event.asV101;
+    } else if (event.isV102) {
+      return event.asV102;
+    } else if (event.isV103) {
+      return event.asV103;
+    } else {
+      throw new Error("Unsupported eth governance proposal spec");
+    }
   }
 }

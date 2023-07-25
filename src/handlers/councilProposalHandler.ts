@@ -17,6 +17,11 @@ import { BaseHandler } from "./baseHandler";
 import type { EventInfo } from "../types";
 import type { Ctx } from "../processor";
 
+import { Call as CallV100 } from "../types/v100";
+import { Call as CallV101 } from "../types/v101";
+import { Call as CallV102 } from "../types/v102";
+import { Call as CallV103 } from "../types/v103";
+
 type CouncilProposalStatusEvents =
   | DaoCouncilApprovedEvent
   | DaoCouncilDisapprovedEvent
@@ -80,30 +85,15 @@ export class CouncilProposalHandler extends BaseHandler<CouncilProposal> {
     daosToInsert: Map<string, Dao>,
     daosQueryMap: Map<string, Dao>
   ) {
-    let proposal, proposalHash, proposalIndex, account, meta, threshold, daoId;
-    if (event.isV100) {
-      ({
-        proposal,
-        proposalHash,
-        proposalIndex,
-        account,
-        meta,
-        threshold,
-        daoId,
-      } = event.asV100);
-    } else if (event.isV101) {
-      ({
-        proposal,
-        proposalHash,
-        proposalIndex,
-        account,
-        meta,
-        threshold,
-        daoId,
-      } = event.asV101);
-    } else {
-      throw new Error("Unsupported council proposal spec");
-    }
+    const {
+      proposal,
+      proposalHash,
+      proposalIndex,
+      account,
+      meta,
+      threshold,
+      daoId,
+    } = this.decodeDaoCouncilProposedEvent(event);
 
     const dao =
       daosToInsert.get(daoId.toString()) ?? daosQueryMap.get(daoId.toString());
@@ -201,14 +191,7 @@ export class CouncilProposalHandler extends BaseHandler<CouncilProposal> {
     daoIds: Set<string>,
     accountIds: Set<string>
   ) {
-    let daoId, account;
-    if (event.isV100) {
-      ({ daoId, account } = event.asV100);
-    } else if (event.isV101) {
-      ({ daoId, account } = event.asV101);
-    } else {
-      throw new Error("Unsupported council proposal spec");
-    }
+    const { daoId, account } = this.decodeDaoCouncilProposedEvent(event);
 
     const accountAddress = decodeAddress(account);
     daoIds.add(daoId.toString());
@@ -228,5 +211,27 @@ export class CouncilProposalHandler extends BaseHandler<CouncilProposal> {
 
     const proposalId = `${daoId}-${proposalIndex}`;
     proposalIds.add(proposalId);
+  }
+
+  decodeDaoCouncilProposedEvent(event: DaoCouncilProposedEvent): {
+    daoId: number;
+    account: Uint8Array;
+    proposalIndex: number;
+    proposalHash: Uint8Array;
+    proposal: CallV100 | CallV101 | CallV102 | CallV103;
+    threshold: number;
+    meta: Uint8Array | undefined;
+  } {
+    if (event.isV100) {
+      return event.asV100;
+    } else if (event.isV101) {
+      return event.asV101;
+    } else if (event.isV102) {
+      return event.asV102;
+    } else if (event.isV103) {
+      return event.asV103;
+    } else {
+      throw new Error("Unsupported council proposal spec");
+    }
   }
 }
