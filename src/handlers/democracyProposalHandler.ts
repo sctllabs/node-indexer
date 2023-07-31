@@ -19,6 +19,7 @@ import { Call as CallV100 } from "../types/v100";
 import { Call as CallV101 } from "../types/v101";
 import { Call as CallV102 } from "../types/v102";
 import { Call as CallV103 } from "../types/v103";
+import { Call as CallV104 } from "../types/v104";
 
 export class DemocracyProposalHandler extends BaseHandler<DemocracyProposal> {
   private readonly _democracyProposalsToInsert: Map<string, DemocracyProposal>;
@@ -170,7 +171,7 @@ export class DemocracyProposalHandler extends BaseHandler<DemocracyProposal> {
     daoId: number;
     account: Uint8Array;
     proposalIndex: number;
-    proposal: CallV100 | CallV101 | CallV102 | CallV103;
+    proposal: CallV100 | CallV101 | CallV102 | CallV103 | CallV104;
     deposit: bigint;
     meta: Uint8Array | undefined;
   } {
@@ -182,6 +183,8 @@ export class DemocracyProposalHandler extends BaseHandler<DemocracyProposal> {
       return event.asV102;
     } else if (event.isV103) {
       return event.asV103;
+    } else if (event.isV104) {
+      return event.asV104;
     } else {
       throw new Error("Unsupported democracy proposal spec");
     }

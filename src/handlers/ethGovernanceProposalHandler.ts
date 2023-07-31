@@ -26,6 +26,7 @@ import { Call as CallV100 } from "../types/v100";
 import { Call as CallV101 } from "../types/v101";
 import { Call as CallV102 } from "../types/v102";
 import { Call as CallV103 } from "../types/v103";
+import { Call as CallV104 } from "../types/v104";
 
 type EthGovernanceProposalStatusEvents =
   | DaoEthGovernanceApprovedEvent
@@ -247,7 +248,7 @@ export class EthGovernanceProposalHandler extends BaseHandler<EthGovernancePropo
     account: Uint8Array;
     proposalIndex: number;
     proposalHash: Uint8Array;
-    proposal: CallV100 | CallV101 | CallV102 | CallV103;
+    proposal: CallV100 | CallV101 | CallV102 | CallV103 | CallV104;
     blockNumber: number;
     threshold: bigint;
     meta: Uint8Array;
@@ -260,6 +261,8 @@ export class EthGovernanceProposalHandler extends BaseHandler<EthGovernancePropo
       return event.asV102;
     } else if (event.isV103) {
       return event.asV103;
+    } else if (event.isV104) {
+      return event.asV104;
     } else {
       throw new Error("Unsupported eth governance proposal spec");
     }
