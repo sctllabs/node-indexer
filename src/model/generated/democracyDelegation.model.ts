@@ -17,4 +17,7 @@ export class DemocracyDelegation {
     @Index_()
     @ManyToOne_(() => Account, {nullable: true})
     target!: Account
+
+    @Column_("bool", {nullable: true})
+    removed!: boolean | undefined | null
 }

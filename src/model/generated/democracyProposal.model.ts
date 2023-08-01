@@ -48,4 +48,7 @@ export class DemocracyProposal {
 
     @Column_("varchar", {length: 10, nullable: false})
     status!: DemocracyProposalStatus
+
+    @Column_("bool", {nullable: true})
+    removed!: boolean | undefined | null
 }

@@ -37,4 +37,7 @@ export class EthGovernanceVoteHistory {
 
     @Column_("int4", {nullable: false})
     blockNum!: number
+
+    @Column_("bool", {nullable: true})
+    removed!: boolean | undefined | null
 }

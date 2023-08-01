@@ -24,6 +24,7 @@ type Dao @entity {
   createdAt: DateTime!
   blockHash: String!
   blockNum: Int!
+  removed: Boolean
 }
 
 enum ApproveOriginType {
@@ -70,6 +71,7 @@ type Policy @entity {
   approveOriginType: ApproveOriginType!
   approveOriginProportion: [Int!]!
   governance: Governance
+  removed: Boolean
 }
 # end Dao
 
@@ -183,6 +185,7 @@ type CouncilProposal @entity {
   status: CouncilProposalStatus!
   executed: Boolean
   reason: String
+  removed: Boolean
 }
 
 type CouncilVoteHistory @entity {
@@ -196,6 +199,7 @@ type CouncilVoteHistory @entity {
   updatedAt: DateTime!
   blockHash: String!
   blockNum: Int!
+  removed: Boolean
 }
 # end CouncilProposal
 
@@ -231,6 +235,7 @@ type DemocracyProposal @entity {
   blockHash: String!
   blockNum: Int!
   status: DemocracyProposalStatus!
+  removed: Boolean
 }
 
 type DemocracySecond @entity {
@@ -242,6 +247,7 @@ type DemocracySecond @entity {
   updatedAt: DateTime!
   blockHash: String!
   blockNum: Int!
+  removed: Boolean
 }
 # end DemocracyProposal
 
@@ -269,6 +275,7 @@ type DemocracyReferendum @entity {
   blockNum: Int!
   createdAt: DateTime!
   updatedAt: DateTime!
+  removed: Boolean
 }
 # end DemocracyReferendum
 
@@ -287,6 +294,7 @@ type DemocracyDelegation @entity {
   id: ID!
   account: Account!
   target: Account!
+  removed: Boolean
 }
 # end DemocracyDelegation
 
@@ -322,6 +330,7 @@ type Bounty @entity {
   blockNum: Int!
   createdAt: DateTime!
   updatedAt: DateTime!
+  removed: Boolean
 }
 
 # end Bounty
@@ -365,6 +374,7 @@ type EthGovernanceProposal @entity {
   status: EthGovernanceProposalStatus!
   executed: Boolean
   reason: String
+  removed: Boolean
 }
 
 type EthGovernanceVoteHistory @entity {
@@ -377,5 +387,6 @@ type EthGovernanceVoteHistory @entity {
   updatedAt: DateTime!
   blockHash: String!
   blockNum: Int!
+  removed: Boolean
 }
 # end EthGovernanceProposal

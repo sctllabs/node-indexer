@@ -1,6 +1,7 @@
-import { In } from "typeorm";
+import { FindOptionsWhere, In } from "typeorm";
 import {
   DaoDemocracyCancelledEvent,
+  DaoDemocracyDaoPurgedEvent,
   DaoDemocracyNotPassedEvent,
   DaoDemocracyPassedEvent,
   DaoDemocracyStartedEvent,
@@ -15,6 +16,7 @@ import {
 import type { Ctx } from "../processor";
 import type { EventInfo } from "../types";
 import { BaseHandler } from "./baseHandler";
+import { buildProposalId } from "../utils/buildProposalId";
 
 type ReferendumStatusEvent =
   | DaoDemocracyPassedEvent
@@ -35,6 +37,7 @@ export class DemocracyReferendumHandler extends BaseHandler<DemocracyReferendum>
     DemocracyReferendum
   >;
   private readonly _democracyReferendumsIds: Set<string>;
+  private readonly _democracyReferendumDaoIds: Set<number>;
 
   constructor(ctx: Ctx) {
     super(ctx);
@@ -42,6 +45,26 @@ export class DemocracyReferendumHandler extends BaseHandler<DemocracyReferendum>
     this._democracyReferendumsToUpdate = new Map<string, DemocracyReferendum>();
     this._democracyReferendumsQueryMap = new Map<string, DemocracyReferendum>();
     this._democracyReferendumsIds = new Set<string>();
+    this._democracyReferendumDaoIds = new Set<number>();
+  }
+
+  get democracyReferendumDaoIds() {
+    return this._democracyReferendumDaoIds;
+  }
+
+  query() {
+    const where: FindOptionsWhere<DemocracyReferendum>[] = [
+      { id: In([...this._democracyReferendumsIds]) },
+    ];
+    if (this.democracyReferendumDaoIds.size > 0) {
+      where.push({
+        democracyProposal: {
+          dao: { id: In([...this.democracyReferendumDaoIds]) },
+        },
+      });
+    }
+
+    return this._ctx.store.findBy(DemocracyReferendum, where);
   }
 
   insert() {
@@ -54,12 +77,6 @@ export class DemocracyReferendumHandler extends BaseHandler<DemocracyReferendum>
     return this._ctx.store.save([
       ...this._democracyReferendumsToUpdate.values(),
     ]);
-  }
-
-  query() {
-    return this._ctx.store.findBy(DemocracyReferendum, {
-      id: In([...this._democracyReferendumsIds]),
-    });
   }
 
   arrayToMap(democracyReferendums: DemocracyReferendum[]) {
@@ -89,7 +106,7 @@ export class DemocracyReferendumHandler extends BaseHandler<DemocracyReferendum>
       throw new Error("Unsupported referendum event spec");
     }
 
-    const democracyProposalId = `${daoId}-${propIndex}`;
+    const democracyProposalId = buildProposalId(daoId, propIndex);
 
     const democracyProposal =
       democracyProposalsToInsert.get(democracyProposalId) ??
@@ -102,7 +119,7 @@ export class DemocracyReferendumHandler extends BaseHandler<DemocracyReferendum>
       );
     }
 
-    const democracyReferendumId = `${daoId}-${refIndex}`;
+    const democracyReferendumId = buildProposalId(daoId, refIndex);
 
     let voteThreshold: DemocracyReferendumVoteThreshold;
 
@@ -145,7 +162,7 @@ export class DemocracyReferendumHandler extends BaseHandler<DemocracyReferendum>
       throw new Error("Unsupported referendum status spec");
     }
 
-    const id = `${daoId}-${refIndex}`;
+    const id = buildProposalId(daoId, refIndex);
 
     const democracyReferendum =
       this._democracyReferendumsToInsert.get(id) ??
@@ -167,6 +184,26 @@ export class DemocracyReferendumHandler extends BaseHandler<DemocracyReferendum>
     this._democracyReferendumsToUpdate.set(id, democracyReferendum);
   }
 
+  processDaoPurged({ event }: EventInfo<DaoDemocracyDaoPurgedEvent>) {
+    let daoId: number;
+    if (event.isV104) {
+      ({ daoId } = event.asV104);
+    } else {
+      throw new Error("Unsupported democracy dao purge spec");
+    }
+
+    this._democracyReferendumsQueryMap.forEach((referendum, id) => {
+      const { index } = referendum;
+      if (id !== buildProposalId(daoId, index)) {
+        return;
+      }
+
+      referendum.removed = true;
+
+      this._democracyReferendumsToUpdate.set(id, referendum);
+    });
+  }
+
   prepareStartedQuery(
     event: DaoDemocracyStartedEvent,
     democracyProposalIds: Set<string>
@@ -178,7 +215,7 @@ export class DemocracyReferendumHandler extends BaseHandler<DemocracyReferendum>
       throw new Error("Unsupported referendum event spec");
     }
 
-    const democracyProposalId = `${daoId}-${propIndex}`;
+    const democracyProposalId = buildProposalId(daoId, propIndex);
     democracyProposalIds.add(democracyProposalId);
   }
 
@@ -192,5 +229,16 @@ export class DemocracyReferendumHandler extends BaseHandler<DemocracyReferendum>
 
     const id = `${daoId}-${refIndex}`;
     this._democracyReferendumsIds.add(id);
+  }
+
+  prepareDaoPurgeQuery(event: DaoDemocracyDaoPurgedEvent) {
+    let daoId;
+    if (event.isV104) {
+      ({ daoId } = event.asV104);
+    } else {
+      throw new Error("Unsupported democracy dao purge spec");
+    }
+
+    this._democracyReferendumDaoIds.add(daoId);
   }
 }

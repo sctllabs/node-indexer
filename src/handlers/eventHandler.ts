@@ -10,6 +10,7 @@ import {
   DaoBountiesBountyCuratorProposedEvent,
   DaoBountiesBountyCuratorUnassignedEvent,
   DaoBountiesBountyExtendedEvent,
+  DaoBountiesDaoPurgedEvent,
   AssetsMetadataSetEvent,
   DaoCouncilApprovedEvent,
   DaoCouncilClosedEvent,
@@ -35,6 +36,12 @@ import {
   DaoEthGovernanceDisapprovedEvent,
   DaoEthGovernanceExecutedEvent,
   DaoEthGovernanceClosedEvent,
+  DaoDaoRemovedEvent,
+  DaoDaoMetadataUpdatedEvent,
+  DaoDaoPolicyUpdatedEvent,
+  DaoCouncilDaoPurgedEvent,
+  DaoEthGovernanceDaoPurgedEvent,
+  DaoDemocracyDaoPurgedEvent,
 } from "../types/events";
 import { DaoHandler } from "./daoHandler";
 import { FungibleTokenHandler } from "./fungibleTokenHandler";
@@ -205,8 +212,10 @@ export class EventHandler {
         blockHash,
         timestamp,
       });
+
       return;
     }
+
     if (event instanceof DaoDaoRegisteredEvent) {
       this._daoHandler.process(
         {
@@ -219,8 +228,21 @@ export class EventHandler {
         this._fungibleTokenHandler.fungibleTokensToInsert,
         this._fungibleTokenHandler.fungibleTokensQueryMap
       );
+
       return;
     }
+
+    if (event instanceof DaoDaoRemovedEvent) {
+      this._daoHandler.processRemoved({
+        event,
+        blockNum,
+        blockHash,
+        timestamp,
+      });
+
+      return;
+    }
+
     if (event instanceof DaoCouncilProposedEvent) {
       this._councilProposalHandler.processProposed(
         {
@@ -233,8 +255,10 @@ export class EventHandler {
         this._daoHandler.daosToInsert,
         this._daoHandler.daosQueryMap
       );
+
       return;
     }
+
     if (
       event instanceof DaoCouncilApprovedEvent ||
       event instanceof DaoCouncilDisapprovedEvent ||
@@ -247,6 +271,7 @@ export class EventHandler {
         blockHash,
         timestamp,
       });
+
       return;
     }
 
@@ -262,6 +287,25 @@ export class EventHandler {
         this._councilProposalHandler.councilProposalsToInsert,
         this._councilProposalHandler.councilProposalsQueryMap
       );
+
+      return;
+    }
+
+    if (event instanceof DaoCouncilDaoPurgedEvent) {
+      this._councilProposalHandler.processDaoPurged({
+        event,
+        blockHash,
+        blockNum,
+        timestamp,
+      });
+
+      this._councilVoteHandler.processDaoPurged({
+        event,
+        blockNum,
+        blockHash,
+        timestamp,
+      });
+
       return;
     }
 
@@ -277,8 +321,10 @@ export class EventHandler {
         this._daoHandler.daosToInsert,
         this._daoHandler.daosQueryMap
       );
+
       return;
     }
+
     if (
       event instanceof DaoEthGovernanceApprovedEvent ||
       event instanceof DaoEthGovernanceDisapprovedEvent ||
@@ -291,6 +337,7 @@ export class EventHandler {
         blockHash,
         timestamp,
       });
+
       return;
     }
 
@@ -309,6 +356,24 @@ export class EventHandler {
       return;
     }
 
+    if (event instanceof DaoEthGovernanceDaoPurgedEvent) {
+      this._ethGovernanceProposalHandler.processDaoPurged({
+        event,
+        blockNum,
+        blockHash,
+        timestamp,
+      });
+
+      this._ethGovernanceVoteHandler.processDaoPurged({
+        event,
+        blockNum,
+        blockHash,
+        timestamp,
+      });
+
+      return;
+    }
+
     if (
       event instanceof DaoCouncilMembersMemberAddedEvent ||
       event instanceof DaoCouncilMembersMemberRemovedEvent
@@ -324,8 +389,10 @@ export class EventHandler {
         this._daoHandler.daosToUpdate,
         this._daoHandler.daosQueryMap
       );
+
       return;
     }
+
     if (event instanceof DaoDemocracyProposedEvent) {
       this._democracyProposalHandler.processProposed(
         {
@@ -338,8 +405,10 @@ export class EventHandler {
         this._daoHandler.daosQueryMap,
         this._accountHandler.accounts
       );
+
       return;
     }
+
     if (event instanceof DaoDemocracyStartedEvent) {
       this._democracyProposalHandler.processStatus({
         event,
@@ -358,8 +427,10 @@ export class EventHandler {
         this._democracyProposalHandler.democracyProposalsToUpdate,
         this._democracyProposalHandler.democracyProposalsQueryMap
       );
+
       return;
     }
+
     if (
       event instanceof DaoDemocracyPassedEvent ||
       event instanceof DaoDemocracyNotPassedEvent ||
@@ -371,8 +442,10 @@ export class EventHandler {
         blockNum,
         timestamp,
       });
+
       return;
     }
+
     if (event instanceof DaoDemocracySecondedEvent) {
       this._democracySecondHandler.process(
         {
@@ -385,7 +458,35 @@ export class EventHandler {
         this._democracyProposalHandler.democracyProposalsToInsert,
         this._democracyProposalHandler.democracyProposalsQueryMap
       );
+
+      return;
     }
+
+    if (event instanceof DaoDemocracyDaoPurgedEvent) {
+      this._democracyProposalHandler.processDaoPurged({
+        event,
+        blockHash,
+        blockNum,
+        timestamp,
+      });
+
+      this._democracySecondHandler.processDaoPurged({
+        event,
+        blockHash,
+        blockNum,
+        timestamp,
+      });
+
+      this._democracyReferendumHandler.processDaoPurged({
+        event,
+        blockHash,
+        blockNum,
+        timestamp,
+      });
+
+      return;
+    }
+
     if (event instanceof DaoBountiesBountyCreatedEvent) {
       this._bountyHandler.processCreated(
         {
@@ -398,8 +499,10 @@ export class EventHandler {
         this._daoHandler.daosToUpdate,
         this._daoHandler.daosQueryMap
       );
+
       return;
     }
+
     if (
       event instanceof DaoBountiesBountyBecameActiveEvent ||
       event instanceof DaoBountiesBountyCuratorAcceptedEvent ||
@@ -419,19 +522,36 @@ export class EventHandler {
         },
         this._accountHandler.accounts
       );
+
+      return;
+    }
+
+    if (event instanceof DaoBountiesDaoPurgedEvent) {
+      this._bountyHandler.processDaoPurged({
+        event,
+        blockHash,
+        blockNum,
+        timestamp,
+      });
+
       return;
     }
   }
 
   private queryItem({ event }: EventInfo<EventType>) {
-    if (event instanceof DaoDaoRegisteredEvent) {
+    if (
+      event instanceof DaoDaoRegisteredEvent ||
+      event instanceof DaoDaoRemovedEvent
+    ) {
       this._daoHandler.prepareQuery(
         event,
         this._accountHandler.accountIds,
         this._fungibleTokenHandler.fungibleTokenIds
       );
+
       return;
     }
+
     if (
       event instanceof DaoCouncilMembersMemberAddedEvent ||
       event instanceof DaoCouncilMembersMemberRemovedEvent
@@ -440,16 +560,20 @@ export class EventHandler {
         event,
         this._daoHandler.daoIds
       );
+
       return;
     }
+
     if (event instanceof DaoCouncilProposedEvent) {
       this._councilProposalHandler.prepareProposedQuery(
         event,
         this._daoHandler.daoIds,
         this._accountHandler.accountIds
       );
+
       return;
     }
+
     if (
       event instanceof DaoCouncilApprovedEvent ||
       event instanceof DaoCouncilDisapprovedEvent ||
@@ -460,24 +584,37 @@ export class EventHandler {
         event,
         this._councilProposalHandler.councilProposalIds
       );
+
       return;
     }
+
     if (event instanceof DaoCouncilVotedEvent) {
       this._councilVoteHandler.prepareQuery(
         event,
         this._accountHandler.accountIds,
         this._councilProposalHandler.councilProposalIds
       );
+
       return;
     }
+
+    if (event instanceof DaoCouncilDaoPurgedEvent) {
+      this._councilProposalHandler.prepareDaoPurgeQuery(event);
+      this._councilVoteHandler.prepareDaoPurgeQuery(event);
+
+      return;
+    }
+
     if (event instanceof DaoEthGovernanceProposedEvent) {
       this._ethGovernanceProposalHandler.prepareProposedQuery(
         event,
         this._daoHandler.daoIds,
         this._accountHandler.accountIds
       );
+
       return;
     }
+
     if (
       event instanceof DaoEthGovernanceApprovedEvent ||
       event instanceof DaoEthGovernanceDisapprovedEvent ||
@@ -488,48 +625,75 @@ export class EventHandler {
         event,
         this._ethGovernanceProposalHandler.ethGovernanceProposalIds
       );
+
       return;
     }
+
     if (event instanceof DaoEthGovernanceVotedEvent) {
       this._ethGovernanceVoteHandler.prepareQuery(
         event,
         this._accountHandler.accountIds,
         this._ethGovernanceProposalHandler.ethGovernanceProposalIds
       );
+
       return;
     }
+
+    if (event instanceof DaoEthGovernanceDaoPurgedEvent) {
+      this._ethGovernanceProposalHandler.prepareDaoPurgeQuery(event);
+      this._ethGovernanceVoteHandler.prepareDaoPurgeQuery(event);
+
+      return;
+    }
+
     if (event instanceof DaoDemocracyProposedEvent) {
       this._democracyProposalHandler.prepareProposedQuery(
         event,
         this._daoHandler.daoIds,
         this._accountHandler.accountIds
       );
+
       return;
     }
+
     if (event instanceof DaoDemocracyStartedEvent) {
       this._democracyProposalHandler.prepareStatusQuery(event);
       this._democracyReferendumHandler.prepareStartedQuery(
         event,
         this._democracyProposalHandler.democracyProposalIds
       );
+
       return;
     }
+
     if (
       event instanceof DaoDemocracyPassedEvent ||
       event instanceof DaoDemocracyNotPassedEvent ||
       event instanceof DaoDemocracyCancelledEvent
     ) {
       this._democracyReferendumHandler.prepareStatusQuery(event);
+
       return;
     }
+
     if (event instanceof DaoDemocracySecondedEvent) {
       this._democracySecondHandler.prepareQuery(
         event,
         this._accountHandler.accountIds,
         this._democracyProposalHandler.democracyProposalIds
       );
+
       return;
     }
+
+    if (event instanceof DaoDemocracyDaoPurgedEvent) {
+      this._democracyProposalHandler.prepareDaoPurgeQuery(event);
+      this._democracySecondHandler.prepareDaoPurgeQuery(event);
+      this._democracyReferendumHandler.prepareDaoPurgeQuery(event);
+
+      return;
+    }
+
     if (
       event instanceof DaoBountiesBountyCreatedEvent ||
       event instanceof DaoBountiesBountyBecameActiveEvent ||
@@ -539,13 +703,15 @@ export class EventHandler {
       event instanceof DaoBountiesBountyClaimedEvent ||
       event instanceof DaoBountiesBountyExtendedEvent ||
       event instanceof DaoBountiesBountyAwardedEvent ||
-      event instanceof DaoBountiesBountyCanceledEvent
+      event instanceof DaoBountiesBountyCanceledEvent ||
+      event instanceof DaoBountiesDaoPurgedEvent
     ) {
       this._bountyHandler.prepareQuery(
         event,
         this._daoHandler.daoIds,
         this._accountHandler.accountIds
       );
+
       return;
     }
   }
@@ -587,6 +753,18 @@ export class EventHandler {
       case "Dao.DaoRegistered": {
         return new DaoDaoRegisteredEvent(this._ctx, item.event);
       }
+      case "Dao.DaoMetadataUpdated": {
+        return new DaoDaoMetadataUpdatedEvent(this._ctx, item.event);
+      }
+      case "Dao.DaoPolicyUpdated": {
+        return new DaoDaoPolicyUpdatedEvent(this._ctx, item.event);
+      }
+      case "Dao.DaoRemoved": {
+        return new DaoDaoRemovedEvent(this._ctx, item.event);
+      }
+      case "Dao.DaoPolicyUpdated": {
+        return new DaoDaoPolicyUpdatedEvent(this._ctx, item.event);
+      }
       case "Assets.MetadataSet": {
         return new AssetsMetadataSetEvent(this._ctx, item.event);
       }
@@ -608,6 +786,9 @@ export class EventHandler {
       case "DaoCouncil.Closed": {
         return new DaoCouncilClosedEvent(this._ctx, item.event);
       }
+      case "DaoCouncil.DaoPurged": {
+        return new DaoCouncilDaoPurgedEvent(this._ctx, item.event);
+      }
       case "DaoEthGovernance.Proposed": {
         return new DaoEthGovernanceProposedEvent(this._ctx, item.event);
       }
@@ -625,6 +806,9 @@ export class EventHandler {
       }
       case "DaoEthGovernance.Closed": {
         return new DaoEthGovernanceClosedEvent(this._ctx, item.event);
+      }
+      case "DaoEthGovernance.DaoPurged": {
+        return new DaoEthGovernanceDaoPurgedEvent(this._ctx, item.event);
       }
       case "DaoCouncilMembers.MemberAdded": {
         return new DaoCouncilMembersMemberAddedEvent(this._ctx, item.event);
@@ -659,6 +843,9 @@ export class EventHandler {
       case "DaoDemocracy.Seconded": {
         return new DaoDemocracySecondedEvent(this._ctx, item.event);
       }
+      case "DaoDemocracy.DaoPurged": {
+        return new DaoDemocracyDaoPurgedEvent(this._ctx, item.event);
+      }
       case "DaoBounties.BountyCreated": {
         return new DaoBountiesBountyCreatedEvent(this._ctx, item.event);
       }
@@ -688,6 +875,9 @@ export class EventHandler {
       }
       case "DaoBounties.BountyExtended": {
         return new DaoBountiesBountyExtendedEvent(this._ctx, item.event);
+      }
+      case "DaoBounties.DaoPurged": {
+        return new DaoBountiesDaoPurgedEvent(this._ctx, item.event);
       }
       default: {
         console.log("Unknown event", item.name);

@@ -1,4 +1,4 @@
-import { In } from "typeorm";
+import { FindOptionsWhere, In } from "typeorm";
 import type { Ctx } from "../processor";
 import type { EventInfo } from "../types";
 import {
@@ -11,10 +11,12 @@ import {
   DaoBountiesBountyCuratorProposedEvent,
   DaoBountiesBountyCuratorUnassignedEvent,
   DaoBountiesBountyExtendedEvent,
+  DaoBountiesDaoPurgedEvent,
 } from "../types/events";
 import { Account, Bounty, BountyStatus, Dao } from "../model";
 import { decodeAddress, decodeString, getAccount } from "../utils";
 import { BaseHandler } from "./baseHandler";
+import { buildBountyId } from "../utils/buildBountyId";
 
 type BountyStatusEvents =
   | DaoBountiesBountyBecameActiveEvent
@@ -26,13 +28,17 @@ type BountyStatusEvents =
   | DaoBountiesBountyCanceledEvent
   | DaoBountiesBountyExtendedEvent;
 
-type BountyEvents = BountyStatusEvents | DaoBountiesBountyCreatedEvent;
+type BountyEvents =
+  | BountyStatusEvents
+  | DaoBountiesBountyCreatedEvent
+  | DaoBountiesDaoPurgedEvent;
 
 export class BountyHandler extends BaseHandler<Bounty> {
   private readonly _bountiesToInsert: Map<string, Bounty>;
   private readonly _bountiesToUpdate: Map<string, Bounty>;
   private readonly _bountiesQueryMap: Map<string, Bounty>;
   private readonly _bountyIds: Set<string>;
+  private readonly _bountyDaoIds: Set<number>;
 
   constructor(ctx: Ctx) {
     super(ctx);
@@ -40,6 +46,11 @@ export class BountyHandler extends BaseHandler<Bounty> {
     this._bountiesToUpdate = new Map<string, Bounty>();
     this._bountiesQueryMap = new Map<string, Bounty>();
     this._bountyIds = new Set<string>();
+    this._bountyDaoIds = new Set<number>();
+  }
+
+  get bountyDaoIds() {
+    return this._bountyDaoIds;
   }
 
   save() {
@@ -57,7 +68,14 @@ export class BountyHandler extends BaseHandler<Bounty> {
   }
 
   query() {
-    return this._ctx.store.findBy(Bounty, { id: In([...this._bountyIds]) });
+    const where: FindOptionsWhere<Bounty>[] = [
+      { id: In([...this._bountyIds]) },
+    ];
+    if (this.bountyDaoIds.size > 0) {
+      where.push({ dao: { id: In([...this.bountyDaoIds]) } });
+    }
+
+    return this._ctx.store.findBy(Bounty, where);
   }
 
   processStatus(
@@ -70,7 +88,8 @@ export class BountyHandler extends BaseHandler<Bounty> {
     } else {
       throw new Error("Unsupported bounty spec");
     }
-    const id = `${daoId}-${index}`;
+
+    const id = buildBountyId(daoId, index);
 
     const bounty =
       this._bountiesToInsert.get(id) ??
@@ -204,7 +223,7 @@ export class BountyHandler extends BaseHandler<Bounty> {
   ) {
     const { daoId, index, description, value, tokenId } = event.asV100;
 
-    const id = `${daoId}-${index}`;
+    const id = buildBountyId(daoId, index);
 
     const dao =
       daosToInsert.get(daoId.toString()) ??
@@ -235,11 +254,43 @@ export class BountyHandler extends BaseHandler<Bounty> {
     );
   }
 
+  processDaoPurged({ event }: EventInfo<DaoBountiesDaoPurgedEvent>) {
+    let daoId: number;
+    if (event.isV104) {
+      ({ daoId } = event.asV104);
+    } else {
+      throw new Error("Unsupported dao remove spec");
+    }
+
+    this._bountiesQueryMap.forEach((bounty, id) => {
+      const { index } = bounty;
+      if (id !== buildBountyId(daoId, index)) {
+        return;
+      }
+
+      bounty.removed = true;
+
+      this._bountiesToUpdate.set(id, bounty);
+    });
+  }
+
   prepareQuery(
     event: BountyEvents,
     daoIds: Set<string>,
     accountIds: Set<string>
   ) {
+    if (event instanceof DaoBountiesDaoPurgedEvent) {
+      if (event.isV104) {
+        const { daoId } = event.asV104;
+
+        this._bountyDaoIds.add(daoId);
+      } else {
+        throw new Error("Unsupported bounty dao purge spec");
+      }
+
+      return;
+    }
+
     let daoId, index;
     if (event.asV100) {
       ({ daoId, index } = event.asV100);
@@ -247,7 +298,7 @@ export class BountyHandler extends BaseHandler<Bounty> {
       throw new Error("Unsupported bounty event spec");
     }
 
-    const id = `${daoId}-${index}`;
+    const id = buildBountyId(daoId, index);
 
     this._bountyIds.add(id);
 

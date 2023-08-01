@@ -9,16 +9,22 @@ import {
   DaoBountiesBountyCuratorProposedEvent,
   DaoBountiesBountyCuratorUnassignedEvent,
   DaoBountiesBountyExtendedEvent,
+  DaoBountiesDaoPurgedEvent,
   DaoCouncilApprovedEvent,
   DaoCouncilClosedEvent,
+  DaoCouncilDaoPurgedEvent,
   DaoCouncilDisapprovedEvent,
   DaoCouncilExecutedEvent,
   DaoCouncilMembersMemberAddedEvent,
   DaoCouncilMembersMemberRemovedEvent,
   DaoCouncilProposedEvent,
   DaoCouncilVotedEvent,
+  DaoDaoMetadataUpdatedEvent,
+  DaoDaoPolicyUpdatedEvent,
   DaoDaoRegisteredEvent,
+  DaoDaoRemovedEvent,
   DaoDemocracyCancelledEvent,
+  DaoDemocracyDaoPurgedEvent,
   DaoDemocracyDelegatedEvent,
   DaoDemocracyNotPassedEvent,
   DaoDemocracyPassedEvent,
@@ -29,6 +35,7 @@ import {
   DaoDemocracyVotedEvent,
   DaoEthGovernanceApprovedEvent,
   DaoEthGovernanceClosedEvent,
+  DaoEthGovernanceDaoPurgedEvent,
   DaoEthGovernanceDisapprovedEvent,
   DaoEthGovernanceExecutedEvent,
   DaoEthGovernanceProposedEvent,
@@ -44,6 +51,9 @@ export type EventInfo<T> = {
 
 export type EventType =
   | DaoDaoRegisteredEvent
+  | DaoDaoMetadataUpdatedEvent
+  | DaoDaoPolicyUpdatedEvent
+  | DaoDaoRemovedEvent
   | AssetsMetadataSetEvent
   | DaoCouncilVotedEvent
   | DaoCouncilProposedEvent
@@ -51,6 +61,7 @@ export type EventType =
   | DaoCouncilDisapprovedEvent
   | DaoCouncilExecutedEvent
   | DaoCouncilClosedEvent
+  | DaoCouncilDaoPurgedEvent
   | DaoDemocracyProposedEvent
   | DaoDemocracySecondedEvent
   | DaoDemocracyPassedEvent
@@ -60,6 +71,7 @@ export type EventType =
   | DaoDemocracyDelegatedEvent
   | DaoDemocracyUndelegatedEvent
   | DaoDemocracyVotedEvent
+  | DaoDemocracyDaoPurgedEvent
   | DaoCouncilMembersMemberAddedEvent
   | DaoCouncilMembersMemberRemovedEvent
   | DaoBountiesBountyCreatedEvent
@@ -71,11 +83,13 @@ export type EventType =
   | DaoBountiesBountyClaimedEvent
   | DaoBountiesBountyCanceledEvent
   | DaoBountiesBountyExtendedEvent
+  | DaoBountiesDaoPurgedEvent
   | DaoEthGovernanceApprovedEvent
   | DaoEthGovernanceClosedEvent
   | DaoEthGovernanceDisapprovedEvent
   | DaoEthGovernanceExecutedEvent
   | DaoEthGovernanceProposedEvent
-  | DaoEthGovernanceVotedEvent;
+  | DaoEthGovernanceVotedEvent
+  | DaoEthGovernanceDaoPurgedEvent;
 
 export type EventsInfo = EventInfo<EventType>[];

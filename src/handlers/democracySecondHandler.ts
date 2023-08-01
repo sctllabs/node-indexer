@@ -1,17 +1,23 @@
-import { In } from "typeorm";
+import { FindOptionsWhere, In } from "typeorm";
 import { Account, DemocracyProposal, DemocracySecond } from "../model";
-import { DaoDemocracySecondedEvent } from "../types/events";
+import {
+  DaoDemocracyDaoPurgedEvent,
+  DaoDemocracySecondedEvent,
+} from "../types/events";
 import { decodeAddress, getAccount } from "../utils";
 import { BaseHandler } from "./baseHandler";
 
 import type { Ctx } from "../processor";
 import type { EventInfo } from "../types";
+import { buildProposalId } from "../utils/buildProposalId";
+import { buildVoteId } from "../utils/buildVoteId";
 
 export class DemocracySecondHandler extends BaseHandler<DemocracySecond> {
   private readonly _democracySecondsToInsert: Map<string, DemocracySecond>;
   private readonly _democracySecondsToUpdate: Map<string, DemocracySecond>;
   private readonly _democracySecondsQueryMap: Map<string, DemocracySecond>;
   private readonly _democracySecondsIds: Set<string>;
+  private readonly _democracySecondDaoIds: Set<number>;
 
   constructor(ctx: Ctx) {
     super(ctx);
@@ -19,12 +25,30 @@ export class DemocracySecondHandler extends BaseHandler<DemocracySecond> {
     this._democracySecondsToUpdate = new Map<string, DemocracySecond>();
     this._democracySecondsQueryMap = new Map<string, DemocracySecond>();
     this._democracySecondsIds = new Set<string>();
+    this._democracySecondDaoIds = new Set<number>();
+  }
+
+  get democracySecondDaoIds() {
+    return this._democracySecondDaoIds;
   }
 
   arrayToMap(democracySeconds: DemocracySecond[]) {
     for (const democracySecond of democracySeconds) {
       this._democracySecondsQueryMap.set(democracySecond.id, democracySecond);
     }
+  }
+
+  query() {
+    const where: FindOptionsWhere<DemocracySecond>[] = [
+      { id: In([...this._democracySecondsIds]) },
+    ];
+    if (this.democracySecondDaoIds.size > 0) {
+      where.push({
+        proposal: { dao: { id: In([...this.democracySecondDaoIds]) } },
+      });
+    }
+
+    return this._ctx.store.findBy(DemocracySecond, where);
   }
 
   save() {
@@ -54,7 +78,7 @@ export class DemocracySecondHandler extends BaseHandler<DemocracySecond> {
     }
 
     const accountAddress = decodeAddress(seconder);
-    const democracyProposalId = `${daoId}-${propIndex}`;
+    const democracyProposalId = buildProposalId(daoId, propIndex);
     const proposal =
       democracyProposalsToInsert.get(democracyProposalId) ??
       democracyProposalsQueryMap.get(democracyProposalId);
@@ -65,7 +89,7 @@ export class DemocracySecondHandler extends BaseHandler<DemocracySecond> {
       );
     }
 
-    const id = `${daoId}-${propIndex}-${accountAddress}`;
+    const id = buildVoteId(daoId, propIndex, accountAddress);
 
     const account = getAccount(accounts, accountAddress);
 
@@ -92,9 +116,22 @@ export class DemocracySecondHandler extends BaseHandler<DemocracySecond> {
     }
   }
 
-  query() {
-    return this._ctx.store.findBy(DemocracySecond, {
-      id: In([...this._democracySecondsIds]),
+  processDaoPurged({ event }: EventInfo<DaoDemocracyDaoPurgedEvent>) {
+    let daoId: number;
+    if (event.isV104) {
+      ({ daoId } = event.asV104);
+    } else {
+      throw new Error("Unsupported democracy dao purge spec");
+    }
+
+    this._democracySecondsQueryMap.forEach((second, id) => {
+      if (!id.startsWith(daoId.toString())) {
+        return;
+      }
+
+      second.removed = true;
+
+      this._democracySecondsToUpdate.set(id, second);
     });
   }
 
@@ -111,11 +148,22 @@ export class DemocracySecondHandler extends BaseHandler<DemocracySecond> {
     }
 
     const accountAddress = decodeAddress(seconder);
-    const democracyProposalId = `${daoId}-${propIndex}`;
-    const secondId = `${daoId}-${propIndex}-${accountAddress}`;
+    const democracyProposalId = buildProposalId(daoId, propIndex);
+    const secondId = buildVoteId(daoId, propIndex, accountAddress);
 
     accountIds.add(accountAddress);
     democracyProposalIds.add(democracyProposalId);
     this._democracySecondsIds.add(secondId);
+  }
+
+  prepareDaoPurgeQuery(event: DaoDemocracyDaoPurgedEvent) {
+    let daoId;
+    if (event.isV104) {
+      ({ daoId } = event.asV104);
+    } else {
+      throw new Error("Unsupported democracy dao purge spec");
+    }
+
+    this._democracySecondDaoIds.add(daoId);
   }
 }
