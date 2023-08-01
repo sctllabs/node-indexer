@@ -9,6 +9,7 @@ import {
 import { Call as CallV101 } from "../types/v101";
 import { Call as CallV102 } from "../types/v102";
 import { Call as CallV103 } from "../types/v103";
+import { Call as CallV104 } from "../types/v104";
 import {
   AddMember,
   CreateBounty,
@@ -26,7 +27,7 @@ import { decodeAddress } from "./decodeAddress";
 import { decodeString } from "./decodeString";
 
 export function getProposalKind(
-  proposal: CallV100 | CallV101 | CallV102 | CallV103
+  proposal: CallV100 | CallV101 | CallV102 | CallV103 | CallV104
 ) {
   switch (proposal.value.__kind) {
     case "add_member": {

@@ -1,17 +1,23 @@
-import { In } from "typeorm";
-import { DaoCouncilVotedEvent } from "../types/events";
+import { FindOptionsWhere, In } from "typeorm";
+import {
+  DaoCouncilDaoPurgedEvent,
+  DaoCouncilVotedEvent,
+} from "../types/events";
 import { Account, CouncilProposal, CouncilVoteHistory } from "../model";
 import { decodeAddress, getAccount } from "../utils";
 
 import type { Ctx } from "../processor";
 import type { EventInfo } from "../types";
 import { BaseHandler } from "./baseHandler";
+import { buildProposalId } from "../utils/buildProposalId";
+import { buildVoteId } from "../utils/buildVoteId";
 
 export class CouncilVoteHandler extends BaseHandler<CouncilVoteHistory> {
   private readonly _councilVotesToInsert: Map<string, CouncilVoteHistory>;
   private readonly _councilVotesToUpdate: Map<string, CouncilVoteHistory>;
   private readonly _councilVotesQueryMap: Map<string, CouncilVoteHistory>;
   private readonly _councilVoteIds: Set<string>;
+  private readonly _councilVoteDaoIds: Set<number>;
 
   constructor(ctx: Ctx) {
     super(ctx);
@@ -19,16 +25,36 @@ export class CouncilVoteHandler extends BaseHandler<CouncilVoteHistory> {
     this._councilVotesToUpdate = new Map<string, CouncilVoteHistory>();
     this._councilVoteIds = new Set<string>();
     this._councilVotesQueryMap = new Map<string, CouncilVoteHistory>();
+    this._councilVoteDaoIds = new Set<number>();
   }
 
   get councilVotesQueryMap() {
     return this._councilVotesQueryMap;
   }
 
+  get councilVoteDaoIds() {
+    return this._councilVoteDaoIds;
+  }
+
   arrayToMap(councilVotes: CouncilVoteHistory[]) {
     for (const councilVote of councilVotes) {
       this._councilVotesQueryMap.set(councilVote.id, councilVote);
     }
+  }
+
+  query() {
+    const where: FindOptionsWhere<CouncilVoteHistory>[] = [
+      { id: In([...this._councilVoteIds]) },
+    ];
+    if (this.councilVoteDaoIds.size > 0) {
+      where.push({
+        proposal: { dao: { id: In([...this.councilVoteDaoIds]) } },
+      });
+    }
+
+    return this._ctx.store.findBy(CouncilVoteHistory, {
+      id: In([...this._councilVoteIds]),
+    });
   }
 
   insert() {
@@ -53,14 +79,14 @@ export class CouncilVoteHandler extends BaseHandler<CouncilVoteHistory> {
     }
 
     const accountAddress = decodeAddress(account);
-    const proposalId = `${daoId}-${proposalIndex}`;
+    const proposalId = buildProposalId(daoId, proposalIndex);
     const proposal =
       councilProposalsToInsert.get(proposalId) ??
       councilProposalsQueryMap.get(proposalId);
     if (!proposal) {
       throw new Error(`Proposal with id: ${proposalId} not found`);
     }
-    const id = `${daoId}-${proposalIndex}-${accountAddress}`;
+    const id = buildVoteId(daoId, proposalIndex, accountAddress);
 
     const existingVote = this.councilVotesQueryMap.get(id);
 
@@ -96,9 +122,22 @@ export class CouncilVoteHandler extends BaseHandler<CouncilVoteHistory> {
     }
   }
 
-  query() {
-    return this._ctx.store.findBy(CouncilVoteHistory, {
-      id: In([...this._councilVoteIds]),
+  processDaoPurged({ event }: EventInfo<DaoCouncilDaoPurgedEvent>) {
+    let daoId: number;
+    if (event.isV104) {
+      ({ daoId } = event.asV104);
+    } else {
+      throw new Error("Unsupported council dao purge spec");
+    }
+
+    this._councilVotesQueryMap.forEach((vote, id) => {
+      if (!id.startsWith(daoId.toString())) {
+        return;
+      }
+
+      vote.removed = true;
+
+      this._councilVotesToUpdate.set(id, vote);
     });
   }
 
@@ -115,11 +154,22 @@ export class CouncilVoteHandler extends BaseHandler<CouncilVoteHistory> {
     }
 
     const accountAddress = decodeAddress(account);
-    const proposalId = `${daoId}-${proposalIndex}`;
-    const voteId = `${daoId}-${proposalIndex}-${accountAddress}`;
+    const proposalId = buildProposalId(daoId, proposalIndex);
+    const voteId = buildVoteId(daoId, proposalIndex, accountAddress);
 
     accountIds.add(accountAddress);
     councilProposalIds.add(proposalId);
     this._councilVoteIds.add(voteId);
+  }
+
+  prepareDaoPurgeQuery(event: DaoCouncilDaoPurgedEvent) {
+    let daoId;
+    if (event.isV104) {
+      ({ daoId } = event.asV104);
+    } else {
+      throw new Error("Unsupported council dao purge spec");
+    }
+
+    this._councilVoteDaoIds.add(daoId);
   }
 }

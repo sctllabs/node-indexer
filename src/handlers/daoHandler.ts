@@ -1,5 +1,5 @@
 import { In } from "typeorm";
-import { DaoDaoRegisteredEvent } from "../types/events";
+import { DaoDaoRegisteredEvent, DaoDaoRemovedEvent } from "../types/events";
 import { decodeAddress, getAccount } from "../utils";
 import {
   Account,
@@ -54,6 +54,10 @@ export class DaoHandler extends BaseHandler<Dao> {
     }
   }
 
+  query() {
+    return this._ctx.store.findBy(Dao, { id: In([...this._daoIds]) });
+  }
+
   insertPolicies() {
     return this._ctx.store.insert([...this._policiesToInsert.values()]);
   }
@@ -68,10 +72,6 @@ export class DaoHandler extends BaseHandler<Dao> {
 
   save() {
     return this._ctx.store.save([...this._daosToUpdate.values()]);
-  }
-
-  query() {
-    return this._ctx.store.findBy(Dao, { id: In([...this._daoIds]) });
   }
 
   process(
@@ -168,11 +168,50 @@ export class DaoHandler extends BaseHandler<Dao> {
     this._daosToInsert.set(dao.id, dao);
   }
 
+  processRemoved({ event }: EventInfo<DaoDaoRemovedEvent>) {
+    let daoId: number;
+    if (event.isV104) {
+      ({ daoId } = event.asV104);
+    } else {
+      throw new Error("Unsupported dao remove spec");
+    }
+
+    const dao =
+      this._daosToUpdate.get(daoId.toString()) ??
+      this.daosQueryMap.get(daoId.toString());
+
+    if (!dao) {
+      throw new Error(`Dao with id: ${daoId} not found.`);
+    }
+
+    dao.removed = true;
+
+    this.daosQueryMap.forEach((dao, id) => {
+      if (id !== daoId.toString()) {
+        return;
+      }
+
+      this._daosToUpdate.set(id, dao);
+    });
+  }
+
   prepareQuery(
-    event: DaoDaoRegisteredEvent,
+    event: DaoDaoRegisteredEvent | DaoDaoRemovedEvent,
     accountIds: Set<string>,
     fungibleTokenIds: Set<string>
   ) {
+    if (event instanceof DaoDaoRemovedEvent) {
+      if (event.isV104) {
+        const { daoId } = event.asV104;
+
+        this._daoIds.add(daoId.toString());
+      } else {
+        throw new Error("Unsupported dao spec");
+      }
+
+      return;
+    }
+
     let encodedFounderAddress,
       encodedDaoAddress,
       encodedCouncil,

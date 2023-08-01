@@ -63,4 +63,7 @@ export class Bounty {
 
     @Column_("timestamp with time zone", {nullable: false})
     updatedAt!: Date
+
+    @Column_("bool", {nullable: true})
+    removed!: boolean | undefined | null
 }

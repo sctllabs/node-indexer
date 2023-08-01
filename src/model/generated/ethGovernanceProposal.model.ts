@@ -60,4 +60,7 @@ export class EthGovernanceProposal {
 
     @Column_("text", {nullable: true})
     reason!: string | undefined | null
+
+    @Column_("bool", {nullable: true})
+    removed!: boolean | undefined | null
 }

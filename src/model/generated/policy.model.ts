@@ -29,4 +29,7 @@ export class Policy {
 
     @Column_("jsonb", {transformer: {to: obj => obj == null ? undefined : obj.toJSON(), from: obj => obj == null ? undefined : fromJsonGovernance(obj)}, nullable: true})
     governance!: Governance | undefined | null
+
+    @Column_("bool", {nullable: true})
+    removed!: boolean | undefined | null
 }

@@ -1,6 +1,7 @@
-import { In } from "typeorm";
+import { FindOptionsWhere, In } from "typeorm";
 import { BaseHandler } from "./baseHandler";
 import {
+  DaoDemocracyDaoPurgedEvent,
   DaoDemocracyProposedEvent,
   DaoDemocracyStartedEvent,
 } from "../types/events";
@@ -19,12 +20,15 @@ import { Call as CallV100 } from "../types/v100";
 import { Call as CallV101 } from "../types/v101";
 import { Call as CallV102 } from "../types/v102";
 import { Call as CallV103 } from "../types/v103";
+import { Call as CallV104 } from "../types/v104";
+import { buildProposalId } from "../utils/buildProposalId";
 
 export class DemocracyProposalHandler extends BaseHandler<DemocracyProposal> {
   private readonly _democracyProposalsToInsert: Map<string, DemocracyProposal>;
   private readonly _democracyProposalsToUpdate: Map<string, DemocracyProposal>;
   private readonly _democracyProposalsQueryMap: Map<string, DemocracyProposal>;
   private readonly _democracyProposalsIds: Set<string>;
+  private readonly _democracyProposalDaoIds: Set<number>;
 
   constructor(ctx: Ctx) {
     super(ctx);
@@ -32,6 +36,7 @@ export class DemocracyProposalHandler extends BaseHandler<DemocracyProposal> {
     this._democracyProposalsToUpdate = new Map<string, DemocracyProposal>();
     this._democracyProposalsQueryMap = new Map<string, DemocracyProposal>();
     this._democracyProposalsIds = new Set<string>();
+    this._democracyProposalDaoIds = new Set<number>();
   }
 
   get democracyProposalsQueryMap() {
@@ -50,6 +55,10 @@ export class DemocracyProposalHandler extends BaseHandler<DemocracyProposal> {
     return this._democracyProposalsIds;
   }
 
+  get democracyProposalDaoIds() {
+    return this._democracyProposalDaoIds;
+  }
+
   arrayToMap(democracyProposals: DemocracyProposal[]) {
     for (const democracyProposal of democracyProposals) {
       this._democracyProposalsQueryMap.set(
@@ -57,6 +66,17 @@ export class DemocracyProposalHandler extends BaseHandler<DemocracyProposal> {
         democracyProposal
       );
     }
+  }
+
+  query() {
+    const where: FindOptionsWhere<DemocracyProposal>[] = [
+      { id: In([...this._democracyProposalsIds]) },
+    ];
+    if (this.democracyProposalDaoIds.size > 0) {
+      where.push({ dao: { id: In([...this.democracyProposalDaoIds]) } });
+    }
+
+    return this._ctx.store.findBy(DemocracyProposal, where);
   }
 
   insert() {
@@ -67,12 +87,6 @@ export class DemocracyProposalHandler extends BaseHandler<DemocracyProposal> {
 
   save() {
     return this._ctx.store.save([...this._democracyProposalsToUpdate.values()]);
-  }
-
-  query() {
-    return this._ctx.store.findBy(DemocracyProposal, {
-      id: In([...this._democracyProposalsIds]),
-    });
   }
 
   processProposed(
@@ -97,7 +111,7 @@ export class DemocracyProposalHandler extends BaseHandler<DemocracyProposal> {
     }
 
     const kind = getProposalKind(proposal);
-    const id = `${dao.id}-${proposalIndex}`;
+    const id = buildProposalId(dao.id, proposalIndex);
     this._democracyProposalsToInsert.set(
       id,
       new DemocracyProposal({
@@ -125,7 +139,7 @@ export class DemocracyProposalHandler extends BaseHandler<DemocracyProposal> {
       throw new Error("Unsupported democracy proposal status spec");
     }
 
-    const id = `${daoId}-${propIndex}`;
+    const id = buildProposalId(daoId, propIndex);
 
     const proposal =
       this._democracyProposalsToInsert.get(id) ??
@@ -138,6 +152,26 @@ export class DemocracyProposalHandler extends BaseHandler<DemocracyProposal> {
     proposal.status = DemocracyProposalStatus.Referendum;
     proposal.updatedAt = new Date(timestamp);
     this._democracyProposalsToUpdate.set(id, proposal);
+  }
+
+  processDaoPurged({ event }: EventInfo<DaoDemocracyDaoPurgedEvent>) {
+    let daoId: number;
+    if (event.isV104) {
+      ({ daoId } = event.asV104);
+    } else {
+      throw new Error("Unsupported democracy dao purge spec");
+    }
+
+    this._democracyProposalsQueryMap.forEach((proposal, id) => {
+      const { index } = proposal;
+      if (id !== buildProposalId(daoId, index)) {
+        return;
+      }
+
+      proposal.removed = true;
+
+      this._democracyProposalsToUpdate.set(id, proposal);
+    });
   }
 
   prepareProposedQuery(
@@ -161,16 +195,27 @@ export class DemocracyProposalHandler extends BaseHandler<DemocracyProposal> {
       throw new Error("Unsupported democracy proposal status spec");
     }
 
-    const democracyProposalId = `${daoId}-${propIndex}`;
+    const democracyProposalId = buildProposalId(daoId, propIndex);
 
     this._democracyProposalsIds.add(democracyProposalId);
+  }
+
+  prepareDaoPurgeQuery(event: DaoDemocracyDaoPurgedEvent) {
+    let daoId;
+    if (event.isV104) {
+      ({ daoId } = event.asV104);
+    } else {
+      throw new Error("Unsupported democracy dao purge spec");
+    }
+
+    this._democracyProposalDaoIds.add(daoId);
   }
 
   decodeDaoDemocracyProposedEvent(event: DaoDemocracyProposedEvent): {
     daoId: number;
     account: Uint8Array;
     proposalIndex: number;
-    proposal: CallV100 | CallV101 | CallV102 | CallV103;
+    proposal: CallV100 | CallV101 | CallV102 | CallV103 | CallV104;
     deposit: bigint;
     meta: Uint8Array | undefined;
   } {
@@ -182,6 +227,8 @@ export class DemocracyProposalHandler extends BaseHandler<DemocracyProposal> {
       return event.asV102;
     } else if (event.isV103) {
       return event.asV103;
+    } else if (event.isV104) {
+      return event.asV104;
     } else {
       throw new Error("Unsupported democracy proposal spec");
     }

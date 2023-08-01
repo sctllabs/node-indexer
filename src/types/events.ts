@@ -4,6 +4,7 @@ import * as v100 from './v100'
 import * as v101 from './v101'
 import * as v102 from './v102'
 import * as v103 from './v103'
+import * as v104 from './v104'
 
 export class AssetsMetadataSetEvent {
     private readonly _chain: Chain
@@ -34,6 +35,52 @@ export class AssetsMetadataSetEvent {
     }
 }
 
+export class DaoDaoMetadataUpdatedEvent {
+    private readonly _chain: Chain
+    private readonly event: Event
+
+    constructor(ctx: EventContext)
+    constructor(ctx: ChainContext, event: Event)
+    constructor(ctx: EventContext, event?: Event) {
+        event = event || ctx.event
+        assert(event.name === 'Dao.DaoMetadataUpdated')
+        this._chain = ctx._chain
+        this.event = event
+    }
+
+    get isV100(): boolean {
+        return this._chain.getEventHash('Dao.DaoMetadataUpdated') === '316240825f9e0a2d87c00509c203827c3af971c5075c4354309bce1e97d2b003'
+    }
+
+    get asV100(): {daoId: number, metadata: Uint8Array} {
+        assert(this.isV100)
+        return this._chain.decodeEvent(this.event)
+    }
+}
+
+export class DaoDaoPolicyUpdatedEvent {
+    private readonly _chain: Chain
+    private readonly event: Event
+
+    constructor(ctx: EventContext)
+    constructor(ctx: ChainContext, event: Event)
+    constructor(ctx: EventContext, event?: Event) {
+        event = event || ctx.event
+        assert(event.name === 'Dao.DaoPolicyUpdated')
+        this._chain = ctx._chain
+        this.event = event
+    }
+
+    get isV100(): boolean {
+        return this._chain.getEventHash('Dao.DaoPolicyUpdated') === 'b8e457cdd7826340581f9bb4e24f8d23b60a1c2115d2bfba9931edcc7c102780'
+    }
+
+    get asV100(): {daoId: number, policy: v100.DaoPolicy} {
+        assert(this.isV100)
+        return this._chain.decodeEvent(this.event)
+    }
+}
+
 export class DaoDaoRegisteredEvent {
     private readonly _chain: Chain
     private readonly event: Event
@@ -53,6 +100,29 @@ export class DaoDaoRegisteredEvent {
 
     get asV100(): {daoId: number, founder: Uint8Array, accountId: Uint8Array, council: Uint8Array[], technicalCommittee: Uint8Array[], token: v100.DaoToken, config: v100.DaoConfig, policy: v100.DaoPolicy} {
         assert(this.isV100)
+        return this._chain.decodeEvent(this.event)
+    }
+}
+
+export class DaoDaoRemovedEvent {
+    private readonly _chain: Chain
+    private readonly event: Event
+
+    constructor(ctx: EventContext)
+    constructor(ctx: ChainContext, event: Event)
+    constructor(ctx: EventContext, event?: Event) {
+        event = event || ctx.event
+        assert(event.name === 'Dao.DaoRemoved')
+        this._chain = ctx._chain
+        this.event = event
+    }
+
+    get isV104(): boolean {
+        return this._chain.getEventHash('Dao.DaoRemoved') === '337d3b1acd0d5290c1a00d10e7d66083cc16f3ad78075a88e5513f1c37ebb523'
+    }
+
+    get asV104(): {daoId: number} {
+        assert(this.isV104)
         return this._chain.decodeEvent(this.event)
     }
 }
@@ -318,6 +388,35 @@ export class DaoBountiesBountyExtendedEvent {
     }
 }
 
+export class DaoBountiesDaoPurgedEvent {
+    private readonly _chain: Chain
+    private readonly event: Event
+
+    constructor(ctx: EventContext)
+    constructor(ctx: ChainContext, event: Event)
+    constructor(ctx: EventContext, event?: Event) {
+        event = event || ctx.event
+        assert(event.name === 'DaoBounties.DaoPurged')
+        this._chain = ctx._chain
+        this.event = event
+    }
+
+    /**
+     * Purged DAO related storage data
+     */
+    get isV104(): boolean {
+        return this._chain.getEventHash('DaoBounties.DaoPurged') === '337d3b1acd0d5290c1a00d10e7d66083cc16f3ad78075a88e5513f1c37ebb523'
+    }
+
+    /**
+     * Purged DAO related storage data
+     */
+    get asV104(): {daoId: number} {
+        assert(this.isV104)
+        return this._chain.decodeEvent(this.event)
+    }
+}
+
 export class DaoCouncilApprovedEvent {
     private readonly _chain: Chain
     private readonly event: Event
@@ -372,6 +471,35 @@ export class DaoCouncilClosedEvent {
      */
     get asV100(): {daoId: number, proposalIndex: number, proposalHash: Uint8Array, yes: number, no: number} {
         assert(this.isV100)
+        return this._chain.decodeEvent(this.event)
+    }
+}
+
+export class DaoCouncilDaoPurgedEvent {
+    private readonly _chain: Chain
+    private readonly event: Event
+
+    constructor(ctx: EventContext)
+    constructor(ctx: ChainContext, event: Event)
+    constructor(ctx: EventContext, event?: Event) {
+        event = event || ctx.event
+        assert(event.name === 'DaoCouncil.DaoPurged')
+        this._chain = ctx._chain
+        this.event = event
+    }
+
+    /**
+     * Purged DAO related storage data
+     */
+    get isV104(): boolean {
+        return this._chain.getEventHash('DaoCouncil.DaoPurged') === '337d3b1acd0d5290c1a00d10e7d66083cc16f3ad78075a88e5513f1c37ebb523'
+    }
+
+    /**
+     * Purged DAO related storage data
+     */
+    get asV104(): {daoId: number} {
+        assert(this.isV104)
         return this._chain.decodeEvent(this.event)
     }
 }
@@ -514,6 +642,23 @@ export class DaoCouncilProposedEvent {
         assert(this.isV103)
         return this._chain.decodeEvent(this.event)
     }
+
+    /**
+     * A motion (given hash) has been proposed (by given account) with a threshold (given
+     * `MemberCount`).
+     */
+    get isV104(): boolean {
+        return this._chain.getEventHash('DaoCouncil.Proposed') === 'f6efad43b62de76f72b85e7e687f1b0acd00b5f93b1a38860bd6d407160cbfc8'
+    }
+
+    /**
+     * A motion (given hash) has been proposed (by given account) with a threshold (given
+     * `MemberCount`).
+     */
+    get asV104(): {daoId: number, account: Uint8Array, proposalIndex: number, proposalHash: Uint8Array, proposal: v104.Call, threshold: number, meta: (Uint8Array | undefined)} {
+        assert(this.isV104)
+        return this._chain.decodeEvent(this.event)
+    }
 }
 
 export class DaoCouncilVotedEvent {
@@ -630,6 +775,35 @@ export class DaoDemocracyCancelledEvent {
      */
     get asV100(): {daoId: number, refIndex: number} {
         assert(this.isV100)
+        return this._chain.decodeEvent(this.event)
+    }
+}
+
+export class DaoDemocracyDaoPurgedEvent {
+    private readonly _chain: Chain
+    private readonly event: Event
+
+    constructor(ctx: EventContext)
+    constructor(ctx: ChainContext, event: Event)
+    constructor(ctx: EventContext, event?: Event) {
+        event = event || ctx.event
+        assert(event.name === 'DaoDemocracy.DaoPurged')
+        this._chain = ctx._chain
+        this.event = event
+    }
+
+    /**
+     * Purged DAO related storage data
+     */
+    get isV104(): boolean {
+        return this._chain.getEventHash('DaoDemocracy.DaoPurged') === '337d3b1acd0d5290c1a00d10e7d66083cc16f3ad78075a88e5513f1c37ebb523'
+    }
+
+    /**
+     * Purged DAO related storage data
+     */
+    get asV104(): {daoId: number} {
+        assert(this.isV104)
         return this._chain.decodeEvent(this.event)
     }
 }
@@ -791,6 +965,21 @@ export class DaoDemocracyProposedEvent {
      */
     get asV103(): {daoId: number, account: Uint8Array, proposalIndex: number, proposal: v103.Call, deposit: bigint, meta: (Uint8Array | undefined)} {
         assert(this.isV103)
+        return this._chain.decodeEvent(this.event)
+    }
+
+    /**
+     * A motion has been proposed by a public account.
+     */
+    get isV104(): boolean {
+        return this._chain.getEventHash('DaoDemocracy.Proposed') === 'b6a537054fa2ed91a7abceefee6c0e409caa7974fb0be5bdca9f1606822dd6dc'
+    }
+
+    /**
+     * A motion has been proposed by a public account.
+     */
+    get asV104(): {daoId: number, account: Uint8Array, proposalIndex: number, proposal: v104.Call, deposit: bigint, meta: (Uint8Array | undefined)} {
+        assert(this.isV104)
         return this._chain.decodeEvent(this.event)
     }
 }
@@ -969,6 +1158,35 @@ export class DaoEthGovernanceClosedEvent {
     }
 }
 
+export class DaoEthGovernanceDaoPurgedEvent {
+    private readonly _chain: Chain
+    private readonly event: Event
+
+    constructor(ctx: EventContext)
+    constructor(ctx: ChainContext, event: Event)
+    constructor(ctx: EventContext, event?: Event) {
+        event = event || ctx.event
+        assert(event.name === 'DaoEthGovernance.DaoPurged')
+        this._chain = ctx._chain
+        this.event = event
+    }
+
+    /**
+     * Purged DAO related storage data
+     */
+    get isV104(): boolean {
+        return this._chain.getEventHash('DaoEthGovernance.DaoPurged') === '337d3b1acd0d5290c1a00d10e7d66083cc16f3ad78075a88e5513f1c37ebb523'
+    }
+
+    /**
+     * Purged DAO related storage data
+     */
+    get asV104(): {daoId: number} {
+        assert(this.isV104)
+        return this._chain.decodeEvent(this.event)
+    }
+}
+
 export class DaoEthGovernanceDisapprovedEvent {
     private readonly _chain: Chain
     private readonly event: Event
@@ -1097,6 +1315,21 @@ export class DaoEthGovernanceProposedEvent {
      */
     get asV103(): {daoId: number, account: Uint8Array, proposalIndex: number, proposalHash: Uint8Array, proposal: v103.Call, blockNumber: number, threshold: bigint, meta: Uint8Array} {
         assert(this.isV103)
+        return this._chain.decodeEvent(this.event)
+    }
+
+    /**
+     * A motion (given hash) has been proposed (by given account) with a threshold
+     */
+    get isV104(): boolean {
+        return this._chain.getEventHash('DaoEthGovernance.Proposed') === 'e77b5819c8abbd6dc04a0d3649d3bf4411d87ff283ed13058d08d8d85a196a8b'
+    }
+
+    /**
+     * A motion (given hash) has been proposed (by given account) with a threshold
+     */
+    get asV104(): {daoId: number, account: Uint8Array, proposalIndex: number, proposalHash: Uint8Array, proposal: v104.Call, blockNumber: number, threshold: bigint, meta: Uint8Array} {
+        assert(this.isV104)
         return this._chain.decodeEvent(this.event)
     }
 }

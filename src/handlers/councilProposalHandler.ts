@@ -1,7 +1,8 @@
-import { In } from "typeorm";
+import { FindOptionsWhere, In } from "typeorm";
 import {
   DaoCouncilApprovedEvent,
   DaoCouncilClosedEvent,
+  DaoCouncilDaoPurgedEvent,
   DaoCouncilDisapprovedEvent,
   DaoCouncilExecutedEvent,
   DaoCouncilProposedEvent,
@@ -21,6 +22,8 @@ import { Call as CallV100 } from "../types/v100";
 import { Call as CallV101 } from "../types/v101";
 import { Call as CallV102 } from "../types/v102";
 import { Call as CallV103 } from "../types/v103";
+import { Call as CallV104 } from "../types/v104";
+import { buildProposalId } from "../utils/buildProposalId";
 
 type CouncilProposalStatusEvents =
   | DaoCouncilApprovedEvent
@@ -33,6 +36,7 @@ export class CouncilProposalHandler extends BaseHandler<CouncilProposal> {
   private readonly _councilProposalsToUpdate: Map<string, CouncilProposal>;
   private readonly _councilProposalsQueryMap: Map<string, CouncilProposal>;
   private readonly _councilProposalIds: Set<string>;
+  private readonly _councilProposalDaoIds: Set<number>;
 
   constructor(ctx: Ctx) {
     super(ctx);
@@ -40,6 +44,7 @@ export class CouncilProposalHandler extends BaseHandler<CouncilProposal> {
     this._councilProposalsToUpdate = new Map<string, CouncilProposal>();
     this._councilProposalsQueryMap = new Map<string, CouncilProposal>();
     this._councilProposalIds = new Set<string>();
+    this._councilProposalDaoIds = new Set<number>();
   }
 
   get councilProposalsToInsert() {
@@ -54,6 +59,10 @@ export class CouncilProposalHandler extends BaseHandler<CouncilProposal> {
     return this._councilProposalIds;
   }
 
+  get councilProposalDaoIds() {
+    return this._councilProposalDaoIds;
+  }
+
   arrayToMap(councilProposals: CouncilProposal[]) {
     for (const councilProposal of councilProposals) {
       this._councilProposalsQueryMap.set(councilProposal.id, councilProposal);
@@ -61,9 +70,14 @@ export class CouncilProposalHandler extends BaseHandler<CouncilProposal> {
   }
 
   query() {
-    return this._ctx.store.findBy(CouncilProposal, {
-      id: In([...this._councilProposalIds]),
-    });
+    const where: FindOptionsWhere<CouncilProposal>[] = [
+      { id: In([...this._councilProposalIds]) },
+    ];
+    if (this.councilProposalDaoIds.size > 0) {
+      where.push({ dao: { id: In([...this.councilProposalDaoIds]) } });
+    }
+
+    return this._ctx.store.findBy(CouncilProposal, where);
   }
 
   insert() {
@@ -104,7 +118,7 @@ export class CouncilProposalHandler extends BaseHandler<CouncilProposal> {
 
     const kind = getProposalKind(proposal);
     const hash = decodeHash(proposalHash);
-    const id = `${dao.id}-${proposalIndex}`;
+    const id = buildProposalId(dao.id, proposalIndex);
 
     this._councilProposalsToInsert.set(
       id,
@@ -134,7 +148,7 @@ export class CouncilProposalHandler extends BaseHandler<CouncilProposal> {
       throw new Error("Unsupported council proposal spec");
     }
 
-    const proposalId = `${daoId}-${proposalIndex}`;
+    const proposalId = buildProposalId(daoId, proposalIndex);
     const proposal =
       this._councilProposalsToInsert.get(proposalId) ??
       this._councilProposalsQueryMap.get(proposalId);
@@ -186,6 +200,26 @@ export class CouncilProposalHandler extends BaseHandler<CouncilProposal> {
     this._councilProposalsToUpdate.set(proposal.id, proposal);
   }
 
+  processDaoPurged({ event }: EventInfo<DaoCouncilDaoPurgedEvent>) {
+    let daoId: number;
+    if (event.isV104) {
+      ({ daoId } = event.asV104);
+    } else {
+      throw new Error("Unsupported council dao purge spec");
+    }
+
+    this._councilProposalsQueryMap.forEach((proposal, id) => {
+      const { index } = proposal;
+      if (id !== buildProposalId(daoId, index)) {
+        return;
+      }
+
+      proposal.removed = true;
+
+      this._councilProposalsToUpdate.set(id, proposal);
+    });
+  }
+
   prepareProposedQuery(
     event: DaoCouncilProposedEvent,
     daoIds: Set<string>,
@@ -209,8 +243,19 @@ export class CouncilProposalHandler extends BaseHandler<CouncilProposal> {
       throw new Error("Unsupported council proposal spec");
     }
 
-    const proposalId = `${daoId}-${proposalIndex}`;
+    const proposalId = buildProposalId(daoId, proposalIndex);
     proposalIds.add(proposalId);
+  }
+
+  prepareDaoPurgeQuery(event: DaoCouncilDaoPurgedEvent) {
+    let daoId;
+    if (event.isV104) {
+      ({ daoId } = event.asV104);
+    } else {
+      throw new Error("Unsupported council dao purge spec");
+    }
+
+    this._councilProposalDaoIds.add(daoId);
   }
 
   decodeDaoCouncilProposedEvent(event: DaoCouncilProposedEvent): {
@@ -218,7 +263,7 @@ export class CouncilProposalHandler extends BaseHandler<CouncilProposal> {
     account: Uint8Array;
     proposalIndex: number;
     proposalHash: Uint8Array;
-    proposal: CallV100 | CallV101 | CallV102 | CallV103;
+    proposal: CallV100 | CallV101 | CallV102 | CallV103 | CallV104;
     threshold: number;
     meta: Uint8Array | undefined;
   } {
@@ -230,6 +275,8 @@ export class CouncilProposalHandler extends BaseHandler<CouncilProposal> {
       return event.asV102;
     } else if (event.isV103) {
       return event.asV103;
+    } else if (event.isV104) {
+      return event.asV104;
     } else {
       throw new Error("Unsupported council proposal spec");
     }

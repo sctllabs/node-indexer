@@ -14,6 +14,15 @@ const processor = new SubstrateBatchProcessor()
   .addEvent("Dao.DaoRegistered", {
     data: { event: { args: true } },
   } as const)
+  .addEvent("Dao.DaoMetadataUpdated", {
+    data: { event: { args: true } },
+  } as const)
+  .addEvent("Dao.DaoPolicyUpdated", {
+    data: { event: { args: true } },
+  } as const)
+  .addEvent("Dao.DaoRemoved", {
+    data: { event: { args: true } },
+  } as const)
   .addEvent("Assets.MetadataSet", {
     data: { event: { args: true } },
   } as const)
@@ -35,6 +44,9 @@ const processor = new SubstrateBatchProcessor()
   .addEvent("DaoCouncil.Closed", {
     data: { event: { args: true } },
   } as const)
+  .addEvent("DaoCouncil.DaoPurged", {
+    data: { event: { args: true } },
+  } as const)
   .addEvent("DaoEthGovernance.Proposed", {
     data: { event: { args: true } },
   } as const)
@@ -51,6 +63,9 @@ const processor = new SubstrateBatchProcessor()
     data: { event: { args: true } },
   } as const)
   .addEvent("DaoEthGovernance.Closed", {
+    data: { event: { args: true } },
+  } as const)
+  .addEvent("DaoEthGovernance.DaoPurged", {
     data: { event: { args: true } },
   } as const)
   .addEvent("DaoCouncilMembers.MemberAdded", {
@@ -86,6 +101,9 @@ const processor = new SubstrateBatchProcessor()
   .addEvent("DaoDemocracy.Undelegated", {
     data: { event: { args: true } },
   } as const)
+  .addEvent("DaoDemocracy.DaoPurged", {
+    data: { event: { args: true } },
+  } as const)
   .addEvent("DaoBounties.BountyCreated", {
     data: { event: { args: true, call: true } },
   } as const)
@@ -111,6 +129,9 @@ const processor = new SubstrateBatchProcessor()
     data: { event: { args: true } },
   } as const)
   .addEvent("DaoBounties.BountyExtended", {
+    data: { event: { args: true } },
+  } as const)
+  .addEvent("DaoBounties.DaoPurged", {
     data: { event: { args: true } },
   } as const);
 export type Item = BatchProcessorItem<typeof processor>;

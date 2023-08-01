@@ -1,10 +1,11 @@
-import { In } from "typeorm";
+import { FindOptionsWhere, In } from "typeorm";
 import {
   DaoEthGovernanceApprovedEvent,
   DaoEthGovernanceClosedEvent,
   DaoEthGovernanceDisapprovedEvent,
   DaoEthGovernanceExecutedEvent,
   DaoEthGovernanceProposedEvent,
+  DaoEthGovernanceDaoPurgedEvent,
 } from "../types/events";
 import {
   Account,
@@ -26,6 +27,8 @@ import { Call as CallV100 } from "../types/v100";
 import { Call as CallV101 } from "../types/v101";
 import { Call as CallV102 } from "../types/v102";
 import { Call as CallV103 } from "../types/v103";
+import { Call as CallV104 } from "../types/v104";
+import { buildProposalId } from "../utils/buildProposalId";
 
 type EthGovernanceProposalStatusEvents =
   | DaoEthGovernanceApprovedEvent
@@ -47,6 +50,7 @@ export class EthGovernanceProposalHandler extends BaseHandler<EthGovernancePropo
     EthGovernanceProposal
   >;
   private readonly _ethGovernanceProposalIds: Set<string>;
+  private readonly _ethGovernanceProposalDaoIds: Set<number>;
 
   constructor(ctx: Ctx) {
     super(ctx);
@@ -63,6 +67,7 @@ export class EthGovernanceProposalHandler extends BaseHandler<EthGovernancePropo
       EthGovernanceProposal
     >();
     this._ethGovernanceProposalIds = new Set<string>();
+    this._ethGovernanceProposalDaoIds = new Set<number>();
   }
 
   get ethGovernanceProposalsToInsert() {
@@ -77,6 +82,10 @@ export class EthGovernanceProposalHandler extends BaseHandler<EthGovernancePropo
     return this._ethGovernanceProposalIds;
   }
 
+  get ethGovernanceProposalDaoIds() {
+    return this._ethGovernanceProposalDaoIds;
+  }
+
   arrayToMap(ethGovernanceProposals: EthGovernanceProposal[]) {
     for (const ethGovernanceProposal of ethGovernanceProposals) {
       this._ethGovernanceProposalsQueryMap.set(
@@ -87,9 +96,14 @@ export class EthGovernanceProposalHandler extends BaseHandler<EthGovernancePropo
   }
 
   query() {
-    return this._ctx.store.findBy(EthGovernanceProposal, {
-      id: In([...this._ethGovernanceProposalIds]),
-    });
+    const where: FindOptionsWhere<EthGovernanceProposal>[] = [
+      { id: In([...this._ethGovernanceProposalIds]) },
+    ];
+    if (this.ethGovernanceProposalDaoIds.size > 0) {
+      where.push({ dao: { id: In([...this.ethGovernanceProposalDaoIds]) } });
+    }
+
+    return this._ctx.store.findBy(EthGovernanceProposal, where);
   }
 
   insert() {
@@ -135,7 +149,7 @@ export class EthGovernanceProposalHandler extends BaseHandler<EthGovernancePropo
 
     const kind = getProposalKind(proposal);
     const hash = decodeHash(proposalHash);
-    const id = `${dao.id}-${proposalIndex}`;
+    const id = buildProposalId(dao.id, proposalIndex);
 
     this._ethGovernanceProposalsToInsert.set(
       id,
@@ -169,7 +183,7 @@ export class EthGovernanceProposalHandler extends BaseHandler<EthGovernancePropo
       throw new Error("Unsupported eth governance proposal spec");
     }
 
-    const proposalId = `${daoId}-${proposalIndex}`;
+    const proposalId = buildProposalId(daoId, proposalIndex);
     const proposal =
       this._ethGovernanceProposalsToInsert.get(proposalId) ??
       this._ethGovernanceProposalsQueryMap.get(proposalId);
@@ -215,6 +229,26 @@ export class EthGovernanceProposalHandler extends BaseHandler<EthGovernancePropo
     this._ethGovernanceProposalsToUpdate.set(proposal.id, proposal);
   }
 
+  processDaoPurged({ event }: EventInfo<DaoEthGovernanceDaoPurgedEvent>) {
+    let daoId: number;
+    if (event.isV104) {
+      ({ daoId } = event.asV104);
+    } else {
+      throw new Error("Unsupported eth governance dao purge spec");
+    }
+
+    this._ethGovernanceProposalsQueryMap.forEach((proposal, id) => {
+      const { index } = proposal;
+      if (id !== buildProposalId(daoId, index)) {
+        return;
+      }
+
+      proposal.removed = true;
+
+      this._ethGovernanceProposalsToUpdate.set(id, proposal);
+    });
+  }
+
   prepareProposedQuery(
     event: DaoEthGovernanceProposedEvent,
     daoIds: Set<string>,
@@ -238,8 +272,19 @@ export class EthGovernanceProposalHandler extends BaseHandler<EthGovernancePropo
       throw new Error("Unsupported status spec");
     }
 
-    const proposalId = `${daoId}-${proposalIndex}`;
+    const proposalId = buildProposalId(daoId, proposalIndex);
     proposalIds.add(proposalId);
+  }
+
+  prepareDaoPurgeQuery(event: DaoEthGovernanceDaoPurgedEvent) {
+    let daoId;
+    if (event.isV104) {
+      ({ daoId } = event.asV104);
+    } else {
+      throw new Error("Unsupported eth governance dao purge spec");
+    }
+
+    this._ethGovernanceProposalDaoIds.add(daoId);
   }
 
   decodeDaoEthGovernanceProposedEvent(event: DaoEthGovernanceProposedEvent): {
@@ -247,7 +292,7 @@ export class EthGovernanceProposalHandler extends BaseHandler<EthGovernancePropo
     account: Uint8Array;
     proposalIndex: number;
     proposalHash: Uint8Array;
-    proposal: CallV100 | CallV101 | CallV102 | CallV103;
+    proposal: CallV100 | CallV101 | CallV102 | CallV103 | CallV104;
     blockNumber: number;
     threshold: bigint;
     meta: Uint8Array;
@@ -260,6 +305,8 @@ export class EthGovernanceProposalHandler extends BaseHandler<EthGovernancePropo
       return event.asV102;
     } else if (event.isV103) {
       return event.asV103;
+    } else if (event.isV104) {
+      return event.asV104;
     } else {
       throw new Error("Unsupported eth governance proposal spec");
     }

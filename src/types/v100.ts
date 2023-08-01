@@ -1,5 +1,14 @@
 import type {Result, Option} from './support'
 
+export interface DaoPolicy {
+    proposalPeriod: number
+    approveOrigin: DaoPolicyProportion
+    governance: (DaoGovernance | undefined)
+    bountyPayoutDelay: number
+    bountyUpdatePeriod: number
+    spendPeriod: number
+}
+
 export type DaoToken = DaoToken_FungibleToken | DaoToken_EthTokenAddress
 
 export interface DaoToken_FungibleToken {
@@ -16,15 +25,6 @@ export interface DaoConfig {
     name: Uint8Array
     purpose: Uint8Array
     metadata: Uint8Array
-}
-
-export interface DaoPolicy {
-    proposalPeriod: number
-    approveOrigin: DaoPolicyProportion
-    governance: (DaoGovernance | undefined)
-    bountyPayoutDelay: number
-    bountyUpdatePeriod: number
-    spendPeriod: number
 }
 
 export type BountyStatus = BountyStatus_Approved | BountyStatus_Funded | BountyStatus_CuratorProposed | BountyStatus_Active | BountyStatus_PendingPayout
