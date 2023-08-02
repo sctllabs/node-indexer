@@ -77,9 +77,7 @@ export class EthGovernanceVoteHandler extends BaseHandler<EthGovernanceVoteHisto
       });
     }
 
-    return this._ctx.store.findBy(EthGovernanceVoteHistory, {
-      id: In([...this._ethGovernanceVoteIds]),
-    });
+    return this._ctx.store.findBy(EthGovernanceVoteHistory, where);
   }
 
   insert() {
