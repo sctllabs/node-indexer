@@ -52,9 +52,7 @@ export class CouncilVoteHandler extends BaseHandler<CouncilVoteHistory> {
       });
     }
 
-    return this._ctx.store.findBy(CouncilVoteHistory, {
-      id: In([...this._councilVoteIds]),
-    });
+    return this._ctx.store.findBy(CouncilVoteHistory, where);
   }
 
   insert() {
