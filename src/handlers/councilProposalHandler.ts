@@ -23,6 +23,7 @@ import { Call as CallV101 } from "../types/v101";
 import { Call as CallV102 } from "../types/v102";
 import { Call as CallV103 } from "../types/v103";
 import { Call as CallV104 } from "../types/v104";
+import { Call as CallV105 } from "../types/v105";
 import { buildProposalId } from "../utils/buildProposalId";
 
 type CouncilProposalStatusEvents =
@@ -263,7 +264,7 @@ export class CouncilProposalHandler extends BaseHandler<CouncilProposal> {
     account: Uint8Array;
     proposalIndex: number;
     proposalHash: Uint8Array;
-    proposal: CallV100 | CallV101 | CallV102 | CallV103 | CallV104;
+    proposal: CallV100 | CallV101 | CallV102 | CallV103 | CallV104 | CallV105;
     threshold: number;
     meta: Uint8Array | undefined;
   } {
@@ -277,6 +278,8 @@ export class CouncilProposalHandler extends BaseHandler<CouncilProposal> {
       return event.asV103;
     } else if (event.isV104) {
       return event.asV104;
+    } else if (event.isV105) {
+      return event.asV105;
     } else {
       throw new Error("Unsupported council proposal spec");
     }
